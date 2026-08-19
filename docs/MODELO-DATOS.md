@@ -319,6 +319,22 @@ Y encima, para `trainer`, un filtro adicional por `trainer_id = auth.uid()`.
 > crea cada tabla**, aunque la política fina se afine en la 1.4. Tabla nueva sin RLS es
 > un defecto, no una tarea pendiente.
 
+### GRANT y RLS son cosas distintas
+
+`RLS` decide **qué filas** ve un rol. El `GRANT` decide si el rol puede **tocar la
+tabla**. Con las políticas perfectas pero sin `GRANT`, toda consulta responde
+`permission denied` y uno pierde horas revisando políticas que están bien.
+
+Cada migración concede explícitamente a `authenticated` y **nada a `anon`**.
+
+> **Trampa verificada en la 1.1.** El Supabase local (`supabase start`) **no** concede
+> permisos a `anon` sobre `public`, pero el proyecto alojado **sí**. Una suite de RLS
+> que pasa en local puede no reflejar producción. La migración
+> `20260819060000_revocar_anon.sql` iguala los dos entornos revocando `anon` y ajustando
+> los privilegios por defecto para que las tablas futuras tampoco nazcan con ellos.
+>
+> **Toda migración nueva debe verificarse también contra el remoto**, no solo en local.
+
 ---
 
 ## 7. Pendiente de Giovanni
