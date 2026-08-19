@@ -14,6 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
+      anthropometric_measurements: {
+        Row: {
+          arm_flexed_cm: number | null
+          athlete_id: string
+          calf_cm: number | null
+          created_at: string
+          created_by: string | null
+          extra_measures: Json
+          femur_breadth_cm: number | null
+          height_cm: number | null
+          humerus_breadth_cm: number | null
+          id: string
+          measured_at: string
+          measured_by: string | null
+          medial_calf_mm: number | null
+          notes: string | null
+          somatotype_ecto: number | null
+          somatotype_endo: number | null
+          somatotype_meso: number | null
+          subscapular_mm: number | null
+          supraspinale_mm: number | null
+          tenant_id: string
+          triceps_mm: number | null
+          voided_at: string | null
+          voided_by: string | null
+          voided_reason: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          arm_flexed_cm?: number | null
+          athlete_id: string
+          calf_cm?: number | null
+          created_at?: string
+          created_by?: string | null
+          extra_measures?: Json
+          femur_breadth_cm?: number | null
+          height_cm?: number | null
+          humerus_breadth_cm?: number | null
+          id?: string
+          measured_at?: string
+          measured_by?: string | null
+          medial_calf_mm?: number | null
+          notes?: string | null
+          somatotype_ecto?: number | null
+          somatotype_endo?: number | null
+          somatotype_meso?: number | null
+          subscapular_mm?: number | null
+          supraspinale_mm?: number | null
+          tenant_id: string
+          triceps_mm?: number | null
+          voided_at?: string | null
+          voided_by?: string | null
+          voided_reason?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          arm_flexed_cm?: number | null
+          athlete_id?: string
+          calf_cm?: number | null
+          created_at?: string
+          created_by?: string | null
+          extra_measures?: Json
+          femur_breadth_cm?: number | null
+          height_cm?: number | null
+          humerus_breadth_cm?: number | null
+          id?: string
+          measured_at?: string
+          measured_by?: string | null
+          medial_calf_mm?: number | null
+          notes?: string | null
+          somatotype_ecto?: number | null
+          somatotype_endo?: number | null
+          somatotype_meso?: number | null
+          subscapular_mm?: number | null
+          supraspinale_mm?: number | null
+          tenant_id?: string
+          triceps_mm?: number | null
+          voided_at?: string | null
+          voided_by?: string | null
+          voided_reason?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anthropometric_measurements_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anthropometric_measurements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anthropometric_measurements_measured_by_fkey"
+            columns: ["measured_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anthropometric_measurements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anthropometric_measurements_voided_by_fkey"
+            columns: ["voided_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_consents: {
         Row: {
           athlete_id: string
@@ -197,6 +317,108 @@ export type Database = {
           {
             foreignKeyName: "athletes_trainer_id_fkey"
             columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      biomech_evaluations: {
+        Row: {
+          ankle_dorsiflexion: string | null
+          athlete_id: string
+          created_at: string
+          created_by: string | null
+          evaluated_at: string
+          evaluated_by: string | null
+          femur_class: string | null
+          femur_length_cm: number | null
+          hip_mobility: string | null
+          humerus_length_cm: number | null
+          id: string
+          notes: string | null
+          pattern_classifications: Json
+          shoulder_mobility: string | null
+          tenant_id: string
+          torso_length_cm: number | null
+          voided_at: string | null
+          voided_by: string | null
+          voided_reason: string | null
+        }
+        Insert: {
+          ankle_dorsiflexion?: string | null
+          athlete_id: string
+          created_at?: string
+          created_by?: string | null
+          evaluated_at?: string
+          evaluated_by?: string | null
+          femur_class?: string | null
+          femur_length_cm?: number | null
+          hip_mobility?: string | null
+          humerus_length_cm?: number | null
+          id?: string
+          notes?: string | null
+          pattern_classifications?: Json
+          shoulder_mobility?: string | null
+          tenant_id: string
+          torso_length_cm?: number | null
+          voided_at?: string | null
+          voided_by?: string | null
+          voided_reason?: string | null
+        }
+        Update: {
+          ankle_dorsiflexion?: string | null
+          athlete_id?: string
+          created_at?: string
+          created_by?: string | null
+          evaluated_at?: string
+          evaluated_by?: string | null
+          femur_class?: string | null
+          femur_length_cm?: number | null
+          hip_mobility?: string | null
+          humerus_length_cm?: number | null
+          id?: string
+          notes?: string | null
+          pattern_classifications?: Json
+          shoulder_mobility?: string | null
+          tenant_id?: string
+          torso_length_cm?: number | null
+          voided_at?: string | null
+          voided_by?: string | null
+          voided_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "biomech_evaluations_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "biomech_evaluations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "biomech_evaluations_evaluated_by_fkey"
+            columns: ["evaluated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "biomech_evaluations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "biomech_evaluations_voided_by_fkey"
+            columns: ["voided_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]

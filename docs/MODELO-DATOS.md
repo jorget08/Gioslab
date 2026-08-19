@@ -122,23 +122,25 @@ erDiagram
         numeric subscapular_mm
         numeric supraspinale_mm
         numeric medial_calf_mm
-        numeric humerus_breadth_mm
-        numeric femur_breadth_mm
+        numeric humerus_breadth_cm
+        numeric femur_breadth_cm
         numeric arm_flexed_cm
         numeric calf_cm
         numeric somatotype_endo
         numeric somatotype_meso
         numeric somatotype_ecto
         jsonb extra_measures
+        timestamptz voided_at
+        text voided_reason
     }
     BIOMECH_EVALUATIONS {
         uuid id PK
         uuid athlete_id FK
         uuid tenant_id FK
         timestamptz evaluated_at
-        numeric femur_length_mm
-        numeric humerus_length_mm
-        numeric torso_length_mm
+        numeric femur_length_cm
+        numeric humerus_length_cm
+        numeric torso_length_cm
         text femur_class
         text ankle_dorsiflexion
         text hip_mobility
@@ -239,6 +241,32 @@ order by athlete_id, measured_at desc;
 ```
 
 Índice necesario: `(athlete_id, measured_at desc)` en ambas tablas.
+
+### Cómo se impone la inmutabilidad (implementado en la 1.2)
+
+No basta con escribirlo aquí. En la migración `20260819070000` **no se concede `UPDATE`
+sobre las columnas de datos ni `DELETE`**: un entrenador solo puede `INSERT` y `SELECT`.
+Sobreescribir un peso ya registrado devuelve `permission denied` desde Postgres, no
+desde una validación de la aplicación que alguien pueda saltarse.
+
+Pero una tabla sin salida es peor que el problema, y los errores de digitación existen.
+Por eso se concede `UPDATE` **solo sobre tres columnas**: `voided_at`, `voided_by` y
+`voided_reason`. La fila errónea se marca como anulada, con autor y motivo, y **sigue en
+el historial**. Un `CHECK` impide anular sin motivo.
+
+Es el patrón de una historia clínica: no se borra, se enmienda dejando rastro. El
+`GRANT` a nivel de columna es lo que lo hace imposible de saltar desde la app, en vez de
+una convención que alguien romperá dentro de un año.
+
+### Unidades
+
+Pliegues cutáneos en **mm**; diámetros óseos, perímetros y longitudes de segmento en
+**cm**. Es lo que usa el protocolo Heath-Carter, y mezclarlas es la vía rápida a un
+somatotipo que no cuadra con el Excel de Giovanni.
+
+Todas las columnas numéricas llevan un `CHECK` de rango **anti-digitación**, no clínico:
+atrapan un `1750` donde iba `175` al llenar el formulario de pie en el gimnasio. Son
+rangos deliberadamente generosos; no rechazan valores atípicos legítimos.
 
 ### Sobre `extra_measures jsonb`
 
