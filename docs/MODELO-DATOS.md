@@ -359,6 +359,41 @@ create policy tenant_aislado on athletes
 
 Y encima, para `trainer`, un filtro adicional por `trainer_id = auth.uid()`.
 
+### Nunca escribir una condición negativa en una política
+
+**Fallo real, encontrado y corregido en la 1.4.** La política original de `athletes` decía:
+
+```sql
+mi_rol() <> 'trainer' or trainer_id = auth.uid()   -- ❌ falla ABIERTO
+```
+
+La intención era "el entrenador solo ve los suyos". Pero para `client` la primera mitad
+es verdadera, así que **un cliente veía todos los atletas de su gimnasio**, con lesiones
+y composición corporal. Cada rol que no esté nombrado entra por la puerta de atrás.
+
+La forma correcta enumera **positivamente** quién sí puede:
+
+```sql
+mi_rol() = 'super_admin'
+or (tenant_id = mi_tenant()
+    and (mi_rol() = 'gym'
+         or (mi_rol() = 'trainer' and trainer_id = auth.uid())))   -- ✅ falla CERRADO
+```
+
+Un rol que no aparece queda fuera por defecto. Lo mismo aplica a `using (true)`: se veía
+inocente en `rules`, y significaba que **cualquier cuenta de cliente podía descargarse la
+matriz de reglas completa** — el activo central del negocio.
+
+**Regla para el resto del proyecto: en una política, el silencio significa "no".** Nada de
+`<>`, nada de `not in`, nada de `using (true)` sobre tablas con datos o metodología.
+
+### Qué puede hacer un `client` en Fase A
+
+Nada, salvo leer su propio perfil y su tenant. No es un descuido: el portal del cliente es
+Fase B y todavía no existe el vínculo cliente ↔ atleta. Cuando se construya hará falta una
+columna `athletes.client_user_id` y extender la política **de forma deliberada**, en una
+migración que se pueda revisar.
+
 > **Ojo con la ventana de riesgo.** Entre la 1.1 (se crean las tablas) y la 1.4 (se
 > aplica RLS) existe un intervalo en el que la clave pública —que va en el bundle del
 > navegador— puede leer las tablas. Por eso RLS se activa **en la misma migración que
