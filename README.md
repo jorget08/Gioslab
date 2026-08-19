@@ -20,7 +20,7 @@ Repositorio privado. El contexto completo del proyecto está en
 |---|---|
 | Frontend | Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 |
 | Componentes | shadcn/ui *(pendiente — tarea 1.8)* |
-| Backend / BD | Supabase (Postgres + Auth + Storage + RLS) *(pendiente — tarea 0.2)* |
+| Backend / BD | Supabase (Postgres + Auth + Storage + RLS) |
 | Validación | Zod + React Hook Form *(pendiente)* |
 | Tests | Vitest |
 | Despliegue | Vercel (web) · Capacitor (móvil, Fase B) |
@@ -52,6 +52,8 @@ La app queda en <http://localhost:3000>.
 | `npm run typecheck` | TypeScript sin emitir archivos |
 | `npm test` | Vitest, una pasada |
 | `npm run test:watch` | Vitest en modo watch |
+| `npm run db:check` | Comprueba que `.env.local` conecta con Supabase |
+| `npm run db:types` | Regenera `src/types/database.types.ts` desde el esquema |
 
 > `npm run typecheck` necesita los tipos de rutas que Next.js genera en `.next/types/`.
 > En un clon recién hecho, corre `npm run build` (o `npm run dev`) una vez antes.
@@ -59,8 +61,22 @@ La app queda en <http://localhost:3000>.
 
 ### Variables de entorno
 
-Todavía ninguna. Se agregan en la tarea 0.2 (Supabase).
-`.env.local` **nunca** se commitea — ya está cubierto por `.gitignore`.
+```bash
+cp .env.example .env.local
+```
+
+Los valores salen de Supabase → *Project Settings* → *API*:
+
+| Variable | Qué es |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave pública (anon / publishable) |
+
+Con eso, `npm run db:check` confirma que la conexión funciona.
+
+`.env.local` **nunca** se commitea; `.env.example` sí, y va sin valores.
+La clave de servicio (`service_role` / secret) **se salta RLS por completo**: no va
+en ningún archivo con prefijo `NEXT_PUBLIC_` ni se usa desde el navegador.
 
 ---
 
