@@ -9,8 +9,10 @@
  *   npx supabase start
  *   npm run test:rls
  *
- * Las claves por defecto son las del entorno local de Supabase: son idénticas en
- * todas las instalaciones y NO son secretas. Nunca apuntar esto al proyecto real.
+ * Cubre además el caso multi-tenant: un entrenador que trabaja en un gimnasio y
+ * a la vez tiene alumnos propios, y el cambio de contexto entre ambos.
+ *
+ * Solo contra el entorno local: crea y borra datos.
  */
 import { execFileSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
@@ -74,10 +76,15 @@ async function limpiar() {
     if (u.email?.endsWith("@rls-test.local")) await admin.auth.admin.deleteUser(u.id);
   }
   await admin.from("athletes").delete().in("tenant_id", [TENANT_A, TENANT_B]);
+  await admin.from("memberships").delete().in("tenant_id", [TENANT_A, TENANT_B]);
   await admin.from("tenants").delete().in("id", [TENANT_A, TENANT_B]);
 }
 
-async function crearUsuario(email, role, tenantId) {
+/**
+ * Crea un usuario y sus membresías.
+ * `pertenencias` es una lista de [tenantId, rol]; la primera queda activa.
+ */
+async function crearUsuario(email, pertenencias, { superAdmin = false } = {}) {
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password: PASS,
@@ -87,8 +94,15 @@ async function crearUsuario(email, role, tenantId) {
 
   const { error: e2 } = await admin
     .from("users")
-    .insert({ id: data.user.id, tenant_id: tenantId, role, email });
+    .insert({ id: data.user.id, email, is_super_admin: superAdmin });
   if (e2) throw new Error(`perfil ${email}: ${e2.message}`);
+
+  for (const [tenantId, role] of pertenencias) {
+    const { error: e3 } = await admin
+      .from("memberships")
+      .insert({ user_id: data.user.id, tenant_id: tenantId, role });
+    if (e3) throw new Error(`membresía ${email}: ${e3.message}`);
+  }
 
   return data.user.id;
 }
@@ -130,21 +144,24 @@ async function main() {
     { id: TENANT_B, type: "solo", name: "Entrenador B" },
   ]);
 
-  const superAdmin = await crearUsuario("super@rls-test.local", "super_admin", null);
-  const gymA = await crearUsuario("gym@rls-test.local", "gym", TENANT_A);
-  const trainerA1 = await crearUsuario("t1@rls-test.local", "trainer", TENANT_A);
-  const trainerA2 = await crearUsuario("t2@rls-test.local", "trainer", TENANT_A);
-  const clienteA = await crearUsuario("cliente@rls-test.local", "client", TENANT_A);
-  const trainerB = await crearUsuario("tb@rls-test.local", "trainer", TENANT_B);
-  void superAdmin;
-  void clienteA;
+  await crearUsuario("super@rls-test.local", [], { superAdmin: true });
+  await crearUsuario("gym@rls-test.local", [[TENANT_A, "gym"]]);
+  const trainerA2 = await crearUsuario("t2@rls-test.local", [[TENANT_A, "trainer"]]);
+  await crearUsuario("cliente@rls-test.local", [[TENANT_A, "client"]]);
+
+  // El caso que motivó el rediseño: trabaja en el gimnasio A Y tiene alumnos
+  // propios en su tenant B. Su tenant activo arranca en A (primera membresía).
+  const mixto = await crearUsuario("mixto@rls-test.local", [
+    [TENANT_A, "trainer"],
+    [TENANT_B, "trainer"],
+  ]);
 
   const { data: atletas, error: eA } = await admin
     .from("athletes")
     .insert([
-      { tenant_id: TENANT_A, trainer_id: trainerA1, full_name: "Atleta A1", birth_date: "1995-03-10", sex: "masculino" },
-      { tenant_id: TENANT_A, trainer_id: trainerA2, full_name: "Atleta A2", birth_date: "1998-07-22", sex: "femenino" },
-      { tenant_id: TENANT_B, trainer_id: trainerB, full_name: "Atleta B", birth_date: "2000-01-05", sex: "masculino" },
+      { tenant_id: TENANT_A, trainer_id: mixto, full_name: "Alumno del gimnasio", birth_date: "1995-03-10", sex: "masculino" },
+      { tenant_id: TENANT_A, trainer_id: trainerA2, full_name: "Atleta de otro entrenador", birth_date: "1998-07-22", sex: "femenino" },
+      { tenant_id: TENANT_B, trainer_id: mixto, full_name: "Alumno particular", birth_date: "2000-01-05", sex: "masculino" },
     ])
     .select();
   if (eA) throw new Error(`atletas: ${eA.message}`);
@@ -157,14 +174,37 @@ async function main() {
   console.log("\n=== Atletas visibles por rol (sesión real) ===");
   verificar("super_admin ve todos",            await contar(await sesion("super@rls-test.local"), "athletes"), 3);
   verificar("gym A ve los de su gimnasio",     await contar(await sesion("gym@rls-test.local"), "athletes"), 2);
-  verificar("trainer A1 ve solo el suyo",      await contar(await sesion("t1@rls-test.local"), "athletes"), 1);
-  verificar("trainer A2 ve solo el suyo",      await contar(await sesion("t2@rls-test.local"), "athletes"), 1);
-  verificar("trainer B (otro tenant)",         await contar(await sesion("tb@rls-test.local"), "athletes"), 1);
+  verificar("trainer ve solo el suyo",         await contar(await sesion("t2@rls-test.local"), "athletes"), 1);
   verificar("CLIENTE no ve ningún atleta",     await contar(await sesion("cliente@rls-test.local"), "athletes"), 0);
+
+  console.log("\n=== Entrenador en DOS tenants (el caso nuevo) ===");
+  const cliMixto = await sesion("mixto@rls-test.local");
+  verificar("en el gimnasio ve su alumno de ahí", await contar(cliMixto, "athletes"), 1);
+  verificar("ve los 2 tenants en el selector",    await contar(cliMixto, "tenants"), 2);
+
+  const { data: nombreEnGym } = await cliMixto.from("athletes").select("full_name").single();
+  verificar("y es el correcto", nombreEnGym?.full_name, "Alumno del gimnasio");
+
+  // Cambia de contexto por la función, como hará la interfaz.
+  const { error: eSw } = await cliMixto.rpc("cambiar_tenant", { nuevo_tenant: TENANT_B });
+  verificar("cambiar_tenant a uno propio funciona", eSw?.message ?? "sin-error", "sin-error");
+
+  const cliMixtoB = await sesion("mixto@rls-test.local");
+  const { data: nombreEnSolo } = await cliMixtoB.from("athletes").select("full_name").single();
+  verificar("tras cambiar, ve su alumno particular", nombreEnSolo?.full_name, "Alumno particular");
+  verificar("y NO ve los del gimnasio",              await contar(cliMixtoB, "athletes"), 1);
+
+  console.log("\n=== Robo de contexto: saltar a un tenant ajeno ===");
+  const cliCliente = await sesion("cliente@rls-test.local");
+  const { error: eRobo } = await cliCliente.rpc("cambiar_tenant", { nuevo_tenant: TENANT_B });
+  verificar("cambiar_tenant a un tenant ajeno falla", eRobo?.code ?? "sin-error", "42501");
+
+  const { error: eDirecto } = await cliCliente
+    .from("users").update({ active_tenant_id: TENANT_B }).eq("email", "cliente@rls-test.local");
+  verificar("UPDATE directo de active_tenant_id falla", eDirecto?.code ?? "sin-error", "42501");
 
   console.log("\n=== Datos clínicos ===");
   verificar("cliente no ve mediciones",        await contar(await sesion("cliente@rls-test.local"), "anthropometric_measurements"), 0);
-  verificar("trainer A1 ve solo la de su atleta", await contar(await sesion("t1@rls-test.local"), "anthropometric_measurements"), 1);
   verificar("gym A ve las de su gimnasio",     await contar(await sesion("gym@rls-test.local"), "anthropometric_measurements"), 2);
 
   console.log("\n=== Metodología (el activo del negocio) ===");
@@ -173,12 +213,12 @@ async function main() {
     condition: { femur_class: "Largo" }, actions: { priorizar: ["Prensa"] },
     justification: "Prueba", evidence_level: "criterio_profesional",
   });
-  verificar("trainer puede leer las reglas",   await contar(await sesion("t1@rls-test.local"), "rules"), 1);
+  verificar("trainer puede leer las reglas",   await contar(await sesion("t2@rls-test.local"), "rules"), 1);
   verificar("CLIENTE no puede leer las reglas", await contar(await sesion("cliente@rls-test.local"), "rules"), 0);
 
   console.log("\n=== Usuarios ===");
   verificar("cliente solo se ve a sí mismo",   await contar(await sesion("cliente@rls-test.local"), "users"), 1);
-  verificar("gym A ve a su equipo (4 del tenant A)", await contar(await sesion("gym@rls-test.local"), "users"), 4);
+  verificar("gym A ve a su equipo del tenant A",    await contar(await sesion("gym@rls-test.local"), "users"), 4);
 
   console.log("\n=== Anónimo (sin sesión) ===");
   const anon = createClient(URL, PUBLISHABLE, { auth: { persistSession: false } });

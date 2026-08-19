@@ -17,12 +17,20 @@ insert into public.tenants (id, type, name) values
   ('10000000-0000-0000-0000-00000000000a','gym','Gimnasio A'),
   ('10000000-0000-0000-0000-00000000000b','solo','Entrenador B independiente');
 
-insert into public.users (id, tenant_id, role, email) values
-  ('00000000-0000-0000-0000-0000000000a0', null,                                   'super_admin','admin@gioslab.co'),
-  ('00000000-0000-0000-0000-0000000000a1','10000000-0000-0000-0000-00000000000a','gym',        'gymA@gioslab.co'),
-  ('00000000-0000-0000-0000-0000000000a2','10000000-0000-0000-0000-00000000000a','trainer',    'trainerA1@gioslab.co'),
-  ('00000000-0000-0000-0000-0000000000a3','10000000-0000-0000-0000-00000000000a','trainer',    'trainerA2@gioslab.co'),
-  ('00000000-0000-0000-0000-0000000000b1','10000000-0000-0000-0000-00000000000b','trainer',    'soloB@gioslab.co');
+insert into public.users (id, email, is_super_admin) values
+  ('00000000-0000-0000-0000-0000000000a0','admin@gioslab.co',     true),
+  ('00000000-0000-0000-0000-0000000000a1','gymA@gioslab.co',      false),
+  ('00000000-0000-0000-0000-0000000000a2','trainerA1@gioslab.co', false),
+  ('00000000-0000-0000-0000-0000000000a3','trainerA2@gioslab.co', false),
+  ('00000000-0000-0000-0000-0000000000b1','soloB@gioslab.co',     false);
+
+-- La membresía define el rol DENTRO de cada tenant. El trigger deja activo el
+-- primero, así que estos usuarios arrancan operando donde corresponde.
+insert into public.memberships (user_id, tenant_id, role) values
+  ('00000000-0000-0000-0000-0000000000a1','10000000-0000-0000-0000-00000000000a','gym'),
+  ('00000000-0000-0000-0000-0000000000a2','10000000-0000-0000-0000-00000000000a','trainer'),
+  ('00000000-0000-0000-0000-0000000000a3','10000000-0000-0000-0000-00000000000a','trainer'),
+  ('00000000-0000-0000-0000-0000000000b1','10000000-0000-0000-0000-00000000000b','trainer');
 
 insert into public.athletes (id, tenant_id, trainer_id, full_name, birth_date, sex) values
   ('20000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-00000000000a','00000000-0000-0000-0000-0000000000a2','Atleta de A1','1995-03-10','masculino'),
@@ -109,19 +117,49 @@ begin;
 commit;
 
 \echo ''
-\echo '=== E. Trainer A1 intentando ascenderse a super_admin ==='
+\echo '=== E. Escalada de privilegios por parte de un entrenador ==='
+
+-- E1: auto-concederse el rol de dueño del gimnasio.
 do $$
 begin
   set local role authenticated;
   perform pg_temp.como('00000000-0000-0000-0000-0000000000a2');
-  update public.users set role = 'super_admin' where id = '00000000-0000-0000-0000-0000000000a2';
-  raise notice 'FALLO  ESCALÓ PRIVILEGIOS';
-exception when others then
-  raise notice 'OK  rechazado por RLS (%)', sqlerrm;
+  insert into public.memberships (user_id, tenant_id, role)
+  values ('00000000-0000-0000-0000-0000000000a2','10000000-0000-0000-0000-00000000000a','gym');
+  raise notice 'FALLO  se auto-concedió el rol gym';
+exception
+  when insufficient_privilege or unique_violation then
+    raise notice 'OK  no puede auto-concederse un rol';
+  when others then
+    raise notice 'OK  rechazado por RLS (%)', sqlerrm;
 end $$;
 reset role;
 
-\echo ''
+-- E2: ascenderse a administrador de plataforma.
+do $$
+begin
+  set local role authenticated;
+  perform pg_temp.como('00000000-0000-0000-0000-0000000000a2');
+  update public.users set is_super_admin = true
+   where id = '00000000-0000-0000-0000-0000000000a2';
+  raise notice 'FALLO  SE ASCENDIÓ A SUPER_ADMIN';
+exception when insufficient_privilege then
+  raise notice 'OK  rechazado: solo full_name es actualizable por el usuario';
+end $$;
+reset role;
+
+-- E3: saltar a un tenant al que no pertenece.
+do $$
+begin
+  set local role authenticated;
+  perform pg_temp.como('00000000-0000-0000-0000-0000000000a2');
+  perform public.cambiar_tenant('10000000-0000-0000-0000-00000000000b');
+  raise notice 'FALLO  SALTÓ A UN TENANT AJENO';
+exception when insufficient_privilege then
+  raise notice 'OK  rechazado: no pertenece a ese tenant';
+end $$;
+reset role;
+
 \echo '=== F. Lesiones: el trainer de B no ve las del atleta de A ==='
 begin;
   set local role authenticated;
@@ -132,14 +170,12 @@ begin;
 commit;
 
 \echo ''
-\echo '=== G. Restricción: usuario con rol trainer y sin tenant ==='
+\echo '=== G. super_admin no puede ser un rol DENTRO de un tenant ==='
 do $$
 begin
-  insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)
-  values ('00000000-0000-0000-0000-0000000000ff','00000000-0000-0000-0000-000000000000','authenticated','authenticated','huerfano@x.co','x',now(),now());
-  insert into public.users (id, tenant_id, role, email)
-  values ('00000000-0000-0000-0000-0000000000ff', null, 'trainer', 'huerfano@x.co');
-  raise notice 'FALLO  aceptó un trainer sin tenant';
+  insert into public.memberships (user_id, tenant_id, role)
+  values ('00000000-0000-0000-0000-0000000000b1','10000000-0000-0000-0000-00000000000a','super_admin');
+  raise notice 'FALLO  aceptó super_admin como rol de tenant';
 exception when check_violation then
-  raise notice 'OK  rechazado: un trainer no puede existir sin tenant';
+  raise notice 'OK  rechazado: super_admin es de plataforma, no de tenant';
 end $$;

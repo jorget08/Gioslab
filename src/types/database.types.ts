@@ -602,6 +602,58 @@ export type Database = {
           },
         ]
       }
+      memberships: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rule_activations: {
         Row: {
           action: string
@@ -720,39 +772,39 @@ export type Database = {
       }
       users: {
         Row: {
+          active_tenant_id: string | null
           archived_at: string | null
           created_at: string
           email: string
           full_name: string | null
           id: string
-          role: Database["public"]["Enums"]["user_role"]
-          tenant_id: string | null
+          is_super_admin: boolean
           updated_at: string
         }
         Insert: {
+          active_tenant_id?: string | null
           archived_at?: string | null
           created_at?: string
           email: string
           full_name?: string | null
           id: string
-          role: Database["public"]["Enums"]["user_role"]
-          tenant_id?: string | null
+          is_super_admin?: boolean
           updated_at?: string
         }
         Update: {
+          active_tenant_id?: string | null
           archived_at?: string | null
           created_at?: string
           email?: string
           full_name?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          tenant_id?: string | null
+          is_super_admin?: boolean
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "users_tenant_id_fkey"
-            columns: ["tenant_id"]
+            foreignKeyName: "users_active_tenant_id_fkey"
+            columns: ["active_tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
@@ -851,6 +903,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cambiar_tenant: { Args: { nuevo_tenant: string }; Returns: undefined }
       mi_rol: { Args: never; Returns: Database["public"]["Enums"]["user_role"] }
       mi_tenant: { Args: never; Returns: string }
     }

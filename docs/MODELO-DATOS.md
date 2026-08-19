@@ -10,6 +10,35 @@ Estado: **v1 — decidido salvo lo listado en §7 (pendiente de Giovanni).**
 
 ## 1. Decisiones estructurales
 
+### 1.0 Un usuario pertenece a VARIOS tenants
+
+Un entrenador puede tener alumnos propios **y** trabajar en un gimnasio que tiene la app
+contratada. También existe el dueño de gimnasio que además entrena. Por eso la
+pertenencia es una tabla, no una columna:
+
+```
+users       (id, email, active_tenant_id, is_super_admin)   ← identidad
+memberships (user_id, tenant_id, role)                      ← un rol POR tenant
+```
+
+`super_admin` no vive en `memberships`: es de plataforma, un eje distinto al rol dentro
+de un tenant.
+
+**El usuario opera en un tenant a la vez** y cambia de contexto explícitamente, estilo
+Slack. `mi_tenant()` devuelve `users.active_tenant_id` y `mi_rol()` devuelve el rol de la
+membresía correspondiente.
+
+> **El cambio de contexto no puede ser un `UPDATE` de columna.** Si lo fuera, cualquiera
+> podría apuntar su `active_tenant_id` a un gimnasio ajeno y `mi_tenant()` devolvería ese
+> id: todas las políticas lo darían por bueno. Por eso existe `cambiar_tenant(uuid)`, que
+> verifica la membresía, y el `UPDATE` directo sobre la columna está revocado. Al usuario
+> solo se le concede `UPDATE` sobre `full_name`.
+
+**Regla de negocio: el atleta pertenece al tenant activo cuando se creó.** Si el
+entrenador deja el gimnasio, el gimnasio conserva sus atletas y él se lleva solo los
+personales. Es lo que espera quien paga la licencia, y ante la Ley 1581 deja un único
+responsable del dato. No requiere código: `athletes.tenant_id` ya lo hace.
+
 ### 1.1 El tenant es una entidad propia
 
 Un entrenador puede operar sin gimnasio (plan individual), así que "tenant = gimnasio"
@@ -55,7 +84,8 @@ los ajustes, con su motivo:
 
 ```mermaid
 erDiagram
-    TENANTS ||--o{ USERS : agrupa
+    TENANTS ||--o{ MEMBERSHIPS : agrupa
+    USERS ||--o{ MEMBERSHIPS : "pertenece a"
     TENANTS ||--o{ ATHLETES : contiene
     USERS ||--o{ ATHLETES : "entrena"
     ATHLETES ||--o{ ATHLETE_CONSENTS : otorga
@@ -77,10 +107,16 @@ erDiagram
     }
     USERS {
         uuid id PK "= auth.users.id"
-        uuid tenant_id FK "NULL solo para super_admin"
-        text role "super_admin|gym|trainer|client"
+        uuid active_tenant_id FK "solo via cambiar_tenant()"
+        boolean is_super_admin
         text email
         text full_name
+    }
+    MEMBERSHIPS {
+        uuid id PK
+        uuid user_id FK
+        uuid tenant_id FK
+        text role "gym|trainer|client"
     }
     ATHLETES {
         uuid id PK
