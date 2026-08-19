@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generados por `supabase start`. Están en .gitignore, pero ESLint los
+    // revisaba igual y ensuciaba la salida con 182 errores ajenos.
+    "supabase/.temp/**",
   ]),
   {
     // CLAUDE.md §3.1 y §3.4: el dominio (cálculos y motor de reglas) son funciones

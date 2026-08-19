@@ -92,10 +92,16 @@ async function crearUsuario(email, pertenencias, { superAdmin = false } = {}) {
   });
   if (error) throw new Error(`createUser ${email}: ${error.message}`);
 
-  const { error: e2 } = await admin
-    .from("users")
-    .insert({ id: data.user.id, email, is_super_admin: superAdmin });
-  if (e2) throw new Error(`perfil ${email}: ${e2.message}`);
+  // El perfil ya lo creó el trigger handle_new_user (migración 1.5). Aquí solo
+  // se marca el administrador de plataforma, que nunca sale de un registro
+  // público.
+  if (superAdmin) {
+    const { error: e2 } = await admin
+      .from("users")
+      .update({ is_super_admin: true })
+      .eq("id", data.user.id);
+    if (e2) throw new Error(`perfil ${email}: ${e2.message}`);
+  }
 
   for (const [tenantId, role] of pertenencias) {
     const { error: e3 } = await admin

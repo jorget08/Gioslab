@@ -17,12 +17,10 @@ insert into public.tenants (id, type, name) values
   ('10000000-0000-0000-0000-00000000000a','gym','Gimnasio A'),
   ('10000000-0000-0000-0000-00000000000b','solo','Entrenador B independiente');
 
-insert into public.users (id, email, is_super_admin) values
-  ('00000000-0000-0000-0000-0000000000a0','admin@gioslab.co',     true),
-  ('00000000-0000-0000-0000-0000000000a1','gymA@gioslab.co',      false),
-  ('00000000-0000-0000-0000-0000000000a2','trainerA1@gioslab.co', false),
-  ('00000000-0000-0000-0000-0000000000a3','trainerA2@gioslab.co', false),
-  ('00000000-0000-0000-0000-0000000000b1','soloB@gioslab.co',     false);
+-- El perfil en public.users lo crea el trigger handle_new_user al insertar en
+-- auth.users (migración 1.5). Aquí solo se marca al administrador de plataforma.
+update public.users set is_super_admin = true
+ where id = '00000000-0000-0000-0000-0000000000a0';
 
 -- La membresía define el rol DENTRO de cada tenant. El trigger deja activo el
 -- primero, así que estos usuarios arrancan operando donde corresponde.
