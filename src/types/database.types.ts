@@ -425,6 +425,269 @@ export type Database = {
           },
         ]
       }
+      engine_runs: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          created_by: string | null
+          evaluation_id: string | null
+          id: string
+          measurement_id: string | null
+          output: Json
+          rules_fired: Json
+          tenant_id: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          created_by?: string | null
+          evaluation_id?: string | null
+          id?: string
+          measurement_id?: string | null
+          output?: Json
+          rules_fired?: Json
+          tenant_id: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          created_by?: string | null
+          evaluation_id?: string | null
+          id?: string
+          measurement_id?: string | null
+          output?: Json
+          rules_fired?: Json
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "engine_runs_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "engine_runs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "engine_runs_evaluation_id_fkey"
+            columns: ["evaluation_id"]
+            isOneToOne: false
+            referencedRelation: "biomech_evaluations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "engine_runs_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "anthropometric_measurements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "engine_runs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercise_library: {
+        Row: {
+          biomechanical_type: string | null
+          contraindications: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          equipment: string | null
+          id: string
+          is_active: boolean
+          media_urls: Json
+          movement_pattern: string | null
+          name: string
+          target_muscle: string | null
+          updated_at: string
+        }
+        Insert: {
+          biomechanical_type?: string | null
+          contraindications?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          equipment?: string | null
+          id?: string
+          is_active?: boolean
+          media_urls?: Json
+          movement_pattern?: string | null
+          name: string
+          target_muscle?: string | null
+          updated_at?: string
+        }
+        Update: {
+          biomechanical_type?: string | null
+          contraindications?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          equipment?: string | null
+          id?: string
+          is_active?: boolean
+          media_urls?: Json
+          movement_pattern?: string | null
+          name?: string
+          target_muscle?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_library_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercise_variants: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          exercise_id: string
+          notes: string | null
+          relation_type: string
+          variant_exercise_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          exercise_id: string
+          notes?: string | null
+          relation_type: string
+          variant_exercise_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          exercise_id?: string
+          notes?: string | null
+          relation_type?: string
+          variant_exercise_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_variants_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_variants_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_variants_variant_exercise_id_fkey"
+            columns: ["variant_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rule_activations: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          rule_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          rule_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          rule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rule_activations_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rule_activations_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rules: {
+        Row: {
+          actions: Json
+          condition: Json
+          created_at: string
+          created_by: string | null
+          evidence_level: string
+          id: string
+          is_active: boolean
+          justification: string
+          rule_key: string
+          version: number
+        }
+        Insert: {
+          actions: Json
+          condition: Json
+          created_at?: string
+          created_by?: string | null
+          evidence_level: string
+          id?: string
+          is_active?: boolean
+          justification: string
+          rule_key: string
+          version: number
+        }
+        Update: {
+          actions?: Json
+          condition?: Json
+          created_at?: string
+          created_by?: string | null
+          evidence_level?: string
+          id?: string
+          is_active?: boolean
+          justification?: string
+          rule_key?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           archived_at: string | null
@@ -492,6 +755,93 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_plans: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          created_by: string | null
+          duration_weeks: number | null
+          engine_run_id: string | null
+          generated_pdf_url: string | null
+          id: string
+          periodization_type: string | null
+          plan_data: Json
+          status: string
+          tenant_id: string
+          title: string | null
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          created_by?: string | null
+          duration_weeks?: number | null
+          engine_run_id?: string | null
+          generated_pdf_url?: string | null
+          id?: string
+          periodization_type?: string | null
+          plan_data?: Json
+          status?: string
+          tenant_id: string
+          title?: string | null
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          created_by?: string | null
+          duration_weeks?: number | null
+          engine_run_id?: string | null
+          generated_pdf_url?: string | null
+          id?: string
+          periodization_type?: string | null
+          plan_data?: Json
+          status?: string
+          tenant_id?: string
+          title?: string | null
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_plans_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_plans_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_plans_engine_run_id_fkey"
+            columns: ["engine_run_id"]
+            isOneToOne: false
+            referencedRelation: "engine_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_plans_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_plans_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

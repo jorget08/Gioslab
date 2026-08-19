@@ -301,6 +301,24 @@ create unique index rules_una_activa_por_key
   on rules (rule_key) where is_active;
 ```
 
+Sin ese índice, el motor podría aplicar dos versiones contradictorias de la misma regla
+en una sola evaluación.
+
+### Cómo se impone (implementado en la 1.3)
+
+Mismo patrón que las mediciones: se concede `INSERT` y `SELECT`, y `UPDATE` **solo sobre
+`is_active`**. La condición, las acciones y la justificación de una versión publicada no
+se pueden reescribir.
+
+Importa porque un plan de marzo apunta a la regla que lo justificó. Si esa fila fuera
+editable, la justificación que ve el entrenador cambiaría retroactivamente y la
+trazabilidad del producto sería ficticia.
+
+**`rule_activations` lo escribe un trigger, no la aplicación.** Si dependiera de que el
+código se acuerde de insertar la fila, el día que alguien active una regla desde el SQL
+editor de Supabase el historial quedaría con un hueco silencioso. La tarea 3.6 pide saber
+quién cambió qué; un registro que se puede evitar no sirve para eso.
+
 ### Por qué existe `engine_runs`
 
 `CLAUDE.md` §3.6 exige mostrar **qué regla aplicó y por qué**. Si eso se recalcula al
