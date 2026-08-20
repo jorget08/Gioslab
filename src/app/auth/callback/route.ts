@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { destinoSeguro } from "@/domain/autorizacion";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -15,10 +16,9 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
-  // A dónde ir después. Solo rutas internas: aceptar una URL completa
-  // convertiría este manejador en un redirector abierto, útil para phishing.
-  const pedido = searchParams.get("siguiente");
-  const siguiente = pedido?.startsWith("/") && !pedido.startsWith("//") ? pedido : "/";
+  // A dónde ir después. destinoSeguro solo admite rutas internas: aceptar una
+  // URL completa convertiría este manejador en un redirector abierto.
+  const siguiente = destinoSeguro(searchParams.get("siguiente"));
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=enlace_invalido`);

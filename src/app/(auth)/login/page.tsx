@@ -10,6 +10,7 @@ import { Campo } from "@/components/shared/campo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { destinoSeguro } from "@/domain/autorizacion";
 import { loginSchema, mensajeDeError, type LoginInput } from "@/lib/validation/auth";
 
 function LoginForm() {
@@ -38,10 +39,9 @@ function LoginForm() {
     }
 
     // `siguiente` lo pone el proxy al bloquear una ruta privada, para devolver
-    // al usuario a donde iba. Solo se aceptan rutas internas: un valor como
-    // "https://otrositio.com" convertiría el login en un redirector abierto.
-    const siguiente = params.get("siguiente");
-    router.push(siguiente?.startsWith("/") ? siguiente : "/");
+    // al usuario a donde iba. destinoSeguro rechaza URLs externas: sin eso, el
+    // login sería un redirector abierto útil para phishing.
+    router.push(destinoSeguro(params.get("siguiente")));
     router.refresh();
   }
 
