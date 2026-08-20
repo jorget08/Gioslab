@@ -85,7 +85,7 @@ function LoginForm() {
 
         <div className="mt-4 space-y-2 text-center text-sm text-muted-foreground">
           <p>
-            <Link href="/recuperar" className="underline underline-offset-4">
+            <Link href="/recuperar" className="inline-flex min-h-11 items-center justify-center underline underline-offset-4">
               Olvidé mi contraseña
             </Link>
           </p>
@@ -93,7 +93,7 @@ function LoginForm() {
             ¿No tienes cuenta?{" "}
             <Link
               href="/registro"
-              className="font-medium text-foreground underline underline-offset-4"
+              className="inline-flex min-h-11 items-center justify-center font-medium text-foreground underline underline-offset-4"
             >
               Crear una
             </Link>

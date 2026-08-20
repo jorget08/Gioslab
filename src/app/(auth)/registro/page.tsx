@@ -145,7 +145,7 @@ function RegistroForm() {
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
+          <Link href="/login" className="inline-flex min-h-11 items-center justify-center font-medium text-foreground underline underline-offset-4">
             Inicia sesión
           </Link>
         </p>

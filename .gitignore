@@ -45,3 +45,6 @@ next-env.d.ts
 # metodológica, el activo central del negocio. Lo que sale de ellos es la
 # especificación en docs/, no los archivos originales.
 fuentes-giovanni/
+
+# Capturas de scripts/captura.mjs. Se regeneran; no van al repositorio.
+capturas/

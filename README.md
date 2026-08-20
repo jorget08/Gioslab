@@ -62,6 +62,8 @@ La app queda en <http://localhost:3000>.
 | `npm run db:types` | Regenera `src/types/database.types.ts` desde el esquema |
 | `npm run test:rls` | RLS con usuarios reales (requiere `supabase start`) |
 | `npm run test:registro` | Registro de extremo a extremo (requiere `supabase start`) |
+| `npm run test:invitaciones` | Invitaciones de extremo a extremo |
+| `npm run captura /login 360` | Captura una pantalla emulando un móvil real |
 
 > `npm run typecheck` necesita los tipos de rutas que Next.js genera en `.next/types/`.
 > En un clon recién hecho, corre `npm run build` (o `npm run dev`) una vez antes.
@@ -152,6 +154,11 @@ escrito en la tarjeta.
 **Móvil primero, de verdad:** el entrenador llena la evaluación de pie en el piso del
 gimnasio, con una mano y con mala señal. Teclado numérico donde corresponda, objetivos
 táctiles de mínimo 44px, áreas seguras respetadas, pasos cortos y borradores guardados.
+
+Para comprobarlo: `npm run captura /login 360`. Emula un móvil de verdad y reporta
+desborde horizontal, objetivos táctiles por debajo de 44px y si la app está mostrando un
+error. `--window-size` de Chrome **no** sirve: macOS impone un ancho mínimo de ventana y
+el layout se calcula a ~500px aunque la imagen salga a 360.
 
 ---
 

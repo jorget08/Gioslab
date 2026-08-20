@@ -1,81 +1,45 @@
 "use client";
 
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 
+import { BarraInferior } from "@/components/shared/barra-inferior";
+import { BarraSuperior } from "@/components/shared/barra-superior";
 import { Guarda } from "@/components/shared/guarda";
-import { SelectorTenant } from "@/components/shared/selector-tenant";
-import { Button } from "@/components/ui/button";
-import type { Rol } from "@/domain/autorizacion";
 import { useSesion } from "@/lib/auth/contexto";
+import { navegacionDe } from "@/lib/navegacion";
 
-const NAV: ReadonlyArray<{ href: string; texto: string; roles: readonly Rol[] }> = [
-  { href: "/", texto: "Inicio", roles: ["super_admin", "gym", "trainer"] },
-  { href: "/atletas", texto: "Atletas", roles: ["super_admin", "gym", "trainer"] },
-  { href: "/equipo", texto: "Equipo", roles: ["super_admin", "gym", "trainer"] },
-  { href: "/mi-rutina", texto: "Mi rutina", roles: ["client"] },
-  { href: "/admin", texto: "Administración", roles: ["super_admin"] },
-];
-
+/**
+ * Shell del área privada.
+ *
+ * Móvil: barra superior mínima + pestañas abajo, al alcance del pulgar.
+ * Escritorio: menú horizontal arriba y sin barra inferior.
+ *
+ * El `key` del <main> con la ruta reinicia la animación en cada navegación:
+ * es la transición propia que pide CLAUDE.md §3.3, en vez del salto seco del
+ * navegador. Se desactiva sola si el sistema pide menos movimiento.
+ */
 function Shell({ children }: { children: React.ReactNode }) {
-  const { sesion, salir } = useSesion();
-
-  // Se filtra el menú por rol para no ofrecer puertas que llevan a un 403.
-  // Es cortesía, no seguridad: detrás de cada una está RLS.
-  const enlaces = NAV.filter((n) => sesion?.rol && n.roles.includes(sesion.rol));
+  const { sesion } = useSesion();
+  const pathname = usePathname();
+  const entradas = navegacionDe(sesion?.rol);
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b bg-background" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-3 px-4 py-3">
-          <Link href="/" className="font-semibold tracking-tight">
-            GiosLab<span className="text-muted-foreground">System</span>
-          </Link>
-
-          <div className="ml-auto flex items-center gap-2">
-            <span className="hidden text-sm text-muted-foreground sm:inline">
-              {sesion?.nombre ?? sesion?.email}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="min-h-11"
-              onClick={() => salir()}
-            >
-              Salir
-            </Button>
-          </div>
-
-          {enlaces.length > 0 && (
-            <nav aria-label="Principal" className="flex w-full gap-1 overflow-x-auto">
-              {enlaces.map((n) => (
-                <Link
-                  key={n.href}
-                  href={n.href}
-                  className="flex min-h-11 items-center rounded-lg px-3 text-sm hover:bg-muted"
-                >
-                  {n.texto}
-                </Link>
-              ))}
-            </nav>
-          )}
-        </div>
-      </header>
-
-      {sesion && sesion.membresias.length > 1 && (
-        <div className="border-b bg-muted/30">
-          <div className="mx-auto max-w-3xl px-4 py-2">
-            <SelectorTenant membresias={sesion.membresias} tenantActivo={sesion.tenantActivo} />
-          </div>
-        </div>
-      )}
+      <BarraSuperior entradas={entradas} />
 
       <main
-        className="mx-auto w-full max-w-3xl flex-1 p-4"
-        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        key={pathname}
+        className="transicion-pantalla mx-auto w-full max-w-3xl flex-1 px-4 py-4"
+        style={{
+          // Deja sitio para la barra inferior en móvil; en escritorio no existe,
+          // pero el relleno de más es inofensivo.
+          paddingBottom: "calc(4.5rem + env(safe-area-inset-bottom))",
+        }}
       >
         {children}
       </main>
+
+      <BarraInferior entradas={entradas} />
     </div>
   );
 }

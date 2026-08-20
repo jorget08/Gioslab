@@ -34,7 +34,9 @@ const PERMISOS: ReadonlyArray<readonly [string, readonly Rol[]]> = [
   ["/atletas", ["super_admin", "gym", "trainer"]],
   ["/equipo", ["super_admin", "gym", "trainer"]],
   ["/mi-rutina", ["client"]],
-  ["/", ["super_admin", "gym", "trainer", "client"]],
+  // El cliente NO tiene sitio en "/": su casa es /mi-rutina. Dejarlo aquí hacía
+  // que aterrizara en el panel del entrenador y se quedara ahí.
+  ["/", ["super_admin", "gym", "trainer"]],
 ] as const;
 
 export function esRutaPublica(pathname: string): boolean {

@@ -23,8 +23,10 @@ export function SelectorTenant({
 
   if (membresias.length <= 1) return null;
 
+  // Sin envolver a dos filas: en móvil las pastillas se comerían la pantalla
+  // útil. El contenedor padre desplaza en horizontal.
   return (
-    <nav aria-label="Espacio de trabajo" className="flex flex-wrap gap-2">
+    <nav aria-label="Espacio de trabajo" className="flex gap-2">
       {membresias.map((m) => {
         const activo = m.tenantId === tenantActivo;
 
@@ -36,7 +38,7 @@ export function SelectorTenant({
             disabled={activo}
             onClick={() => cambiarTenant(m.tenantId)}
             className={[
-              "min-h-11 rounded-lg border px-3 text-sm transition-colors",
+              "min-h-11 shrink-0 whitespace-nowrap rounded-lg border px-3 text-sm transition-colors",
               activo
                 ? "border-foreground bg-foreground text-background"
                 : "border-input hover:bg-muted",

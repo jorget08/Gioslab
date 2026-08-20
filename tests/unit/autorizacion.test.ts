@@ -71,6 +71,11 @@ describe("acceso por rol", () => {
 });
 
 describe("falla cerrado", () => {
+  it("el cliente no aterriza en el panel del entrenador", () => {
+    // Su casa es /mi-rutina; useRedirigirSegunRol lo lleva allí.
+    expect(puedeAcceder("client", "/")).toBe(false);
+  });
+
   it("sin rol no se entra a nada privado", () => {
     for (const ruta of ["/", "/atletas", "/admin", "/mi-rutina"]) {
       expect(puedeAcceder(null, ruta)).toBe(false);
