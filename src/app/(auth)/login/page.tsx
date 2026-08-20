@@ -41,8 +41,7 @@ function LoginForm() {
     // `siguiente` lo pone el proxy al bloquear una ruta privada, para devolver
     // al usuario a donde iba. destinoSeguro rechaza URLs externas: sin eso, el
     // login sería un redirector abierto útil para phishing.
-    router.push(destinoSeguro(params.get("siguiente")));
-    router.refresh();
+    router.replace(destinoSeguro(params.get("siguiente")));
   }
 
   return (

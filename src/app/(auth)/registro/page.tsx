@@ -51,8 +51,7 @@ export default function RegistroPage() {
       return;
     }
 
-    router.push("/");
-    router.refresh();
+    router.replace("/");
   }
 
   if (revisaTuCorreo) {

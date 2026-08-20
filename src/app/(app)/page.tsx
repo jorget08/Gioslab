@@ -1,20 +1,18 @@
-import { redirect } from "next/navigation";
+"use client";
 
-import { requerirSesion } from "@/lib/auth/sesion";
-import { rutaInicial } from "@/domain/autorizacion";
+import { useRedirigirSegunRol } from "@/components/shared/guarda";
+import { useSesion } from "@/lib/auth/contexto";
 
-/**
- * Panel. Provisional: la 1.8 lo reemplaza por el shell real.
- */
-export default async function Inicio() {
-  const ctx = await requerirSesion();
+/** Panel. Provisional: la 1.8 lo reemplaza por el shell real. */
+export default function Inicio() {
+  const { sesion } = useSesion();
+  useRedirigirSegunRol();
 
-  // El cliente no tiene panel de entrenador: su sitio es su rutina.
-  if (ctx.rol === "client") redirect(rutaInicial(ctx.rol));
+  if (!sesion) return null;
 
   // Sin membresías no hay contexto de trabajo. Pasa con un usuario invitado al
   // que aún no le han asignado tenant (tarea 1.7).
-  if (!ctx.rol) {
+  if (!sesion.rol) {
     return (
       <div className="rounded-lg border p-4">
         <h1 className="font-medium">Tu cuenta todavía no tiene espacio de trabajo</h1>
@@ -25,25 +23,25 @@ export default async function Inicio() {
     );
   }
 
-  const activo = ctx.membresias.find((m) => m.tenantId === ctx.tenantActivo);
+  const activo = sesion.membresias.find((m) => m.tenantId === sesion.tenantActivo);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Hola, {ctx.nombre ?? ctx.email}
+          Hola, {sesion.nombre ?? sesion.email}
         </h1>
         <p className="text-sm text-muted-foreground">
           {activo ? `Trabajando en ${activo.nombreTenant}` : "Sin espacio activo"} · rol{" "}
-          {ctx.rol}
+          {sesion.rol}
         </p>
       </div>
 
       <section className="rounded-lg border p-4">
         <h2 className="mb-1 text-sm font-medium">Siguiente paso</h2>
         <p className="text-sm text-muted-foreground">
-          El wizard de evaluación llega en el grupo 2. Por ahora esta pantalla solo confirma
-          que la sesión, el rol y el espacio de trabajo están bien enlazados.
+          El wizard de evaluación llega en el grupo 2. Esta pantalla solo confirma que la
+          sesión, el rol y el espacio de trabajo están bien enlazados.
         </p>
       </section>
     </div>

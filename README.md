@@ -25,6 +25,12 @@ Repositorio privado. El contexto completo del proyecto está en
 | Tests | Vitest |
 | Despliegue | Vercel (web) · Capacitor (móvil, Fase B) |
 
+**El backend es Supabase; Next.js es solo la interfaz.** Todo el acceso a datos
+ocurre desde el navegador con `supabase-js`, y quien decide qué se ve es Row Level
+Security. No se usan Server Components ni Server Actions: el paquete que Capacitor
+mete en la app nativa es estático y no puede ejecutar código de servidor.
+Ver [`docs/ARQUITECTURA.md`](./docs/ARQUITECTURA.md).
+
 Una sola base de código: la app móvil es esta misma web empaquetada con Capacitor.
 **No se agregan React Native, Flutter ni un segundo proyecto móvil.**
 
@@ -54,6 +60,8 @@ La app queda en <http://localhost:3000>.
 | `npm run test:watch` | Vitest en modo watch |
 | `npm run db:check` | Comprueba que `.env.local` conecta con Supabase |
 | `npm run db:types` | Regenera `src/types/database.types.ts` desde el esquema |
+| `npm run test:rls` | RLS con usuarios reales (requiere `supabase start`) |
+| `npm run test:registro` | Registro de extremo a extremo (requiere `supabase start`) |
 
 > `npm run typecheck` necesita los tipos de rutas que Next.js genera en `.next/types/`.
 > En un clon recién hecho, corre `npm run build` (o `npm run dev`) una vez antes.

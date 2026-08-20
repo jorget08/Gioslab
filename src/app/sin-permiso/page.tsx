@@ -1,15 +1,17 @@
+"use client";
+
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { obtenerContexto } from "@/lib/auth/sesion";
 import { rutaInicial } from "@/domain/autorizacion";
+import { useSesion } from "@/lib/auth/contexto";
 
 /**
  * 403. Dice qué pasó sin detallar qué hay al otro lado: describir la sección
- * prohibida le enseña a un curioso el mapa del producto.
+ * prohibida le enseña el mapa del producto a un curioso.
  */
-export default async function SinPermisoPage() {
-  const ctx = await obtenerContexto();
+export default function SinPermisoPage() {
+  const { sesion } = useSesion();
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-4 p-6 text-center">
@@ -19,7 +21,7 @@ export default async function SinPermisoPage() {
         administra tu espacio de trabajo.
       </p>
       <Button asChild className="min-h-11 w-full">
-        <Link href={rutaInicial(ctx?.rol)}>Volver</Link>
+        <Link href={rutaInicial(sesion?.rol)}>Volver</Link>
       </Button>
     </div>
   );

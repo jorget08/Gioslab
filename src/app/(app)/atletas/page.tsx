@@ -1,26 +1,32 @@
-import { requerirRol } from "@/lib/auth/sesion";
-import { createClient } from "@/lib/supabase/server";
+"use client";
 
-/**
- * Listado de atletas. Provisional: el CRUD real es del grupo 2.
- *
- * La guarda de rol se declara aquí, en la sección, no en el layout: cada área
- * decide quién entra. Detrás, RLS filtra las filas aunque alguien llegue.
- */
-export default async function AtletasPage() {
-  await requerirRol(["super_admin", "gym", "trainer"]);
+import { useEffect, useState } from "react";
 
-  const supabase = await createClient();
-  const { data: atletas } = await supabase
-    .from("athletes")
-    .select("id, full_name, birth_date, sex")
-    .order("created_at", { ascending: false });
+import { Guarda } from "@/components/shared/guarda";
+import { createClient } from "@/lib/supabase/client";
+
+type Atleta = { id: string; full_name: string };
+
+function Listado() {
+  const [atletas, setAtletas] = useState<Atleta[] | null>(null);
+
+  useEffect(() => {
+    // RLS decide qué filas vuelven: el entrenador ve los suyos, el gimnasio los
+    // de su sede. La consulta es la misma para todos.
+    createClient()
+      .from("athletes")
+      .select("id, full_name")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => setAtletas(data ?? []));
+  }, []);
 
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold tracking-tight">Atletas</h1>
 
-      {!atletas?.length ? (
+      {atletas === null ? (
+        <p className="text-sm text-muted-foreground" role="status">Cargando…</p>
+      ) : atletas.length === 0 ? (
         <p className="rounded-lg border p-4 text-sm text-muted-foreground">
           Todavía no hay atletas en este espacio de trabajo.
         </p>
@@ -33,11 +39,14 @@ export default async function AtletasPage() {
           ))}
         </ul>
       )}
-
-      <p className="text-xs text-muted-foreground">
-        Se muestran solo los atletas de tu espacio activo. El entrenador ve los suyos; el
-        gimnasio, los de toda su sede.
-      </p>
     </div>
+  );
+}
+
+export default function AtletasPage() {
+  return (
+    <Guarda roles={["super_admin", "gym", "trainer"]}>
+      <Listado />
+    </Guarda>
   );
 }

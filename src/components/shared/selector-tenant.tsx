@@ -1,5 +1,6 @@
-import { cambiarTenant } from "@/app/(app)/acciones";
-import type { Membresia } from "@/lib/auth/sesion";
+"use client";
+
+import { useSesion, type Membresia } from "@/lib/auth/contexto";
 
 /**
  * Selector de espacio de trabajo.
@@ -9,7 +10,7 @@ import type { Membresia } from "@/lib/auth/sesion";
  * de un gimnasio con sus clientes particulares en una sola lista es justo la
  * confusión que la Ley 1581 castiga.
  *
- * Con una sola membresía no se muestra nada: sería ruido.
+ * Con una sola membresía no se muestra: sería ruido.
  */
 export function SelectorTenant({
   membresias,
@@ -18,6 +19,8 @@ export function SelectorTenant({
   membresias: Membresia[];
   tenantActivo: string | null;
 }) {
+  const { cambiarTenant } = useSesion();
+
   if (membresias.length <= 1) return null;
 
   return (
@@ -26,25 +29,24 @@ export function SelectorTenant({
         const activo = m.tenantId === tenantActivo;
 
         return (
-          <form key={m.tenantId} action={cambiarTenant}>
-            <input type="hidden" name="tenant_id" value={m.tenantId} />
-            <button
-              type="submit"
-              aria-current={activo ? "true" : undefined}
-              disabled={activo}
-              className={[
-                "min-h-11 rounded-lg border px-3 text-sm transition-colors",
-                activo
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-input hover:bg-muted",
-              ].join(" ")}
-            >
-              {m.nombreTenant}
-              <span className="ml-1.5 text-xs opacity-70">
-                {m.tipoTenant === "gym" ? "gimnasio" : "propio"}
-              </span>
-            </button>
-          </form>
+          <button
+            key={m.tenantId}
+            type="button"
+            aria-current={activo ? "true" : undefined}
+            disabled={activo}
+            onClick={() => cambiarTenant(m.tenantId)}
+            className={[
+              "min-h-11 rounded-lg border px-3 text-sm transition-colors",
+              activo
+                ? "border-foreground bg-foreground text-background"
+                : "border-input hover:bg-muted",
+            ].join(" ")}
+          >
+            {m.nombreTenant}
+            <span className="ml-1.5 text-xs opacity-70">
+              {m.tipoTenant === "gym" ? "gimnasio" : "propio"}
+            </span>
+          </button>
         );
       })}
     </nav>

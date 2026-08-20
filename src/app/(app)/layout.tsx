@@ -1,17 +1,12 @@
+"use client";
+
 import Link from "next/link";
 
+import { Guarda } from "@/components/shared/guarda";
 import { SelectorTenant } from "@/components/shared/selector-tenant";
 import { Button } from "@/components/ui/button";
-import { requerirSesion } from "@/lib/auth/sesion";
 import type { Rol } from "@/domain/autorizacion";
-
-/**
- * Área privada. Todo lo que cuelga de aquí exige sesión.
- *
- * El proxy ya redirige a /login, pero esta guarda se repite a propósito: si
- * mañana alguien cambia el `matcher` del proxy, estas páginas no deben quedar
- * abiertas por accidente. La protección por ROL vive en cada sección, no aquí.
- */
+import { useSesion } from "@/lib/auth/contexto";
 
 const NAV: ReadonlyArray<{ href: string; texto: string; roles: readonly Rol[] }> = [
   { href: "/", texto: "Inicio", roles: ["super_admin", "gym", "trainer"] },
@@ -20,20 +15,16 @@ const NAV: ReadonlyArray<{ href: string; texto: string; roles: readonly Rol[] }>
   { href: "/admin", texto: "Administración", roles: ["super_admin"] },
 ];
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const ctx = await requerirSesion();
+function Shell({ children }: { children: React.ReactNode }) {
+  const { sesion, salir } = useSesion();
 
   // Se filtra el menú por rol para no ofrecer puertas que llevan a un 403.
-  // Es cortesía, no seguridad: quien la fuerce se topa con la guarda de la
-  // sección y, detrás, con RLS.
-  const enlaces = NAV.filter((n) => ctx.rol && n.roles.includes(ctx.rol));
+  // Es cortesía, no seguridad: detrás de cada una está RLS.
+  const enlaces = NAV.filter((n) => sesion?.rol && n.roles.includes(sesion.rol));
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header
-        className="border-b bg-background"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
+      <header className="border-b bg-background" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-3 px-4 py-3">
           <Link href="/" className="font-semibold tracking-tight">
             GiosLab<span className="text-muted-foreground">System</span>
@@ -41,13 +32,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
           <div className="ml-auto flex items-center gap-2">
             <span className="hidden text-sm text-muted-foreground sm:inline">
-              {ctx.nombre ?? ctx.email}
+              {sesion?.nombre ?? sesion?.email}
             </span>
-            <form action="/auth/salir" method="post">
-              <Button type="submit" variant="outline" size="sm" className="min-h-11">
-                Salir
-              </Button>
-            </form>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="min-h-11"
+              onClick={() => salir()}
+            >
+              Salir
+            </Button>
           </div>
 
           {enlaces.length > 0 && (
@@ -66,10 +61,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      {ctx.membresias.length > 1 && (
+      {sesion && sesion.membresias.length > 1 && (
         <div className="border-b bg-muted/30">
           <div className="mx-auto max-w-3xl px-4 py-2">
-            <SelectorTenant membresias={ctx.membresias} tenantActivo={ctx.tenantActivo} />
+            <SelectorTenant membresias={sesion.membresias} tenantActivo={sesion.tenantActivo} />
           </div>
         </div>
       )}
@@ -81,5 +76,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {children}
       </main>
     </div>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Guarda>
+      <Shell>{children}</Shell>
+    </Guarda>
   );
 }

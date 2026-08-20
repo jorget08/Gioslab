@@ -47,8 +47,7 @@ export default function NuevaContrasenaPage() {
       return;
     }
 
-    router.push("/");
-    router.refresh();
+    router.replace("/");
   }
 
   if (sesionValida === false) {
