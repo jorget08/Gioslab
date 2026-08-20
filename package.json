@@ -13,7 +13,8 @@
     "db:types": "supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public > src/types/database.types.ts",
     "db:check": "node --env-file=.env.local scripts/check-supabase.mjs",
     "test:rls": "node tests/rls/auth-e2e.mjs",
-    "test:registro": "node tests/rls/registro-e2e.mjs"
+    "test:registro": "node tests/rls/registro-e2e.mjs",
+    "test:invitaciones": "node tests/rls/invitaciones-e2e.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

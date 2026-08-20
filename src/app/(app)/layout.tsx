@@ -11,6 +11,7 @@ import { useSesion } from "@/lib/auth/contexto";
 const NAV: ReadonlyArray<{ href: string; texto: string; roles: readonly Rol[] }> = [
   { href: "/", texto: "Inicio", roles: ["super_admin", "gym", "trainer"] },
   { href: "/atletas", texto: "Atletas", roles: ["super_admin", "gym", "trainer"] },
+  { href: "/equipo", texto: "Equipo", roles: ["super_admin", "gym", "trainer"] },
   { href: "/mi-rutina", texto: "Mi rutina", roles: ["client"] },
   { href: "/admin", texto: "Administración", roles: ["super_admin"] },
 ];

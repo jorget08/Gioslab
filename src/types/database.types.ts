@@ -656,6 +656,70 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          tenant_id: string
+          token_hash: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_by?: string | null
+          revoked_at?: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          tenant_id: string
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          tenant_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memberships: {
         Row: {
           created_at: string
@@ -1034,9 +1098,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aceptar_invitacion: { Args: { p_token: string }; Returns: string }
       cambiar_tenant: { Args: { nuevo_tenant: string }; Returns: undefined }
+      crear_invitacion: {
+        Args: {
+          p_dias_validez?: number
+          p_email: string
+          p_rol: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: string
+      }
       mi_rol: { Args: never; Returns: Database["public"]["Enums"]["user_role"] }
       mi_tenant: { Args: never; Returns: string }
+      ver_invitacion: {
+        Args: { p_token: string }
+        Returns: {
+          correo: string
+          nombre_tenant: string
+          rol: Database["public"]["Enums"]["user_role"]
+          valida: boolean
+        }[]
+      }
     }
     Enums: {
       tenant_type: "gym" | "solo"

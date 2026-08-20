@@ -18,6 +18,8 @@ export const RUTAS_PUBLICAS = [
   "/recuperar",
   "/nueva-contrasena",
   "/auth",
+  // El invitado tiene que poder ver a qué le invitan antes de tener cuenta.
+  "/invitacion",
 ] as const;
 
 /**
@@ -30,6 +32,7 @@ const PERMISOS: ReadonlyArray<readonly [string, readonly Rol[]]> = [
   ["/admin", ["super_admin"]],
   ["/biblioteca", ["super_admin", "gym", "trainer"]],
   ["/atletas", ["super_admin", "gym", "trainer"]],
+  ["/equipo", ["super_admin", "gym", "trainer"]],
   ["/mi-rutina", ["client"]],
   ["/", ["super_admin", "gym", "trainer", "client"]],
 ] as const;

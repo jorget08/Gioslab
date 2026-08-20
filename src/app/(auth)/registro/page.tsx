@@ -2,8 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Campo } from "@/components/shared/campo";
@@ -12,8 +12,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { createClient } from "@/lib/supabase/client";
 import { mensajeDeError, registroSchema, type RegistroInput } from "@/lib/validation/auth";
 
-export default function RegistroPage() {
+function RegistroForm() {
   const router = useRouter();
+  const params = useSearchParams();
+
+  // Si viene de un enlace de invitación, NO se le crea un tenant propio: su
+  // espacio se lo da la invitación al aceptarla.
+  const invitacion = params.get("invitacion");
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [revisaTuCorreo, setRevisaTuCorreo] = useState(false);
 
@@ -35,8 +40,14 @@ export default function RegistroPage() {
         // por 'tipo_registro', el tenant propio del entrenador y su membresía.
         // El rol NO viaja aquí: está escrito a mano en la migración, porque
         // esto lo manda el navegador y sería la vía para pedirse super_admin.
-        data: { full_name: datos.fullName, tipo_registro: "independiente" },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: invitacion
+          ? { full_name: datos.fullName }
+          : { full_name: datos.fullName, tipo_registro: "independiente" },
+        emailRedirectTo: invitacion
+          ? `${window.location.origin}/auth/callback?siguiente=${encodeURIComponent(
+              `/invitacion?token=${invitacion}`,
+            )}`
+          : `${window.location.origin}/auth/callback`,
       },
     });
 
@@ -51,7 +62,7 @@ export default function RegistroPage() {
       return;
     }
 
-    router.replace("/");
+    router.replace(invitacion ? `/invitacion?token=${invitacion}` : "/");
   }
 
   if (revisaTuCorreo) {
@@ -77,7 +88,9 @@ export default function RegistroPage() {
       <CardHeader>
         <CardTitle>Crear cuenta</CardTitle>
         <CardDescription>
-          Para entrenadores independientes. Si te invitó un gimnasio, usa el enlace de su correo.
+          {invitacion
+            ? "Crea tu cuenta para aceptar la invitación."
+            : "Para entrenadores independientes. Si te invitó un gimnasio, usa su enlace."}
         </CardDescription>
       </CardHeader>
 
@@ -138,5 +151,14 @@ export default function RegistroPage() {
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+export default function RegistroPage() {
+  // useSearchParams obliga a un Suspense para no romper el prerenderizado.
+  return (
+    <Suspense>
+      <RegistroForm />
+    </Suspense>
   );
 }
