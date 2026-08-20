@@ -108,4 +108,12 @@ describe("errores que llegan por enlace de correo", () => {
   it("access_denied también se traduce, no queda en inglés", () => {
     expect(mensajeDeError("access_denied", "x")).not.toBe("x");
   });
+
+  it("un error de configuración no invita a reintentar", () => {
+    // Reintentar no arregla un proveedor apagado: decir "inténtalo de nuevo"
+    // manda al usuario a repetir algo que va a fallar igual.
+    const m = mensajeDeError("email_provider_disabled", "Inténtalo de nuevo");
+    expect(m).toMatch(/administrador/i);
+    expect(m).not.toMatch(/de nuevo/i);
+  });
 });

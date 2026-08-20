@@ -101,6 +101,12 @@ export function mensajeDeError(codigo: string | undefined, fallback: string): st
       return "El enlace del correo no es válido. Pide uno nuevo abajo.";
     case "enlace_invalido":
       return "El enlace del correo no es válido o ya caducó.";
+
+    // Errores de configuración del proyecto, no del usuario. No se le pide que
+    // "vuelva a intentarlo": reintentar no arregla nada y solo frustra.
+    case "email_provider_disabled":
+    case "signup_disabled":
+      return "El registro está deshabilitado en este momento. Avisa al administrador.";
     default:
       return fallback;
   }
