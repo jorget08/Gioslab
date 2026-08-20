@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Excels y material fuente de Giovanni. NUNCA se commitean: son la matriz
+# metodológica, el activo central del negocio. Lo que sale de ellos es la
+# especificación en docs/, no los archivos originales.
+fuentes-giovanni/

@@ -1,135 +1,156 @@
 # Preguntas pendientes para Giovanni
 
-> Estas seis preguntas bloquean partes concretas del desarrollo. Cinco salen del
-> modelo de datos (`MODELO-DATOS.md` §7) y se resuelven en la sesión grabada de la
-> tarea **0.5**; la sexta se responde por WhatsApp en dos minutos.
->
-> **Las respuestas se escriben aquí abajo**, en el hueco de cada pregunta. Este
-> archivo es el insumo directo de las tareas 0.5, 2.4, 2.5 y 3.3.
+Estado: **actualizado tras leer los tres Excels (2026-08-19).**
+Cinco preguntas quedaron resueltas por los archivos; quedan **siete abiertas**, y
+tres son nuevas.
 
-Estado: **sin responder** · Última actualización: 2026-08-19
+Ver el análisis completo en [`ESPECIFICACION-FICHAS.md`](./ESPECIFICACION-FICHAS.md).
+
+---
+
+## ✅ Resueltas por los Excels
+
+| Antes preguntábamos | Respuesta que traen los archivos |
+|---|---|
+| Umbrales de fémur Largo/Medio/Corto | No hay umbrales: es un desplegable `[Corto, Promedio, Largo]` que elige el entrenador |
+| Escala de dorsiflexión | `[Óptima (>10 cm), Limitada (5-10 cm), Severa (<5 cm)]`, test de pared |
+| Escalas de las demás movilidades | Hombro `[Apto OverHead, Limitado / Inclinado]`; cadera ≥120°; rotación interna <30°; extensión torácica cifótica |
+| Visibilidad entre entrenadores | Resuelta por el modelo de membresías: el atleta pertenece al tenant donde se creó |
+| Catálogos de perfil | Objetivo (5 opciones) y nivel de experiencia (5 opciones), ambos en su ficha |
+
+---
+
+## 🔴 URGENTE — no es una pregunta, es un aviso
+
+**El archivo `flujograma completo Automatizada_GiosLab_v2.xlsx` está dando
+resultados equivocados.**
+
+Al insertar la sección de screening, las fórmulas quedaron apuntando a filas
+anteriores. Con el mismo atleta, `Ficha_1.1` calcula **18.02 %** de grasa y el
+flujograma muestra **22.5 %**, que no es un cálculo sino el valor de reserva de la
+fórmula. El ratio cintura/cadera y la masa magra salen como `#VALUE!`.
+
+**Si está usando ese archivo con clientes, esos informes están mal.** Conviene
+avisarle hoy, independientemente del desarrollo. Nosotros tomamos `Ficha_1.1` como
+fuente, que sí está correcta.
 
 ---
 
 ## Mensaje para enviarle
 
-> Copiar y pegar. Está escrito sin jerga técnica a propósito.
+> Copiar y pegar. Sin jerga técnica.
 
 ---
 
-Gio, para seguir necesito que me precises seis cosas del método. No es burocracia:
-cada una define cómo queda guardado el dato, y cambiarlo después de que haya
-atletas cargados cuesta bastante más que definirlo ahora.
+Gio, ya revisé a fondo los tres Excels. Están muy bien documentados —los
+identificadores que pusiste para la base de datos nos ahorraron trabajo— y con
+ellos ya programé el cálculo de composición corporal: da exactamente tus mismos
+números.
 
-**1. Longitud de fémur — ¿cuándo es "Largo"?**
+Dos cosas antes de las preguntas.
 
-Ya sé que clasificas el fémur en Largo / Medio / Corto. Lo que no sé es cómo sale esa
-clasificación. ¿Es una medida absoluta en centímetros (por ejemplo, "más de 48 cm es
-largo"), o es una proporción contra la estatura o contra el torso (por ejemplo, "si el
-fémur pasa del 26% de la talla")?
+**Una alerta.** El archivo "flujograma completo" tiene las fórmulas desconfiguradas:
+se corrieron de fila cuando le agregaste la sección de screening. Con los datos de
+la ficha de ejemplo, ese archivo muestra 22.5 % de grasa cuando el cálculo correcto
+da 18.02 %. Si lo estás usando con algún cliente, revísalo. El archivo "Ficha 1.1"
+sí está bien y es el que estamos siguiendo.
 
-Si es proporción, dime contra qué y cuáles son los cortes exactos.
-Y lo mismo para húmero y torso, si también los clasificas.
+**Una duda de fondo.** En nuestras conversaciones habíamos hablado de somatotipo
+Heath-Carter, pero tus fichas no lo calculan: usan Jackson & Pollock con 7 pliegues
+y la ecuación de Siri. ¿Dejamos solo tu método, o el somatotipo va aparte en otra
+ficha que no me pasaste?
 
-**2. Movilidad — ¿cómo la registras?**
+Ahora sí, lo que me falta:
 
-Para dorsiflexión de tobillo, cadera y hombro: ¿el entrenador anota una categoría
-(Limitada / Normal / Amplia), un ángulo en grados, o centímetros de un test?
+**1. Los pliegues de Jackson & Pollock.** La fórmula original de J&P usa el pliegue
+axilar medio y tú usas el de pantorrilla en su lugar, con las mismas constantes.
+¿Es a propósito? Lo pregunto porque cambiar un sitio de medición sin cambiar la
+fórmula mueve un poco el resultado.
 
-Si es el test de pared para tobillo, dime en centímetros y cuál es el corte.
-Si son categorías, dame la lista exacta de opciones tal como quieres que aparezcan.
+**2. Eficiente / Compensada / De Riesgo.** Esa clasificación no aparece en ninguno
+de los tres archivos. Ahí usas "Restringido / Óptimo" para movilidad y perfiles como
+"Inclinación Alta" o "Baja Tolerancia" para biomecánica. ¿Cuál es la buena? ¿O son
+cosas distintas que conviven?
 
-**3. Patrones de movimiento — la lista completa**
+**3. Nivel de evidencia.** Cada regla debería llevar uno. ¿Cuáles son las opciones y
+en qué orden van, de más fuerte a más débil?
 
-Necesito el listado cerrado de patrones con los que clasificas los ejercicios.
-Algo como: sentadilla, bisagra de cadera, empuje horizontal, empuje vertical,
-tracción horizontal, tracción vertical, zancada, core…
+**4. Patrones de movimiento.** Necesito la lista cerrada con la que clasificas los
+ejercicios: sentadilla, bisagra de cadera, empuje horizontal, tracción vertical…
+Dime los tuyos con el nombre exacto, porque es lo que verá el entrenador y lo que
+usa el motor para cruzar ejercicios.
 
-Dime cuáles usas tú y con qué nombre exacto, porque ese nombre es el que va a ver
-el entrenador en la app y el que usa el motor para cruzar ejercicios.
+**5. Dos nombres para lo mismo.** En un archivo el fémur es `longitud_femur` y en
+otro `palanca_femur`; la dorsiflexión es `rom_dorsiflexion_tobillo` en uno y
+`mov_dorsiflexion_tobillo` en otro. ¿Son la misma evaluación o son dos distintas
+(una completa y una rápida)?
 
-**4. Clasificación por patrón — Eficiente / Compensada / De Riesgo**
+**6. El 1RM estimado.** No está en ningún archivo. ¿Lo usas? ¿Con qué fórmula?
 
-Sé que clasificas así, pero me falta:
-- ¿Qué patrones evalúas concretamente? (¿todos los de la pregunta 3, o solo algunos?)
-- ¿Solo va la categoría, o el entrenador también escribe una observación?
-- ¿Hay una cuarta opción, tipo "no evaluado"?
-
-**5. Nivel de evidencia — las opciones**
-
-Cada regla lleva un nivel de evidencia. En lo que hablamos apareció
-"criterio profesional". ¿Cuáles son los demás niveles y en qué orden van, de más
-fuerte a más débil? Por ejemplo: evidencia sólida → evidencia limitada → criterio
-profesional. Dime los tuyos.
-
-**6. Privacidad entre entrenadores del mismo gimnasio**
-
-Esta es de producto, no de método. En un gimnasio con varios entrenadores:
-¿cada entrenador ve **solo sus** atletas, o ve **todos los del gimnasio**?
-
-Por ahora lo dejé en la opción más restrictiva —cada uno ve solo los suyos— porque
-son datos de salud y prefiero abrir después que descubrir que estaba abierto de más.
-Si el dueño del gimnasio debe verlos todos, eso ya funciona así.
+**7. El módulo FEMTECH.** Lo encontré en tu ficha y ya lo programé. ¿Lo usas con
+todas tus atletas mujeres o fue una prueba? Lo pregunto porque son datos de salud
+reproductiva y hay que pedir un consentimiento aparte, específico para eso.
 
 ---
 
 ## Respuestas
 
-### 1. Umbrales de segmentos óseos
+### 1. Pliegues de Jackson & Pollock (pantorrilla vs axilar media)
 
 <!-- Respuesta aquí -->
 
-**Bloquea:** tarea 2.4 (ratios de palanca), columna `femur_class`.
+**Afecta:** exactitud del % graso. `composicion-corporal.ts` ya replica su versión.
 
-### 2. Escalas de movilidad
-
-<!-- Respuesta aquí -->
-
-**Bloquea:** tarea 2.5, columnas `ankle_dorsiflexion`, `hip_mobility`, `shoulder_mobility`.
-
-### 3. Catálogo de patrones de movimiento
+### 2. Taxonomía Eficiente / Compensada / De Riesgo
 
 <!-- Respuesta aquí -->
 
-**Bloquea:** tarea 4.1, columna `exercise_library.movement_pattern`.
+**Bloquea:** `biomech_evaluations.pattern_classifications`, tarea 2.5.
 
-### 4. Clasificación por patrón
-
-<!-- Respuesta aquí -->
-
-**Bloquea:** tarea 2.5, columna `biomech_evaluations.pattern_classifications`.
-
-### 5. Niveles de evidencia
+### 3. Niveles de evidencia
 
 <!-- Respuesta aquí -->
 
-**Bloquea:** tarea 3.1, columna `rules.evidence_level`.
+**Bloquea:** `rules.evidence_level`, tarea 3.1.
 
-### 6. Visibilidad entre entrenadores
+### 4. Catálogo de patrones de movimiento
 
 <!-- Respuesta aquí -->
 
-**Afecta:** política de RLS de `athletes` (tarea 1.4). Hoy: cada entrenador ve solo los suyos.
+**Bloquea:** `exercise_library.movement_pattern`, tarea 4.1.
+
+### 5. Identificadores duplicados
+
+<!-- Respuesta aquí -->
+
+**Bloquea:** fijar el vocabulario antes de convertir las columnas `text` en `enum`.
+
+### 6. 1RM estimado
+
+<!-- Respuesta aquí -->
+
+**Bloquea:** tarea 2.7.
+
+### 7. Alcance de FEMTECH y consentimiento
+
+<!-- Respuesta aquí -->
+
+**Afecta:** flujo de consentimiento de la tarea 2.2.
+
+### 8. ¿Heath-Carter va o no?
+
+<!-- Respuesta aquí -->
+
+**Afecta:** tarea 2.6 y `CLAUDE.md` §3.4, que hoy se contradicen con sus fichas.
 
 ---
 
-## Qué hacer cuando responda
+## Sigue pendiente de él (de `CLAUDE.md` §7)
 
-Las columnas afectadas están hoy como **texto libre**, a propósito: poner una lista
-cerrada antes de tener sus respuestas habría sido inventar dominio. Cuando conteste:
-
-1. Escribir las respuestas arriba.
-2. Convertir esas columnas a `enum` en una migración nueva.
-3. Actualizar `MODELO-DATOS.md` §7 marcando los puntos resueltos.
-
----
-
-## Además, sigue pendiente de él
-
-De `CLAUDE.md` §7, sin relación con estas seis preguntas:
-
-- **Los Excels con la matriz completa de condicionales** — bloquea la 0.5 y todo el grupo 3.
-  Es el bloqueo más grande del proyecto.
+- **La matriz completa de condicionales.** Los Excels traen **15 reglas en prosa**,
+  suficientes para construir el motor y sembrar las primeras, pero no es la matriz
+  completa. Sigue bloqueando el cierre del grupo 3.
 - Assets de marca: logo, colores, plantilla de reporte — bloquea el grupo 5.
 - Listado y medios de la biblioteca de ejercicios — bloquea la 4.5.
-- 2–3 atletas reales para validar los cálculos contra su Excel — bloquea la 2.10.
+- 2–3 atletas reales para validar — bloquea la 2.10. *(La ficha de ejemplo ya sirve
+  como primer caso: sus números están replicados en los golden tests.)*

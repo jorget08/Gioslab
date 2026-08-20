@@ -16,84 +16,105 @@ export type Database = {
     Tables: {
       anthropometric_measurements: {
         Row: {
-          arm_flexed_cm: number | null
+          abdominal_mm: number | null
           athlete_id: string
-          calf_cm: number | null
+          bmi: number | null
+          body_density: number | null
+          body_fat_pct: number | null
+          body_fat_pct_source: string
+          calf_mm: number | null
+          chest_mm: number | null
           created_at: string
           created_by: string | null
           extra_measures: Json
-          femur_breadth_cm: number | null
+          fat_mass_kg: number | null
           height_cm: number | null
-          humerus_breadth_cm: number | null
+          hip_cm: number | null
           id: string
+          lean_mass_kg: number | null
           measured_at: string
           measured_by: string | null
-          medial_calf_mm: number | null
           notes: string | null
-          somatotype_ecto: number | null
-          somatotype_endo: number | null
-          somatotype_meso: number | null
           subscapular_mm: number | null
-          supraspinale_mm: number | null
+          sum_6_skinfolds_mm: number | null
+          sum_7_skinfolds_mm: number | null
+          suprailiac_mm: number | null
           tenant_id: string
+          thigh_mm: number | null
           triceps_mm: number | null
           voided_at: string | null
           voided_by: string | null
           voided_reason: string | null
+          waist_cm: number | null
+          waist_hip_ratio: number | null
           weight_kg: number | null
         }
         Insert: {
-          arm_flexed_cm?: number | null
+          abdominal_mm?: number | null
           athlete_id: string
-          calf_cm?: number | null
+          bmi?: number | null
+          body_density?: number | null
+          body_fat_pct?: number | null
+          body_fat_pct_source?: string
+          calf_mm?: number | null
+          chest_mm?: number | null
           created_at?: string
           created_by?: string | null
           extra_measures?: Json
-          femur_breadth_cm?: number | null
+          fat_mass_kg?: number | null
           height_cm?: number | null
-          humerus_breadth_cm?: number | null
+          hip_cm?: number | null
           id?: string
+          lean_mass_kg?: number | null
           measured_at?: string
           measured_by?: string | null
-          medial_calf_mm?: number | null
           notes?: string | null
-          somatotype_ecto?: number | null
-          somatotype_endo?: number | null
-          somatotype_meso?: number | null
           subscapular_mm?: number | null
-          supraspinale_mm?: number | null
+          sum_6_skinfolds_mm?: number | null
+          sum_7_skinfolds_mm?: number | null
+          suprailiac_mm?: number | null
           tenant_id: string
+          thigh_mm?: number | null
           triceps_mm?: number | null
           voided_at?: string | null
           voided_by?: string | null
           voided_reason?: string | null
+          waist_cm?: number | null
+          waist_hip_ratio?: number | null
           weight_kg?: number | null
         }
         Update: {
-          arm_flexed_cm?: number | null
+          abdominal_mm?: number | null
           athlete_id?: string
-          calf_cm?: number | null
+          bmi?: number | null
+          body_density?: number | null
+          body_fat_pct?: number | null
+          body_fat_pct_source?: string
+          calf_mm?: number | null
+          chest_mm?: number | null
           created_at?: string
           created_by?: string | null
           extra_measures?: Json
-          femur_breadth_cm?: number | null
+          fat_mass_kg?: number | null
           height_cm?: number | null
-          humerus_breadth_cm?: number | null
+          hip_cm?: number | null
           id?: string
+          lean_mass_kg?: number | null
           measured_at?: string
           measured_by?: string | null
-          medial_calf_mm?: number | null
           notes?: string | null
-          somatotype_ecto?: number | null
-          somatotype_endo?: number | null
-          somatotype_meso?: number | null
           subscapular_mm?: number | null
-          supraspinale_mm?: number | null
+          sum_6_skinfolds_mm?: number | null
+          sum_7_skinfolds_mm?: number | null
+          suprailiac_mm?: number | null
           tenant_id?: string
+          thigh_mm?: number | null
           triceps_mm?: number | null
           voided_at?: string | null
           voided_by?: string | null
           voided_reason?: string | null
+          waist_cm?: number | null
+          waist_hip_ratio?: number | null
           weight_kg?: number | null
         }
         Relationships: [
@@ -260,6 +281,7 @@ export type Database = {
           birth_date: string
           created_at: string
           created_by: string | null
+          experience_level: string | null
           full_name: string
           goals: Json
           id: string
@@ -267,6 +289,7 @@ export type Database = {
           sex: string
           tenant_id: string
           trainer_id: string
+          training_goal: string | null
           updated_at: string
         }
         Insert: {
@@ -275,6 +298,7 @@ export type Database = {
           birth_date: string
           created_at?: string
           created_by?: string | null
+          experience_level?: string | null
           full_name: string
           goals?: Json
           id?: string
@@ -282,6 +306,7 @@ export type Database = {
           sex: string
           tenant_id: string
           trainer_id: string
+          training_goal?: string | null
           updated_at?: string
         }
         Update: {
@@ -290,6 +315,7 @@ export type Database = {
           birth_date?: string
           created_at?: string
           created_by?: string | null
+          experience_level?: string | null
           full_name?: string
           goals?: Json
           id?: string
@@ -297,6 +323,7 @@ export type Database = {
           sex?: string
           tenant_id?: string
           trainer_id?: string
+          training_goal?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -327,19 +354,28 @@ export type Database = {
         Row: {
           ankle_dorsiflexion: string | null
           athlete_id: string
+          axial_load_tolerance: string | null
+          back_dominance: string | null
           created_at: string
           created_by: string | null
           evaluated_at: string
           evaluated_by: string | null
           femur_class: string | null
           femur_length_cm: number | null
+          femur_torso_ratio: string | null
+          glute_vector: string | null
+          hip_internal_rotation: string | null
           hip_mobility: string | null
           humerus_length_cm: number | null
           id: string
           notes: string | null
           pattern_classifications: Json
           shoulder_mobility: string | null
+          shoulder_overhead: string | null
+          squat_dominance: string | null
           tenant_id: string
+          thoracic_extension: string | null
+          torso_class: string | null
           torso_length_cm: number | null
           voided_at: string | null
           voided_by: string | null
@@ -348,19 +384,28 @@ export type Database = {
         Insert: {
           ankle_dorsiflexion?: string | null
           athlete_id: string
+          axial_load_tolerance?: string | null
+          back_dominance?: string | null
           created_at?: string
           created_by?: string | null
           evaluated_at?: string
           evaluated_by?: string | null
           femur_class?: string | null
           femur_length_cm?: number | null
+          femur_torso_ratio?: string | null
+          glute_vector?: string | null
+          hip_internal_rotation?: string | null
           hip_mobility?: string | null
           humerus_length_cm?: number | null
           id?: string
           notes?: string | null
           pattern_classifications?: Json
           shoulder_mobility?: string | null
+          shoulder_overhead?: string | null
+          squat_dominance?: string | null
           tenant_id: string
+          thoracic_extension?: string | null
+          torso_class?: string | null
           torso_length_cm?: number | null
           voided_at?: string | null
           voided_by?: string | null
@@ -369,19 +414,28 @@ export type Database = {
         Update: {
           ankle_dorsiflexion?: string | null
           athlete_id?: string
+          axial_load_tolerance?: string | null
+          back_dominance?: string | null
           created_at?: string
           created_by?: string | null
           evaluated_at?: string
           evaluated_by?: string | null
           femur_class?: string | null
           femur_length_cm?: number | null
+          femur_torso_ratio?: string | null
+          glute_vector?: string | null
+          hip_internal_rotation?: string | null
           hip_mobility?: string | null
           humerus_length_cm?: number | null
           id?: string
           notes?: string | null
           pattern_classifications?: Json
           shoulder_mobility?: string | null
+          shoulder_overhead?: string | null
+          squat_dominance?: string | null
           tenant_id?: string
+          thoracic_extension?: string | null
+          torso_class?: string | null
           torso_length_cm?: number | null
           voided_at?: string | null
           voided_by?: string | null
@@ -648,6 +702,83 @@ export type Database = {
           {
             foreignKeyName: "memberships_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menstrual_cycle_logs: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          created_by: string | null
+          cycle_length_days: number
+          id: string
+          last_period_start: string
+          notes: string | null
+          recorded_at: string
+          tenant_id: string
+          uses_hormonal_contraception: boolean
+          voided_at: string | null
+          voided_by: string | null
+          voided_reason: string | null
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          created_by?: string | null
+          cycle_length_days?: number
+          id?: string
+          last_period_start: string
+          notes?: string | null
+          recorded_at?: string
+          tenant_id: string
+          uses_hormonal_contraception?: boolean
+          voided_at?: string | null
+          voided_by?: string | null
+          voided_reason?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          created_by?: string | null
+          cycle_length_days?: number
+          id?: string
+          last_period_start?: string
+          notes?: string | null
+          recorded_at?: string
+          tenant_id?: string
+          uses_hormonal_contraception?: boolean
+          voided_at?: string | null
+          voided_by?: string | null
+          voided_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menstrual_cycle_logs_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menstrual_cycle_logs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menstrual_cycle_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menstrual_cycle_logs_voided_by_fkey"
+            columns: ["voided_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
