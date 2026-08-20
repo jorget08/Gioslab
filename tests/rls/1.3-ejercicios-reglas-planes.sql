@@ -1,6 +1,10 @@
 -- Pruebas de la migración 1.3: biblioteca global, reglas versionadas y planes.
 -- Requiere 1.1-tenants-athletes.sql ejecutado antes.
 
+-- OJO: estas suites insertan con identificadores fijos, así que NO son
+-- idempotentes. Hay que ejecutar `npx supabase db reset` antes de cada pasada,
+-- o la segunda falla por clave duplicada.
+
 \set ON_ERROR_STOP on
 
 \set admin      '00000000-0000-0000-0000-0000000000a0'
@@ -25,8 +29,11 @@ begin;
   values ('30000000-0000-0000-0000-000000000001','Sentadilla Barra Alta con Tacón','sentadilla','cuadriceps'),
          ('30000000-0000-0000-0000-000000000002','Prensa 45 grados','sentadilla','cuadriceps'),
          ('30000000-0000-0000-0000-000000000003','Sentadilla Barra Baja','sentadilla','cuadriceps');
+  -- Se acota a los suyos: la biblioteca ya trae los del seed (tarea 1.9), y
+  -- contar la tabla entera ataría esta prueba a que la base esté vacía.
   select case when count(*) = 3 then 'OK  super_admin creó 3 ejercicios'
-              else 'FALLO' end as resultado from public.exercise_library;
+              else 'FALLO  creó ' || count(*) end as resultado
+  from public.exercise_library where id::text like '30000000-%';
 commit;
 
 do $$
@@ -46,7 +53,8 @@ begin;
   set local role authenticated;
   select pg_temp.como(:'trainer_b');
   select case when count(*) = 3 then 'OK  ve los 3 ejercicios (catálogo común)'
-              else 'FALLO  vio ' || count(*) end as resultado from public.exercise_library;
+              else 'FALLO  vio ' || count(*) end as resultado
+  from public.exercise_library where id::text like '30000000-%';
 commit;
 
 \echo ''

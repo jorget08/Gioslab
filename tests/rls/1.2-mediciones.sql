@@ -7,6 +7,10 @@
 --   docker exec -i supabase_db_<ref> psql -U postgres -d postgres -q \
 --     < tests/rls/1.2-mediciones.sql
 
+-- OJO: estas suites insertan con identificadores fijos, así que NO son
+-- idempotentes. Hay que ejecutar `npx supabase db reset` antes de cada pasada,
+-- o la segunda falla por clave duplicada.
+
 \set ON_ERROR_STOP on
 
 \set atleta_a1 '20000000-0000-0000-0000-000000000001'

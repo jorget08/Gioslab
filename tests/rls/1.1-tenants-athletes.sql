@@ -1,3 +1,7 @@
+-- OJO: estas suites insertan con identificadores fijos, así que NO son
+-- idempotentes. Hay que ejecutar `npx supabase db reset` antes de cada pasada,
+-- o la segunda falla por clave duplicada.
+
 \set ON_ERROR_STOP on
 
 -- ===========================================================================

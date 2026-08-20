@@ -64,6 +64,25 @@ La app queda en <http://localhost:3000>.
 | `npm run test:registro` | Registro de extremo a extremo (requiere `supabase start`) |
 | `npm run test:invitaciones` | Invitaciones de extremo a extremo |
 | `npm run captura /login 360` | Captura una pantalla emulando un móvil real |
+| `npm run test:seed` | Comprueba que los datos de prueba sirven |
+
+### Datos de prueba
+
+`npx supabase db reset` carga `supabase/seed.sql`: un gimnasio, un entrenador
+independiente, 5 atletas con mediciones y evaluaciones, y las primeras reglas
+sacadas de las fichas de Giovanni. Para el proyecto remoto, pegar ese archivo en
+el SQL Editor de Supabase.
+
+Todas las cuentas usan la contraseña `clave-de-prueba`:
+
+| Correo | Rol |
+|---|---|
+| `admin@gioslab.test` | super_admin |
+| `gimnasio@gioslab.test` | dueño del gimnasio |
+| `ana@gioslab.test` | entrenadora del gimnasio |
+| `diego@gioslab.test` | entrenador en el gimnasio **y** con alumnos propios |
+
+Diego es el que permite probar el selector de espacio de trabajo sin montar nada.
 
 > `npm run typecheck` necesita los tipos de rutas que Next.js genera en `.next/types/`.
 > En un clon recién hecho, corre `npm run build` (o `npm run dev`) una vez antes.

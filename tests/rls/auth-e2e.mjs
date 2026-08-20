@@ -131,6 +131,22 @@ const contar = async (cli, tabla) => {
 };
 
 /**
+ * Cuenta solo las filas de esta prueba.
+ *
+ * Contar la tabla entera acoplaba el resultado a que la base estuviera vacía, y
+ * dejó de estarlo en cuanto la 1.9 añadió datos de prueba. Una aserción que
+ * depende de lo que haya alrededor falla por motivos que no tienen que ver con
+ * lo que quiere comprobar.
+ */
+const contarMios = async (cli, tabla, columna, valores) => {
+  const { count, error } = await cli
+    .from(tabla)
+    .select("*", { count: "exact", head: true })
+    .in(columna, valores);
+  return error ? `error:${error.code}` : count;
+};
+
+/**
  * Devuelve el código de error de Postgres, o 'sin-error' si la consulta pasó.
  * Va sin `head: true` a propósito: una petición HEAD responde con el cuerpo
  * vacío, así que el código del error se pierde por el camino.
@@ -178,7 +194,8 @@ async function main() {
 
   // -------------------------------------------------------------------------
   console.log("\n=== Atletas visibles por rol (sesión real) ===");
-  verificar("super_admin ve todos",            await contar(await sesion("super@rls-test.local"), "athletes"), 3);
+  verificar("super_admin ve todos",
+    await contarMios(await sesion("super@rls-test.local"), "athletes", "tenant_id", [TENANT_A, TENANT_B]), 3);
   verificar("gym A ve los de su gimnasio",     await contar(await sesion("gym@rls-test.local"), "athletes"), 2);
   verificar("trainer ve solo el suyo",         await contar(await sesion("t2@rls-test.local"), "athletes"), 1);
   verificar("CLIENTE no ve ningún atleta",     await contar(await sesion("cliente@rls-test.local"), "athletes"), 0);
@@ -210,8 +227,10 @@ async function main() {
   verificar("UPDATE directo de active_tenant_id falla", eDirecto?.code ?? "sin-error", "42501");
 
   console.log("\n=== Datos clínicos ===");
-  verificar("cliente no ve mediciones",        await contar(await sesion("cliente@rls-test.local"), "anthropometric_measurements"), 0);
-  verificar("gym A ve las de su gimnasio",     await contar(await sesion("gym@rls-test.local"), "anthropometric_measurements"), 2);
+  verificar("cliente no ve mediciones",
+    await contarMios(await sesion("cliente@rls-test.local"), "anthropometric_measurements", "tenant_id", [TENANT_A, TENANT_B]), 0);
+  verificar("gym A ve las de su gimnasio",
+    await contarMios(await sesion("gym@rls-test.local"), "anthropometric_measurements", "tenant_id", [TENANT_A, TENANT_B]), 2);
 
   console.log("\n=== Metodología (el activo del negocio) ===");
   await admin.from("rules").insert({
@@ -219,12 +238,18 @@ async function main() {
     condition: { femur_class: "Largo" }, actions: { priorizar: ["Prensa"] },
     justification: "Prueba", evidence_level: "criterio_profesional",
   });
-  verificar("trainer puede leer las reglas",   await contar(await sesion("t2@rls-test.local"), "rules"), 1);
-  verificar("CLIENTE no puede leer las reglas", await contar(await sesion("cliente@rls-test.local"), "rules"), 0);
+  verificar("trainer puede leer las reglas",
+    await contarMios(await sesion("t2@rls-test.local"), "rules", "rule_key", ["regla-de-prueba-rls"]), 1);
+  verificar("CLIENTE no puede leer las reglas",
+    await contarMios(await sesion("cliente@rls-test.local"), "rules", "rule_key", ["regla-de-prueba-rls"]), 0);
 
   console.log("\n=== Usuarios ===");
-  verificar("cliente solo se ve a sí mismo",   await contar(await sesion("cliente@rls-test.local"), "users"), 1);
-  verificar("gym A ve a su equipo del tenant A",    await contar(await sesion("gym@rls-test.local"), "users"), 4);
+  verificar("cliente solo se ve a sí mismo",
+    await contarMios(await sesion("cliente@rls-test.local"), "users", "email",
+      ["gym@rls-test.local","t2@rls-test.local","cliente@rls-test.local","mixto@rls-test.local"]), 1);
+  verificar("gym A ve a su equipo del tenant A",
+    await contarMios(await sesion("gym@rls-test.local"), "users", "email",
+      ["gym@rls-test.local","t2@rls-test.local","cliente@rls-test.local","mixto@rls-test.local"]), 4);
 
   console.log("\n=== Anónimo (sin sesión) ===");
   const anon = createClient(URL, PUBLISHABLE, { auth: { persistSession: false } });
