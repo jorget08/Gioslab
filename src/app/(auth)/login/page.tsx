@@ -11,12 +11,30 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { destinoSeguro } from "@/domain/autorizacion";
+import { leerErrorDeUrl } from "@/domain/error-url";
 import { loginSchema, mensajeDeError, type LoginInput } from "@/lib/validation/auth";
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
+
+  // Se DERIVA en cada render, no se siembra con useState: en una página
+  // exportada estáticamente useSearchParams() llega vacío durante la
+  // hidratación y se rellena después, así que un valor inicial se quedaría
+  // congelado en null y el usuario nunca vería el aviso.
+  // También el fragmento: Supabase manda el error ahí, y si el enlace apunta
+  // directamente al login nadie lo habrá pasado a la query.
+  const codigoDeEnlace =
+    params.get("error") ??
+    (typeof window !== "undefined"
+      ? leerErrorDeUrl(window.location.search, window.location.hash)
+      : null);
+  const mensaje =
+    errorGeneral ??
+    (codigoDeEnlace
+      ? mensajeDeError(codigoDeEnlace, "El enlace del correo no es válido.")
+      : null);
 
   const {
     register,
@@ -72,9 +90,9 @@ function LoginForm() {
             {...register("password")}
           />
 
-          {errorGeneral && (
+          {mensaje && (
             <p role="alert" className="text-sm font-medium text-destructive">
-              {errorGeneral}
+              {mensaje}
             </p>
           )}
 

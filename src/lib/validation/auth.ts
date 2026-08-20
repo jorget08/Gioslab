@@ -92,6 +92,15 @@ export function mensajeDeError(codigo: string | undefined, fallback: string): st
       return "Demasiados intentos. Espera un minuto y vuelve a probar.";
     case "same_password":
       return "La contraseña nueva debe ser distinta de la anterior";
+
+    // Estos llegan en la URL al volver de un enlace del correo, no de una
+    // llamada a la API.
+    case "otp_expired":
+      return "El enlace del correo caducó o ya se había usado. Pide uno nuevo abajo.";
+    case "access_denied":
+      return "El enlace del correo no es válido. Pide uno nuevo abajo.";
+    case "enlace_invalido":
+      return "El enlace del correo no es válido o ya caducó.";
     default:
       return fallback;
   }

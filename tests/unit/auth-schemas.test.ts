@@ -97,3 +97,15 @@ describe("mensajeDeError", () => {
     expect(mensajeDeError(undefined, "Error inesperado")).toBe("Error inesperado");
   });
 });
+
+describe("errores que llegan por enlace de correo", () => {
+  it("explica un enlace caducado y qué hacer", () => {
+    const m = mensajeDeError("otp_expired", "x");
+    expect(m).toMatch(/caducó|ya se había usado/);
+    expect(m).toMatch(/pide uno nuevo/i);
+  });
+
+  it("access_denied también se traduce, no queda en inglés", () => {
+    expect(mensajeDeError("access_denied", "x")).not.toBe("x");
+  });
+});

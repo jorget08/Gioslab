@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { puedeAcceder, rutaInicial, type Rol } from "@/domain/autorizacion";
+import { leerErrorDeUrl, urlDeLogin } from "@/domain/error-url";
 import { useSesion } from "@/lib/auth/contexto";
 
 /**
@@ -39,8 +40,14 @@ export function Guarda({
     if (cargando) return;
 
     if (!sesion) {
+      // Si venimos de un enlace de correo fallido, el motivo viaja en la URL y
+      // hay que llevárselo al login: si no, el usuario acaba ahí sin saber por
+      // qué "el enlace no funciona".
+      const error = leerErrorDeUrl(window.location.search, window.location.hash);
       const destino = window.location.pathname + window.location.search;
-      router.replace(`/login?siguiente=${encodeURIComponent(destino)}`);
+      router.replace(
+        urlDeLogin({ siguiente: error ? undefined : destino, error }),
+      );
       return;
     }
 
