@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
+import { AvisoBorrador } from "@/components/shared/aviso-borrador";
 import { CampoMedidaInput } from "@/components/medicion/campo-medida";
 import { ModoPliegues } from "@/components/medicion/modo-pliegues";
 import { Resultado } from "@/components/medicion/resultado";
@@ -21,6 +22,8 @@ import {
   validarRango,
   type CampoMedida,
 } from "@/domain/medidas";
+import { useSesion } from "@/lib/auth/contexto";
+import { descartarBorrador, guardarBorrador, leerBorrador } from "@/lib/borradores";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database.types";
 
@@ -58,6 +61,10 @@ function Medicion() {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { sesion } = useSesion();
+  const usuarioId = sesion?.userId ?? "";
+  const [borrador, setBorrador] = useState<{ guardadoEn: number; datos: Record<string, string> } | null>(null);
+
   useEffect(() => {
     // Se sale sin tocar el estado: asignarlo de forma síncrona dentro de un
     // efecto encadena un render de más. Sin id, `cargando` ya arranca en false.
@@ -90,6 +97,24 @@ function Medicion() {
       vivo = false;
     };
   }, [atletaId]);
+
+  // Se busca el borrador al llegar, ANTES de que el entrenador teclee nada: si
+  // escribiera primero y restaurara después, perdería lo recién metido.
+  useEffect(() => {
+    if (!atletaId || !usuarioId) return;
+    const b = leerBorrador<Record<string, string>>("medicion", usuarioId, atletaId);
+    if (b) setBorrador({ guardadoEn: b.guardadoEn, datos: b.datos });
+  }, [atletaId, usuarioId]);
+
+  // Guardado automático en el dispositivo. Sin botón: en el gimnasio interrumpen
+  // a mitad y nadie se acuerda de pulsar nada (tarea 2.8).
+  useEffect(() => {
+    if (!atletaId || !usuarioId || borrador) return;
+    const t = setTimeout(() => {
+      guardarBorrador("medicion", usuarioId, atletaId, valores as Record<string, unknown>);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [valores, atletaId, usuarioId, borrador]);
 
   const numeros = useMemo(() => {
     const n: Partial<Record<CampoMedida, number | null>> = {};
@@ -190,6 +215,10 @@ function Medicion() {
       return;
     }
 
+    // Ya está en la base: el borrador sobra y dejarlo haría que la próxima vez
+    // apareciera el aviso sobre una evaluación que sí se guardó.
+    descartarBorrador("medicion", atleta.id);
+
     // Encadena con el paso 3 en vez de volver a la lista: es un wizard, y
     // obligar a buscar al mismo atleta otra vez rompe el hilo de la evaluación.
     router.replace(`/atletas/evaluar?id=${atleta.id}`);
@@ -233,6 +262,20 @@ function Medicion() {
             anterior ? `Antropometría · última toma ${cuando}` : "Antropometría · primera toma"
           }
         />
+
+        {borrador && (
+          <AvisoBorrador
+            guardadoEn={borrador.guardadoEn}
+            onRestaurar={() => {
+              setValores(borrador.datos as Partial<Record<CampoMedida, string>>);
+              setBorrador(null);
+            }}
+            onDescartar={() => {
+              descartarBorrador("medicion", atletaId);
+              setBorrador(null);
+            }}
+          />
+        )}
 
         <Bloque rotulo="Básicos">
           {BASICOS.map((campo) => (

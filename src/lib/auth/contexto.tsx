@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import type { Rol } from "@/domain/autorizacion";
+import { limpiarBorradores } from "@/lib/borradores";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -109,6 +110,7 @@ export function ProveedorSesion({ children }: { children: React.ReactNode }) {
     // pestaña. Sin esto, la app seguiría mostrando datos de una sesión muerta.
     const { data } = createClient().auth.onAuthStateChange((evento) => {
       if (evento === "SIGNED_OUT") {
+        limpiarBorradores();
         setSesion(null);
         return;
       }
@@ -140,6 +142,10 @@ export function ProveedorSesion({ children }: { children: React.ReactNode }) {
 
   const salir = useCallback(async () => {
     await createClient().auth.signOut();
+    // Sin esto, en el móvil compartido del gimnasio quedarían las evaluaciones a
+    // medias del entrenador anterior —con sus pliegues y su peso— esperando a
+    // que las abra cualquiera.
+    limpiarBorradores();
     setSesion(null);
   }, []);
 
