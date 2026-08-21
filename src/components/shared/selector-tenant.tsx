@@ -40,7 +40,7 @@ export function SelectorTenant({
             className={[
               "min-h-11 shrink-0 whitespace-nowrap rounded-lg border px-3 text-sm transition-colors",
               activo
-                ? "border-foreground bg-foreground text-background"
+                ? "border-primary bg-primary text-primary-foreground"
                 : "border-input hover:bg-muted",
             ].join(" ")}
           >

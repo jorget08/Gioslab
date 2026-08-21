@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,11 @@ import type { LesionInput } from "@/lib/validation/atleta";
  * consultarlas. Pero la zona SÍ admite escribir a mano, porque el vocabulario
  * definitivo lo tiene que dar Giovanni y mientras tanto es preferible que el
  * entrenador escriba "manguito rotador" a que no pueda registrar la lesión.
+ *
+ * EL FORMULARIO VIENE PLEGADO. La mayoría de los atletas no tiene lesiones que
+ * registrar, y tres campos abiertos ocupando media pantalla para algo que casi
+ * siempre se deja vacío alarga el paso 1 sin motivo. Se abre solo cuando el
+ * entrenador va a anotar algo.
  */
 export function Lesiones({
   lesiones,
@@ -25,6 +30,7 @@ export function Lesiones({
   lesiones: LesionInput[];
   onChange: (l: LesionInput[]) => void;
 }) {
+  const [abierto, setAbierto] = useState(false);
   const [zona, setZona] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [estado, setEstado] = useState<(typeof ESTADOS_LESION)[number]>("activa");
@@ -36,6 +42,7 @@ export function Lesiones({
     setZona("");
     setDescripcion("");
     setEstado("activa");
+    // Se deja abierto: quien registra una lesión suele registrar dos.
   }
 
   return (
@@ -43,7 +50,9 @@ export function Lesiones({
       <div>
         <h3 className="text-sm font-medium">Lesiones y antecedentes</h3>
         <p className="text-xs text-muted-foreground">
-          El motor las usa para excluir ejercicios contraindicados.
+          {lesiones.length > 0
+            ? `${lesiones.length} registrada${lesiones.length === 1 ? "" : "s"}. El motor las usa para excluir ejercicios contraindicados.`
+            : "Ninguna registrada. El motor las usa para excluir ejercicios contraindicados."}
         </p>
       </div>
 
@@ -73,7 +82,34 @@ export function Lesiones({
         </ul>
       )}
 
+      {/* Plegado por defecto: la mayoría de los atletas no tiene nada que
+          anotar aquí, y tres campos abiertos alargan el paso sin motivo. */}
+      {!abierto ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11 w-full justify-center"
+          onClick={() => setAbierto(true)}
+        >
+          <Plus className="size-4" aria-hidden="true" />
+          {lesiones.length > 0 ? "Añadir otra lesión" : "Registrar una lesión"}
+        </Button>
+      ) : (
       <div className="space-y-2 rounded-lg border border-dashed p-3">
+        <div className="flex items-center justify-between">
+          <span className="rotulo">Nueva lesión</span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-11"
+            aria-label="Cerrar el formulario de lesión"
+            onClick={() => setAbierto(false)}
+          >
+            <ChevronDown className="size-4" aria-hidden="true" />
+          </Button>
+        </div>
+
         <div className="space-y-1.5">
           <Label htmlFor="lesion-zona">Zona</Label>
           <Input
@@ -121,7 +157,6 @@ export function Lesiones({
 
         <Button
           type="button"
-          variant="outline"
           className="min-h-11 w-full"
           onClick={agregar}
           disabled={!zona.trim()}
@@ -129,6 +164,7 @@ export function Lesiones({
           Añadir lesión
         </Button>
       </div>
+      )}
     </div>
   );
 }

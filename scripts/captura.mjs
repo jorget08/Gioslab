@@ -87,6 +87,11 @@ async function main() {
       mobile: true,
     });
     await cdp(ws, 3, "Emulation.setTouchEmulationEnabled", { enabled: true });
+    // TEMA=claro para ver el otro. Por defecto se captura en oscuro, que es lo
+    // que verá la mayoría: es el tema por defecto del producto.
+    await cdp(ws, 31, "Emulation.setEmulatedMedia", {
+      features: [{ name: "prefers-color-scheme", value: process.env.TEMA ?? "dark" }],
+    });
 
     // Sesión opcional: rellena el formulario de acceso como lo haría una
     // persona. Es más lento que inyectar el token, pero no depende de cómo

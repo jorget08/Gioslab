@@ -53,7 +53,7 @@ export function GrupoOpciones<T extends string>({
                 "rounded-lg border px-3 py-2 text-sm transition-colors",
                 "focus-within:ring-2 focus-within:ring-ring/50",
                 activa
-                  ? "border-foreground bg-foreground text-background font-medium"
+                  ? "border-primary bg-primary text-primary-foreground font-medium"
                   : "border-input hover:bg-muted",
               )}
             >

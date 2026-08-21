@@ -51,76 +51,155 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ===========================================================================
+   GIOSLAB — identidad "Laboratorio"
+   ===========================================================================
+   El producto es un instrumento de medición, no una app de rutinas. La paleta
+   viene de ahí: fondo azul-negro profundo, cian de lectura de instrumento como
+   único acento, y los números en monoespaciada.
+
+   El acento se gasta en UN solo sitio —el dato y la acción principal— y todo lo
+   demás se mantiene callado. Si se reparte, deja de señalar nada.
+
+   Cuando lleguen los colores de marca de Giovanni (CLAUDE.md §7), se cambian
+   --acento y --acento-fuerte y la app entera los sigue.
+   =========================================================================== */
+
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Neutros con sesgo azul: un gris puro al lado de un cian se ve sucio. */
+  --gl-fondo:      oklch(0.985 0.004 220);
+  --gl-superficie: oklch(1     0     0);
+  --gl-elevada:    oklch(0.968 0.006 220);
+  --gl-linea:      oklch(0.905 0.008 220);
+  --gl-tinta:      oklch(0.205 0.020 240);
+  --gl-tinta-2:    oklch(0.505 0.018 235);
+
+  /* Cian de instrumento. En claro se oscurece para que el texto sobre él y el
+     propio acento sobre fondo claro mantengan contraste legible. */
+  --gl-acento:     oklch(0.545 0.098 205);
+  --gl-acento-sv:  oklch(0.955 0.028 205);
+  --gl-alerta:     oklch(0.545 0.130  65);
+  --gl-alerta-sv:  oklch(0.960 0.040  75);
+  --gl-peligro:    oklch(0.525 0.185  27);
+  --gl-ok:         oklch(0.520 0.105 160);
+
+  --background: var(--gl-fondo);
+  --foreground: var(--gl-tinta);
+  --card: var(--gl-superficie);
+  --card-foreground: var(--gl-tinta);
+  --popover: var(--gl-superficie);
+  --popover-foreground: var(--gl-tinta);
+  --primary: var(--gl-acento);
+  --primary-foreground: oklch(0.99 0.005 205);
+  --secondary: var(--gl-elevada);
+  --secondary-foreground: var(--gl-tinta);
+  --muted: var(--gl-elevada);
+  --muted-foreground: var(--gl-tinta-2);
+  --accent: var(--gl-acento-sv);
+  --accent-foreground: var(--gl-acento);
+  --destructive: var(--gl-peligro);
+  --border: var(--gl-linea);
+  --input: var(--gl-linea);
+  --ring: var(--gl-acento);
+  --chart-1: var(--gl-acento);
+  --chart-2: var(--gl-ok);
+  --chart-3: var(--gl-alerta);
+  --chart-4: oklch(0.55 0.10 260);
+  --chart-5: oklch(0.55 0.09 300);
+  --sidebar: var(--gl-superficie);
+  --sidebar-foreground: var(--gl-tinta);
+  --sidebar-primary: var(--gl-acento);
+  --sidebar-primary-foreground: oklch(0.99 0.005 205);
+  --sidebar-accent: var(--gl-acento-sv);
+  --sidebar-accent-foreground: var(--gl-acento);
+  --sidebar-border: var(--gl-linea);
+  --sidebar-ring: var(--gl-acento);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* El tema por defecto del producto. Una pantalla oscura cansa menos la vista en
+   un gimnasio con poca luz, que es donde se usa. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --gl-fondo:      oklch(0.180 0.020 235);
+  --gl-superficie: oklch(0.228 0.022 235);
+  --gl-elevada:    oklch(0.268 0.022 235);
+  --gl-linea:      oklch(0.318 0.022 235);
+  --gl-tinta:      oklch(0.945 0.010 220);
+  --gl-tinta-2:    oklch(0.700 0.020 225);
+
+  /* Sobre fondo oscuro el cian sube en luminosidad: es el punto donde brilla
+     como una lectura de instrumento sin llegar a vibrar. */
+  --gl-acento:     oklch(0.800 0.115 195);
+  --gl-acento-sv:  oklch(0.300 0.045 200);
+  --gl-alerta:     oklch(0.790 0.120  75);
+  --gl-alerta-sv:  oklch(0.300 0.050  70);
+  --gl-peligro:    oklch(0.680 0.160  25);
+  --gl-ok:         oklch(0.770 0.120 160);
+
+  --background: var(--gl-fondo);
+  --foreground: var(--gl-tinta);
+  --card: var(--gl-superficie);
+  --card-foreground: var(--gl-tinta);
+  --popover: var(--gl-superficie);
+  --popover-foreground: var(--gl-tinta);
+  --primary: var(--gl-acento);
+  /* Texto OSCURO sobre el botón cian: sobre un acento claro, el texto blanco
+     no llega al contraste mínimo. */
+  --primary-foreground: oklch(0.185 0.030 230);
+  --secondary: var(--gl-elevada);
+  --secondary-foreground: var(--gl-tinta);
+  --muted: var(--gl-elevada);
+  --muted-foreground: var(--gl-tinta-2);
+  --accent: var(--gl-acento-sv);
+  --accent-foreground: var(--gl-acento);
+  --destructive: var(--gl-peligro);
+  --border: var(--gl-linea);
+  --input: var(--gl-linea);
+  --ring: var(--gl-acento);
+  --chart-1: var(--gl-acento);
+  --chart-2: var(--gl-ok);
+  --chart-3: var(--gl-alerta);
+  --chart-4: oklch(0.72 0.11 260);
+  --chart-5: oklch(0.72 0.10 310);
+  --sidebar: var(--gl-superficie);
+  --sidebar-foreground: var(--gl-tinta);
+  --sidebar-primary: var(--gl-acento);
+  --sidebar-primary-foreground: oklch(0.185 0.030 230);
+  --sidebar-accent: var(--gl-acento-sv);
+  --sidebar-accent-foreground: var(--gl-acento);
+  --sidebar-border: var(--gl-linea);
+  --sidebar-ring: var(--gl-acento);
+}
+
+/* Sin selector de tema todavía: se sigue el ajuste del sistema. Cuando exista
+   un interruptor, bastará con que ponga la clase .dark en <html>. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --gl-fondo:      oklch(0.180 0.020 235);
+    --gl-superficie: oklch(0.228 0.022 235);
+    --gl-elevada:    oklch(0.268 0.022 235);
+    --gl-linea:      oklch(0.318 0.022 235);
+    --gl-tinta:      oklch(0.945 0.010 220);
+    --gl-tinta-2:    oklch(0.700 0.020 225);
+    --gl-acento:     oklch(0.800 0.115 195);
+    --gl-acento-sv:  oklch(0.300 0.045 200);
+    --gl-alerta:     oklch(0.790 0.120  75);
+    --gl-alerta-sv:  oklch(0.300 0.050  70);
+    --gl-peligro:    oklch(0.680 0.160  25);
+    --gl-ok:         oklch(0.770 0.120 160);
+    --primary-foreground: oklch(0.185 0.030 230);
+    --sidebar-primary-foreground: oklch(0.185 0.030 230);
+  }
 }
 
 @layer base {
+  :root {
+    /* Hace que el navegador pinte los controles nativos —el selector de fecha,
+       las barras de desplazamiento— en el tema que toca. Sin esto, un date
+       picker blanco aparece en medio de una interfaz oscura. */
+    color-scheme: light dark;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -204,4 +283,36 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ===========================================================================
+   Datos: los números son el producto
+   =========================================================================== */
+
+/* Las cifras van en monoespaciada con `tabular-nums`: así 18.0 y 111.2 ocupan
+   lo mismo y las columnas quedan alineadas. En una ficha de medición, unos
+   números que bailan al cambiar de valor se leen como un error. */
+.dato {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Cifra protagonista: el porcentaje graso, el pliegue que se está midiendo. */
+.dato-grande {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2rem, 9vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+/* Rótulos de sección: versalitas espaciadas, como en una ficha de laboratorio. */
+.rotulo {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
 }

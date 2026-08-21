@@ -42,7 +42,7 @@ export function BarraInferior({ entradas }: { entradas: EntradaNav[] }) {
                 className={[
                   "flex min-h-14 select-none flex-col items-center justify-center gap-0.5",
                   "text-xs transition-colors active:bg-muted",
-                  activa ? "text-foreground" : "text-muted-foreground",
+                  activa ? "text-primary" : "text-muted-foreground",
                 ].join(" ")}
               >
                 <Icono

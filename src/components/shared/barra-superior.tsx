@@ -43,7 +43,9 @@ export function BarraSuperior({ entradas }: { entradas: EntradaNav[] }) {
                 aria-current={activa ? "page" : undefined}
                 className={[
                   "flex min-h-11 items-center rounded-lg px-3 text-sm transition-colors",
-                  activa ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/60",
+                  activa
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-muted/60",
                 ].join(" ")}
               >
                 {e.etiqueta}

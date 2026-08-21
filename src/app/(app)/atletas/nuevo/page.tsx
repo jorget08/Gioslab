@@ -11,6 +11,7 @@ import { Objetivos } from "@/components/atletas/objetivos";
 import { Campo } from "@/components/shared/campo";
 import { GrupoOpciones } from "@/components/shared/grupo-opciones";
 import { Guarda } from "@/components/shared/guarda";
+import { Bloque, PasoWizard } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -96,13 +97,10 @@ function FormularioAtleta() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Nuevo atleta</h1>
-        <p className="text-sm text-muted-foreground">Paso 1 de 5 · perfil y anamnesis</p>
-      </div>
+      <PasoWizard paso={1} titulo="Nuevo atleta" descripcion="Perfil y anamnesis" />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-7" noValidate>
-        <section className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        <Bloque rotulo="Quién es">
           <Campo
             etiqueta="Nombre completo"
             autoComplete="off"
@@ -135,9 +133,9 @@ function FormularioAtleta() {
               />
             )}
           />
-        </section>
+        </Bloque>
 
-        <section className="space-y-4 border-t pt-6">
+        <Bloque rotulo="Qué busca">
           <div className="space-y-1.5">
             <Label htmlFor="objetivo">Objetivo principal</Label>
             <select
@@ -177,9 +175,9 @@ function FormularioAtleta() {
               <Objetivos objetivos={field.value ?? []} onChange={field.onChange} />
             )}
           />
-        </section>
+        </Bloque>
 
-        <section className="border-t pt-6">
+        <Bloque rotulo="Qué le duele">
           <Controller
             name="lesiones"
             control={control}
@@ -187,10 +185,9 @@ function FormularioAtleta() {
               <Lesiones lesiones={field.value ?? []} onChange={field.onChange} />
             )}
           />
-        </section>
+        </Bloque>
 
-        <section className="space-y-3 border-t pt-6">
-          <h3 className="text-sm font-medium">Autorización de datos</h3>
+        <Bloque rotulo="Autorización de datos">
 
           {/* Dos casillas separadas y ninguna premarcada: una casilla marcada de
               antemano no es consentimiento (docs/WIZARD-UX.md §4.1). */}
@@ -228,7 +225,7 @@ function FormularioAtleta() {
               </span>
             </label>
           )}
-        </section>
+        </Bloque>
 
         {errorGeneral && (
           <p role="alert" className="text-sm font-medium text-destructive">
@@ -236,7 +233,7 @@ function FormularioAtleta() {
           </p>
         )}
 
-        <div className="flex gap-2 border-t pt-6">
+        <div className="flex gap-2 pt-2">
           <Button asChild variant="outline" className="min-h-11 flex-1">
             <Link href="/atletas">Cancelar</Link>
           </Button>
