@@ -190,7 +190,9 @@ function Medicion() {
       return;
     }
 
-    router.replace("/atletas");
+    // Encadena con el paso 3 en vez de volver a la lista: es un wizard, y
+    // obligar a buscar al mismo atleta otra vez rompe el hilo de la evaluación.
+    router.replace(`/atletas/evaluar?id=${atleta.id}`);
   }
 
   if (cargando) {
@@ -310,7 +312,7 @@ function Medicion() {
             onClick={guardar}
             disabled={guardando || hayBloqueo || pliegesLlenos === 0}
           >
-            {guardando ? "Guardando…" : "Guardar medición"}
+            {guardando ? "Guardando…" : "Guardar y continuar"}
           </Button>
         </div>
 

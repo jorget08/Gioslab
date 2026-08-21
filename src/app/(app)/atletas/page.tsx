@@ -118,9 +118,9 @@ function Listado() {
                   </p>
                 </div>
                 <Button asChild variant="outline" size="sm" className="min-h-11 shrink-0">
-                  <Link href={`/atletas/medir?id=${a.id}`} aria-label={`Medir a ${a.full_name}`}>
+                  <Link href={`/atletas/medir?id=${a.id}`} aria-label={`Evaluar a ${a.full_name}`}>
                     <Ruler className="size-4" aria-hidden="true" />
-                    Medir
+                    Evaluar
                   </Link>
                 </Button>
               </div>
