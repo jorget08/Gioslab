@@ -38,9 +38,43 @@ function verificar(nombre, real, esperado) {
 
 async function sesion(email) {
   const cli = createClient(URL_SB, PUB, { auth: { persistSession: false } });
-  const { error } = await cli.auth.signInWithPassword({ email, password: CLAVE });
+  const { error } = await conReintento(() =>
+    cli.auth.signInWithPassword({ email, password: CLAVE }),
+  );
   if (error) throw new Error(`login ${email}: ${error.message}`);
   return cli;
+}
+
+/**
+ * Reintenta una operación de Auth.
+ *
+ * El GoTrue del entorno local devuelve "Processing this request timed out" de
+ * vez en cuando, tanto al crear usuarios como al iniciar sesión. No es un fallo
+ * del código —contra el proyecto alojado no ocurre— pero un test que falla al
+ * azar hace desconfiar de toda la suite, que es justo lo que no puede pasar con
+ * las pruebas que protegen datos clínicos.
+ */
+async function reintentar(fn, veces = 4) {
+  let ultimo;
+  for (let i = 0; i < veces; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      ultimo = e;
+      if (!/timed out|timeout/i.test(e.message)) throw e;
+      await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+    }
+  }
+  throw ultimo;
+}
+
+/** Envuelve una respuesta {data,error} de Supabase para que el reintento la vea. */
+async function conReintento(fn) {
+  return reintentar(async () => {
+    const r = await fn();
+    if (r.error && /timed out|timeout/i.test(r.error.message)) throw new Error(r.error.message);
+    return r;
+  });
 }
 
 async function limpiar() {

@@ -41,10 +41,44 @@ function verificar(nombre, real, esperado) {
   console.log(`  ${ok ? "OK  " : "FALLO"} ${nombre.padEnd(48)} ${real} (esperado ${esperado})`);
 }
 
+/**
+ * Reintenta una operación de Auth.
+ *
+ * El GoTrue del entorno local devuelve "Processing this request timed out" de
+ * vez en cuando, tanto al crear usuarios como al iniciar sesión. No es un fallo
+ * del código —contra el proyecto alojado no ocurre— pero un test que falla al
+ * azar hace desconfiar de toda la suite, que es justo lo que no puede pasar con
+ * las pruebas que protegen datos clínicos.
+ */
+async function reintentar(fn, veces = 4) {
+  let ultimo;
+  for (let i = 0; i < veces; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      ultimo = e;
+      if (!/timed out|timeout/i.test(e.message)) throw e;
+      await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+    }
+  }
+  throw ultimo;
+}
+
+/** Envuelve una respuesta {data,error} de Supabase para que el reintento la vea. */
+async function conReintento(fn) {
+  return reintentar(async () => {
+    const r = await fn();
+    if (r.error && /timed out|timeout/i.test(r.error.message)) throw new Error(r.error.message);
+    return r;
+  });
+}
+
 async function limpiar() {
   const { data } = await admin.auth.admin.listUsers({ perPage: 200 });
   for (const u of data?.users ?? []) {
-    if (u.email?.endsWith("@inv-test.local")) await admin.auth.admin.deleteUser(u.id);
+    if (u.email?.endsWith("@inv-test.local")) {
+      await conReintento(() => admin.auth.admin.deleteUser(u.id));
+    }
   }
   await admin.from("invitations").delete().eq("tenant_id", T_GYM);
   await admin.from("memberships").delete().eq("tenant_id", T_GYM);
@@ -52,9 +86,7 @@ async function limpiar() {
 }
 
 async function crearUsuario(email, membresias = []) {
-  const { data, error } = await admin.auth.admin.createUser({
-    email, password: PASS, email_confirm: true,
-  });
+  const { data, error } = await conReintento(() => admin.auth.admin.createUser({ email, password: PASS, email_confirm: true }));
   if (error) throw new Error(`${email}: ${error.message}`);
   for (const [tenant_id, role] of membresias) {
     await admin.from("memberships").insert({ user_id: data.user.id, tenant_id, role });
@@ -64,7 +96,9 @@ async function crearUsuario(email, membresias = []) {
 
 async function sesion(email) {
   const cli = createClient(URL_SB, PUB, { auth: { persistSession: false } });
-  const { error } = await cli.auth.signInWithPassword({ email, password: PASS });
+  const { error } = await conReintento(() =>
+    cli.auth.signInWithPassword({ email, password: PASS }),
+  );
   if (error) throw new Error(`login ${email}: ${error.message}`);
   return cli;
 }

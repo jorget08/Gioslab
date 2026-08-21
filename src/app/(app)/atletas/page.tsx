@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { Plus, Ruler, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -107,7 +107,7 @@ function Listado() {
         <ul className="divide-y rounded-lg border">
           {visibles.map((a) => (
             <li key={a.id}>
-              <div className="flex min-h-14 items-center gap-3 px-4 py-3">
+              <div className="flex min-h-14 items-center gap-2 px-4 py-2">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{a.full_name}</p>
                   {/* Cuándo fue su última evaluación es el dato con el que se
@@ -117,6 +117,12 @@ function Listado() {
                     {a.training_goal ? ` · ${a.training_goal}` : ""}
                   </p>
                 </div>
+                <Button asChild variant="outline" size="sm" className="min-h-11 shrink-0">
+                  <Link href={`/atletas/medir?id=${a.id}`} aria-label={`Medir a ${a.full_name}`}>
+                    <Ruler className="size-4" aria-hidden="true" />
+                    Medir
+                  </Link>
+                </Button>
               </div>
             </li>
           ))}
