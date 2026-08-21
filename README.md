@@ -51,7 +51,8 @@ La app queda en <http://localhost:3000>.
 
 | Comando | Qué hace |
 |---|---|
-| `npm run dev` | Servidor de desarrollo |
+| `npm run dev` | Servidor de desarrollo, contra el **Supabase remoto** |
+| `npm run dev:local` | Servidor de desarrollo contra el **Supabase local** (Docker) |
 | `npm run build` | Build de producción |
 | `npm start` | Sirve el build de producción |
 | `npm run lint` | ESLint |
@@ -72,6 +73,11 @@ La app queda en <http://localhost:3000>.
 independiente, 5 atletas con mediciones y evaluaciones, y las primeras reglas
 sacadas de las fichas de Giovanni. Para el proyecto remoto, pegar ese archivo en
 el SQL Editor de Supabase.
+
+Para entrar con estas cuentas hay que arrancar con **`npm run dev:local`**.
+`npm run dev` usa `.env.local`, que apunta al proyecto remoto, donde estas
+cuentas no existen — y el error que sale es «correo o contraseña incorrectos»,
+que no da ninguna pista del motivo real.
 
 Todas las cuentas usan la contraseña `clave-de-prueba`:
 
