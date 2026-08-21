@@ -135,11 +135,19 @@ async function main() {
               .filter(e => e.getBoundingClientRect().right > window.innerWidth + 1)
               .slice(0, 5)
               .map(e => e.tagName + '.' + String(e.className || '').slice(0, 50)),
+        // Se mide el área que el dedo puede tocar, no el elemento. Un radio o
+        // una casilla dentro de una <label> alta se tocan por la etiqueta
+        // entera; marcarlos haría desconfiar de la herramienta, que es peor
+        // que no tenerla.
         tactilesPequenos: [...document.querySelectorAll('a,button,[role="button"],input,select')]
-          .filter(e => { const r = e.getBoundingClientRect();
-                         return r.height > 0 && r.height < 44; })
+          .map(e => {
+            const envoltura = e.closest('label,button,a');
+            const objetivo = envoltura && envoltura !== e ? envoltura : e;
+            return { e, alto: objetivo.getBoundingClientRect().height };
+          })
+          .filter(x => x.alto > 0 && x.alto < 44)
           .slice(0, 5)
-          .map(e => e.tagName + ' ' + Math.round(e.getBoundingClientRect().height) + 'px')
+          .map(x => x.e.tagName + ' ' + Math.round(x.alto) + 'px')
       })`,
       returnByValue: true,
     });

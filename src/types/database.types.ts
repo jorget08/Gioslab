@@ -126,6 +126,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "anthropometric_measurements_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes_listado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "anthropometric_measurements_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -198,6 +205,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "athlete_consents_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes_listado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "athlete_consents_granted_by_fkey"
             columns: ["granted_by"]
             isOneToOne: false
@@ -256,6 +270,13 @@ export type Database = {
             columns: ["athlete_id"]
             isOneToOne: false
             referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_injuries_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes_listado"
             referencedColumns: ["id"]
           },
           {
@@ -450,6 +471,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "biomech_evaluations_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes_listado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "biomech_evaluations_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -519,6 +547,13 @@ export type Database = {
             columns: ["athlete_id"]
             isOneToOne: false
             referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "engine_runs_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes_listado"
             referencedColumns: ["id"]
           },
           {
@@ -827,6 +862,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menstrual_cycle_logs_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes_listado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "menstrual_cycle_logs_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -1064,6 +1106,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "workout_plans_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes_listado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "workout_plans_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -1095,11 +1144,79 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      athletes_listado: {
+        Row: {
+          archived_at: string | null
+          birth_date: string | null
+          experience_level: string | null
+          full_name: string | null
+          id: string | null
+          sex: string | null
+          tenant_id: string | null
+          trainer_id: string | null
+          training_goal: string | null
+          ultima_evaluacion: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          birth_date?: string | null
+          experience_level?: string | null
+          full_name?: string | null
+          id?: string | null
+          sex?: string | null
+          tenant_id?: string | null
+          trainer_id?: string | null
+          training_goal?: string | null
+          ultima_evaluacion?: never
+        }
+        Update: {
+          archived_at?: string | null
+          birth_date?: string | null
+          experience_level?: string | null
+          full_name?: string | null
+          id?: string | null
+          sex?: string | null
+          tenant_id?: string | null
+          trainer_id?: string | null
+          training_goal?: string | null
+          ultima_evaluacion?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athletes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athletes_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
       cambiar_tenant: { Args: { nuevo_tenant: string }; Returns: undefined }
+      crear_atleta: {
+        Args: {
+          p_consiente_ciclo?: boolean
+          p_fecha_nacimiento: string
+          p_lesiones?: Json
+          p_nivel?: string
+          p_nombre: string
+          p_notas?: string
+          p_objetivo?: string
+          p_objetivos?: Json
+          p_sexo: string
+          p_version_politica?: string
+        }
+        Returns: string
+      }
       crear_invitacion: {
         Args: {
           p_dias_validez?: number
