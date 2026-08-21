@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 
 import { Campo } from "@/components/shared/campo";
 import { Guarda } from "@/components/shared/guarda";
+import { CampoSelect } from "@/components/shared/campo-select";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useSesion } from "@/lib/auth/contexto";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -125,20 +125,13 @@ function Equipo() {
           {...register("email")}
         />
 
-        <div className="space-y-1.5">
-          <Label htmlFor="rol">Entra como</Label>
-          <select
-            id="rol"
-            className="min-h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
-            {...register("rol")}
-          >
-            {roles.map((r) => (
-              <option key={r} value={r}>
-                {ETIQUETA_ROL[r]}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CampoSelect etiqueta="Entra como" {...register("rol")}>
+          {roles.map((r) => (
+            <option key={r} value={r}>
+              {ETIQUETA_ROL[r]}
+            </option>
+          ))}
+        </CampoSelect>
 
         {errorGeneral && (
           <p role="alert" className="text-sm font-medium text-destructive">

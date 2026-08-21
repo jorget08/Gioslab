@@ -9,11 +9,12 @@ import { Controller, useForm } from "react-hook-form";
 import { Lesiones } from "@/components/atletas/lesiones";
 import { Objetivos } from "@/components/atletas/objetivos";
 import { Campo } from "@/components/shared/campo";
+import { CampoFecha } from "@/components/shared/campo-fecha";
+import { CampoSelect } from "@/components/shared/campo-select";
 import { GrupoOpciones } from "@/components/shared/grupo-opciones";
 import { Guarda } from "@/components/shared/guarda";
 import { Bloque, PasoWizard } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   ETIQUETA_SEXO,
   NIVELES,
@@ -109,12 +110,19 @@ function FormularioAtleta() {
             {...register("nombre")}
           />
 
-          <Campo
-            etiqueta="Fecha de nacimiento"
-            type="date"
-            ayuda="La edad entra en la fórmula del porcentaje graso"
-            error={errors.fechaNacimiento?.message}
-            {...register("fechaNacimiento")}
+          <Controller
+            name="fechaNacimiento"
+            control={control}
+            render={({ field }) => (
+              <CampoFecha
+                nombre="nacimiento"
+                etiqueta="Fecha de nacimiento"
+                ayuda="La edad entra en la fórmula del porcentaje graso"
+                valor={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.fechaNacimiento?.message}
+              />
+            )}
           />
 
           <Controller
@@ -136,37 +144,23 @@ function FormularioAtleta() {
         </Bloque>
 
         <Bloque rotulo="Qué busca">
-          <div className="space-y-1.5">
-            <Label htmlFor="objetivo">Objetivo principal</Label>
-            <select
-              id="objetivo"
-              className="min-h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
-              {...register("objetivo")}
-            >
-              <option value="">Sin definir</option>
-              {OBJETIVOS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CampoSelect etiqueta="Objetivo principal" {...register("objetivo")}>
+            <option value="">Sin definir</option>
+            {OBJETIVOS.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </CampoSelect>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="nivel">Nivel de experiencia</Label>
-            <select
-              id="nivel"
-              className="min-h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
-              {...register("nivel")}
-            >
-              <option value="">Sin definir</option>
-              {NIVELES.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CampoSelect etiqueta="Nivel de experiencia" {...register("nivel")}>
+            <option value="">Sin definir</option>
+            {NIVELES.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </CampoSelect>
 
           <Controller
             name="objetivos"

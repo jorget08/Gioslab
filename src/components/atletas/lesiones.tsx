@@ -3,6 +3,7 @@
 import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
+import { CampoSelect } from "@/components/shared/campo-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -139,21 +140,18 @@ export function Lesiones({
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="lesion-estado">Estado</Label>
-          <select
-            id="lesion-estado"
-            value={estado}
-            onChange={(e) => setEstado(e.target.value as (typeof ESTADOS_LESION)[number])}
-            className="min-h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base"
-          >
-            {ESTADOS_LESION.map((e) => (
-              <option key={e} value={e}>
-                {ETIQUETA_ESTADO_LESION[e]}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CampoSelect
+          id="lesion-estado"
+          etiqueta="Estado"
+          value={estado}
+          onChange={(e) => setEstado(e.target.value as (typeof ESTADOS_LESION)[number])}
+        >
+          {ESTADOS_LESION.map((e) => (
+            <option key={e} value={e}>
+              {ETIQUETA_ESTADO_LESION[e]}
+            </option>
+          ))}
+        </CampoSelect>
 
         <Button
           type="button"
