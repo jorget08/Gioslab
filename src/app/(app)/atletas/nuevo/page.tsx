@@ -98,7 +98,7 @@ function FormularioAtleta() {
 
   return (
     <div className="space-y-6">
-      <PasoWizard paso={1} titulo="Nuevo atleta" descripcion="Perfil y anamnesis" />
+      <PasoWizard paso={1} titulo="Nuevo atleta" descripcion="Datos, objetivos y autorización" />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <Bloque rotulo="Quién es">

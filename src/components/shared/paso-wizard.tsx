@@ -3,25 +3,28 @@
 /**
  * Cabecera de un paso del wizard.
  *
- * Los cinco pasos van siempre visibles: el entrenador tiene que saber cuánto le
- * falta antes de empezar, sobre todo si va a interrumpirle alguien a mitad. Una
- * barra que solo dice "paso 1 de 5" en texto no comunica eso de un vistazo.
+ * La barra de progreso solo se dibuja si `total` es mayor que 1. Hoy únicamente
+ * existe el paso 1 —los demás llegan con las tareas 2.3 a 2.5— y anunciar "1 de
+ * 5" prometía un recorrido que al guardar no continuaba: devolvía a la lista.
+ * Enseñar pasos que no existen confunde más que no enseñar ninguno.
  *
- * Los pasos ya recorridos se marcan con el acento; el actual, más ancho.
+ * Cuando estén construidos, basta con pasarle `total={5}`.
  */
 export function PasoWizard({
   paso,
-  total = 5,
+  total = 1,
   titulo,
   descripcion,
 }: {
   paso: number;
+  /** Número de pasos del recorrido. Con 1, no se dibuja barra. */
   total?: number;
   titulo: string;
   descripcion?: string;
 }) {
   return (
     <header className="space-y-3">
+      {total > 1 && (
       <div
         className="flex items-center gap-1.5"
         role="progressbar"
@@ -48,6 +51,7 @@ export function PasoWizard({
           {paso} / {total}
         </span>
       </div>
+      )}
 
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>

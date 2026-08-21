@@ -1,28 +1,51 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { es } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
-import { aISO, campoCompleto, desdeISO, soloDigitos } from "@/domain/fecha";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 /**
- * Fecha en tres campos: día, mes y año.
+ * Selector de fecha con calendario propio.
  *
- * NO es un `<input type="date">`, y no es solo por estética. El selector de
- * calendario del navegador obliga a retroceder treinta años a golpe de flecha
- * para una fecha de nacimiento; tres campos numéricos se llenan en cinco
- * segundos con el pulgar.
+ * No se usa `<input type="date">` porque el calendario que abre el navegador no
+ * se puede tematizar: sobre fondo oscuro aparece un panel blanco con un icono
+ * gris pegado al borde.
  *
- * Detalles que lo hacen rápido de verdad:
- *  - Teclado numérico en los tres (`inputMode="numeric"`).
- *  - Avance automático al completar cada uno. Un "5" en el mes salta solo,
- *    porque no hay ningún mes que empiece por 5 y tenga dos cifras.
- *  - Borrar con el campo vacío retrocede al anterior, que es lo que espera
- *    cualquiera que se equivoque tecleando.
- *  - El 31 de febrero no se acepta: si se dejara pasar, el navegador lo
- *    "corregiría" a marzo sin avisar.
+ * El calendario lleva **desplegables de mes y año**. Sin ellos, elegir una fecha
+ * de nacimiento obligaría a retroceder treinta años a golpe de flecha, que es el
+ * defecto real de cualquier calendario en este campo.
  */
+
+const MESES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+/** Fecha ISO → Date local, sin que la zona horaria mueva el día. */
+function aFecha(iso: string | undefined): Date | undefined {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return undefined;
+  const [a, m, d] = iso.split("-").map(Number);
+  return new Date(a, m - 1, d);
+}
+
+/** Date → ISO, construido a mano: toISOString() pasa por UTC y resta un día. */
+function aISO(fecha: Date | undefined): string {
+  if (!fecha) return "";
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
+
+function enPalabras(fecha: Date): string {
+  return `${fecha.getDate()} de ${MESES[fecha.getMonth()]} de ${fecha.getFullYear()}`;
+}
+
 export function CampoFecha({
   etiqueta,
   ayuda,
@@ -30,110 +53,72 @@ export function CampoFecha({
   valor,
   onChange,
   nombre = "fecha",
+  /** Año más antiguo seleccionable. */
+  desdeAnio = new Date().getFullYear() - 100,
 }: {
   etiqueta: string;
   ayuda?: string;
   error?: string;
-  /** Fecha ISO (AAAA-MM-DD) o cadena vacía. */
   valor: string;
   onChange: (iso: string) => void;
   nombre?: string;
+  desdeAnio?: number;
 }) {
-  const inicial = desdeISO(valor);
-  const [dia, setDia] = useState(inicial.dia);
-  const [mes, setMes] = useState(inicial.mes);
-  const [anio, setAnio] = useState(inicial.anio);
-
-  const refMes = useRef<HTMLInputElement>(null);
-  const refAnio = useRef<HTMLInputElement>(null);
-
-  // Se avisa hacia arriba con la fecha completa, o con "" mientras no lo esté.
-  useEffect(() => {
-    onChange(aISO(dia, mes, anio));
-    // `onChange` cambia en cada render del padre; incluirlo dispararía el
-    // efecto en bucle.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dia, mes, anio]);
+  const [abierto, setAbierto] = useState(false);
+  const fecha = aFecha(valor);
+  const hoy = new Date();
 
   const idError = error ? `${nombre}-error` : undefined;
   const idAyuda = ayuda ? `${nombre}-ayuda` : undefined;
 
-  function retrocederSiVacio(
-    e: React.KeyboardEvent<HTMLInputElement>,
-    valorActual: string,
-    anterior: React.RefObject<HTMLInputElement | null>,
-  ) {
-    if (e.key === "Backspace" && valorActual === "" && anterior.current) {
-      anterior.current.focus();
-    }
-  }
-
-  const claseCampo = cn(
-    "dato min-h-11 rounded-lg border border-input bg-transparent text-center text-base",
-    "transition-colors placeholder:text-muted-foreground",
-    "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
-    error && "border-destructive",
-  );
-
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={`${nombre}-dia`}>{etiqueta}</Label>
+      <Label htmlFor={nombre}>{etiqueta}</Label>
 
-      <div
-        className="flex items-center gap-2"
-        role="group"
-        aria-label={etiqueta}
-        aria-describedby={[idError, idAyuda].filter(Boolean).join(" ") || undefined}
-      >
-        <input
-          id={`${nombre}-dia`}
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="DD"
-          aria-label="Día"
-          value={dia}
-          className={cn(claseCampo, "w-14")}
-          onChange={(e) => {
-            const v = soloDigitos(e.target.value, 2);
-            setDia(v);
-            if (campoCompleto(v, "dia")) refMes.current?.focus();
-          }}
-        />
-        <span aria-hidden="true" className="text-muted-foreground">
-          /
-        </span>
+      <Popover open={abierto} onOpenChange={setAbierto}>
+        <PopoverTrigger asChild>
+          <Button
+            id={nombre}
+            type="button"
+            variant="outline"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={[idError, idAyuda].filter(Boolean).join(" ") || undefined}
+            className={cn(
+              "min-h-11 w-full justify-between px-3 font-normal",
+              !fecha && "text-muted-foreground",
+              error && "border-destructive",
+            )}
+          >
+            <span className={fecha ? "dato" : undefined}>
+              {fecha ? enPalabras(fecha) : "Elegir fecha"}
+            </span>
+            <CalendarIcon className="size-4 shrink-0 opacity-60" aria-hidden="true" />
+          </Button>
+        </PopoverTrigger>
 
-        <input
-          ref={refMes}
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="MM"
-          aria-label="Mes"
-          value={mes}
-          className={cn(claseCampo, "w-14")}
-          onChange={(e) => {
-            const v = soloDigitos(e.target.value, 2);
-            setMes(v);
-            if (campoCompleto(v, "mes")) refAnio.current?.focus();
-          }}
-          onKeyDown={(e) => retrocederSiVacio(e, mes, { current: document.getElementById(`${nombre}-dia`) as HTMLInputElement | null })}
-        />
-        <span aria-hidden="true" className="text-muted-foreground">
-          /
-        </span>
-
-        <input
-          ref={refAnio}
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="AAAA"
-          aria-label="Año"
-          value={anio}
-          className={cn(claseCampo, "w-20")}
-          onChange={(e) => setAnio(soloDigitos(e.target.value, 4))}
-          onKeyDown={(e) => retrocederSiVacio(e, anio, refMes)}
-        />
-      </div>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            // Sin esto los días salen en inglés —"Su Mo Tu We"— y la semana
+            // empieza en domingo, que no es la convención de aquí.
+            locale={es}
+            selected={fecha}
+            defaultMonth={fecha ?? new Date(hoy.getFullYear() - 25, 0)}
+            // Los desplegables de mes y año son lo que hace usable un calendario
+            // para una fecha de nacimiento.
+            captionLayout="dropdown"
+            startMonth={new Date(desdeAnio, 0)}
+            endMonth={new Date(hoy.getFullYear(), 11)}
+            disabled={{ after: hoy }}
+            onSelect={(d) => {
+              onChange(aISO(d));
+              // Se cierra al elegir: en un móvil, un panel abierto tapa el resto
+              // del formulario y hay que buscar dónde tocar para cerrarlo.
+              if (d) setAbierto(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
 
       {ayuda && !error && (
         <p id={idAyuda} className="text-xs text-muted-foreground">
