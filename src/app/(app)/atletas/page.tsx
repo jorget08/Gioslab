@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Ruler, Search } from "lucide-react";
+import { ChevronRight, Plus, Ruler, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -107,16 +107,29 @@ function Listado() {
         <ul className="divide-y rounded-lg border">
           {visibles.map((a) => (
             <li key={a.id}>
-              <div className="flex min-h-14 items-center gap-2 px-4 py-2">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{a.full_name}</p>
+              <div className="flex min-h-14 items-center gap-2 pr-4">
+                {/* El nombre lleva a la ficha y ocupa toda la fila: es el gesto
+                    que se hace sin mirar. "Evaluar" queda como acción aparte
+                    para no perder el atajo de quien ya sabe a qué viene. */}
+                <Link
+                  href={`/atletas/ficha?id=${a.id}`}
+                  className="flex min-h-14 min-w-0 flex-1 flex-col justify-center py-2 pl-4"
+                >
+                  <span className="truncate text-sm font-medium">{a.full_name}</span>
                   {/* Cuándo fue su última evaluación es el dato con el que se
                       decide a quién le toca hoy (docs/WIZARD-UX.md §3). */}
-                  <p className="truncate text-xs text-muted-foreground">
+                  <span className="truncate text-xs text-muted-foreground">
                     {haceCuanto(a.ultima_evaluacion)}
                     {a.training_goal ? ` · ${a.training_goal}` : ""}
-                  </p>
-                </div>
+                  </span>
+                </Link>
+                {/* Sin esto la fila no anuncia que lleva a algún sitio: el botón
+                    de la derecha se lleva toda la atención y la ficha queda
+                    escondida detrás de un toque que nadie adivina. */}
+                <ChevronRight
+                  className="size-4 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
                 <Button asChild variant="outline" size="sm" className="min-h-11 shrink-0">
                   <Link href={`/atletas/medir?id=${a.id}`} aria-label={`Evaluar a ${a.full_name}`}>
                     <Ruler className="size-4" aria-hidden="true" />

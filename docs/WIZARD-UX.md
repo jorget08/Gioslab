@@ -37,12 +37,15 @@ tecleo al instante, y darle contexto al entrenador sin salir de la pantalla.
        │
   [2] Antropometría           ← tarea 2.3
        │
-  [3] Segmentos y proporciones ← tarea 2.4
+  [3] Segmentos y proporciones ← tarea 2.4  ┐ una sola evaluación,
+       │                                     │ una sola fila
+  [4] Movilidad               ← tarea 2.5  ┘
        │
-  [4] Movilidad y patrones    ← tarea 2.5
-       │
-  [5] Resumen y confirmación
+  [→] Ficha del atleta        ← tarea 2.9
 ```
+
+El paso 5 "Resumen" del plan original no se construyó: lo sustituye la ficha.
+El porqué está en §8.
 
 ### Reglas de navegación
 
@@ -52,8 +55,8 @@ tecleo al instante, y darle contexto al entrenador sin salir de la pantalla.
 - **Cada paso se guarda al salir, completo o no.** No hay botón "guardar".
 - **El cálculo espera a tener sus datos.** El porcentaje graso necesita los 7
   pliegues; con 5 no se muestra un número aproximado, se muestra qué falta.
-- Barra de progreso arriba con los 5 puntos, tocable para saltar entre pasos ya
-  visitados.
+- Barra de progreso solo cuando el recorrido tiene más de un paso. Anunciar
+  "1 / 5" cuando al guardar se vuelve a la lista promete pantallas que no vienen.
 
 ---
 
@@ -201,10 +204,10 @@ sin distinguirlos la gráfica de evolución mezclaría dos cosas distintas.
 
 ## 6. Paso 3 — Segmentos y proporciones
 
-> ⚠️ **Bloqueado en parte.** La tarjeta 2.4 habla de ratios calculados, pero la
-> ficha de Giovanni usa desplegables. Es la pregunta 5 de
-> `PREGUNTAS-GIOVANNI.md`. Mientras responde, se implementan **ambos**: los
-> desplegables son obligatorios y las medidas en cm, opcionales.
+> ✅ **Desbloqueado.** Giovanni confirmó que no hay umbral: es un juicio del
+> entrenador con tres opciones. Las medidas en cm quedan opcionales.
+>
+> Este paso **no guarda**: pasa al 4, que inserta la fila con lo de ambos.
 
 | Campo | Control | Opciones |
 |---|---|---|
@@ -276,10 +279,9 @@ puede concluir nada sobre una articulación que nadie midió.
 
 ---
 
-## 8. Paso 5 — Resumen
+## 8. Paso 5 — Resumen → **sustituido por la ficha del atleta** (tarea 2.9)
 
-Todo lo capturado en una pantalla, con cada bloque tocable para volver a
-corregirlo, y el aviso de lo que quedó vacío:
+El plan original era una pantalla de revisión antes de guardar:
 
 ```
 ✓ Perfil            completo
@@ -290,9 +292,53 @@ corregirlo, y el aviso de lo que quedó vacío:
         [ Guardar evaluación ]
 ```
 
-Al guardar: se crea la fila de mediciones y la de evaluación biomecánica, y se
-vuelve a la ficha del atleta. **Nunca se sobreescribe una toma anterior** (§3.5
-del `CLAUDE.md`): cada evaluación es una fila nueva.
+**No se construyó, y a propósito.** Al implementar los pasos quedó claro que
+resolvía un problema que ya no existía:
+
+- Cada flujo **avisa en el momento** de lo que falta y de lo que está fuera de
+  rango. Un resumen que repite eso al final llega tarde: el atleta ya se fue.
+- Los flujos no son un embudo único. Medir y evaluar se entran por separado
+  desde la ficha, así que no hay un "final" común donde poner ese resumen.
+- Lo que sí hacía falta era ver **el resultado**, no la lista de lo tecleado. Eso
+  es la ficha del atleta, y además sirve cualquier día, no solo al terminar.
+
+Al guardar se vuelve a la ficha, que es donde el entrenador ve para qué sirvió
+lo que acaba de medir. **Nunca se sobreescribe una toma anterior** (§3.5): cada
+evaluación es una fila nueva.
+
+---
+
+## 8b. Ficha del atleta (tarea 2.9)
+
+La pantalla que le devuelve algo al entrenador después de tanto teclear.
+
+| Bloque | Contenido |
+|---|---|
+| Cabecera | Edad, sexo, objetivo, nivel + accesos a Medir y Evaluar |
+| Composición | Grasa y peso destacados, con su variación; masa magra y grasa, IMC, suma de 7 pliegues, cintura/cadera |
+| Biomecánica | Proporción fémur/torso con su interpretación + los 6 tests con su estado |
+| Ciclo | Solo si aplica: fase, multiplicador, efecto fisiológico y ajuste |
+| Lesiones | Zona, estado y descripción |
+| Historial | Todas las mediciones, con cuánto pasó entre cada una |
+
+### La regla que la gobierna: no juzga
+
+Ninguna variación se pinta de verde ni de rojo. Solo flecha, cifra y unidad.
+
+Es tentador pintar "bajó 3 kg" de verde, pero para quien busca ganar masa es un
+retroceso. Decidir cuál es cuál es criterio metodológico de Giovanni, y
+codificarlo en un color sería inventar dominio (`CLAUDE.md` §6).
+
+**Única excepción:** el ratio cintura/cadera, con aviso por encima de 0.85 en
+mujeres, porque ese umbral está escrito en su ficha. Para hombres él no da corte
+y la ficha no dice nada, en vez de usar el 0.90 de la literatura general.
+
+### Otros dos detalles
+
+- **`—` y no `0`.** Un cero es un dato; un guion es la ausencia de dato.
+  Confundirlos en una ficha clínica no es aceptable.
+- **El delta siempre lleva contexto**: "−3.4 % desde 6 meses antes". Perder eso
+  en tres semanas o en ocho meses son dos historias distintas.
 
 ---
 
@@ -352,7 +398,7 @@ Cada mensaje dice **qué pasó y qué hacer**. Ninguno dice solo "valor inválid
 | 2 Antropometría | ✅ construido — fórmulas verificadas contra el Excel |
 | 3 Segmentos | ✅ construido — ocho de las nueve proporciones siguen sin interpretación en su ficha, y se dice en pantalla |
 | 4 Movilidad | ✅ construido (2.5) — desbloqueado por el MÓDULO 02 |
-| 5 Resumen | ⏳ pendiente (2.9) |
+| 5 Resumen | ⊘ sustituido por la ficha del atleta (2.9) — ver §8 |
 
 La numeración interna del recorrido de evaluación es **3 → 4**, no 1 → 5: los
 pasos 0 a 2 son flujos propios que se entran por separado desde la ficha del

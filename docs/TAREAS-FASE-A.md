@@ -99,7 +99,7 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Retomar una evaluación a medias sin perder datos. La realidad del gimnasio son
   las interrupciones.
 
-- [ ] **2.9 Ficha del atleta: resultados + historial** (8 h)
+- [x] **2.9 Ficha del atleta: resultados + historial** (8 h)
   Vista completa: resultados, somatotipo, clasificaciones, comparación entre fechas.
 
 - [?] **2.10 Validación: atletas reales vs. Excels de Giovanni** (4 h)

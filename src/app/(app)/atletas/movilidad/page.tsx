@@ -194,7 +194,10 @@ function Movilidad() {
     }
 
     descartarBorrador("biomecanica", atleta.id);
-    router.replace("/atletas");
+    // A la ficha, no a la lista: es el momento en que el entrenador ve para qué
+    // sirvió lo que acaba de medir. Devolverlo a la lista dejaba el recorrido
+    // sin recompensa.
+    router.replace(`/atletas/ficha?id=${atleta.id}`);
   }
 
   if (cargando) {
