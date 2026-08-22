@@ -43,23 +43,20 @@ export const ETIQUETA_ESTADO_LESION: Record<string, string> = {
 /**
  * Zonas del cuerpo para el registro de lesiones.
  *
- * PROVISIONAL: es una lista de trabajo, no el vocabulario de Giovanni — él no
- * lo ha definido (pregunta abierta en PREGUNTAS-GIOVANNI.md). Por eso el campo
- * admite también texto libre: es preferible que el entrenador escriba "manguito
- * rotador" a que no pueda registrar la lesión.
+ * YA NO ES PROVISIONAL Y YA NO ADMITE TEXTO LIBRE. Giovanni cerró el catálogo
+ * el 2026-08-22: "el cruce por listas cerradas es la única forma de evitar
+ * fallos; si dejamos texto libre, el motor pierde precisión".
+ *
+ * Es EL MISMO catálogo que las contraindicaciones del ejercicio —de hecho se
+ * reexporta desde allí, para que no puedan divergir—, y esa identidad es lo que
+ * convierte el cruce lesión↔ejercicio en una comparación exacta en vez de una
+ * adivinanza.
+ *
+ * El precio es real: quien antes escribía "manguito rotador" ahora marca
+ * "Hombro" y pone el detalle en la descripción. A cambio, el motor puede
+ * decirle por qué excluyó un ejercicio.
  */
-export const ZONAS_CUERPO = [
-  "Hombro",
-  "Codo",
-  "Muñeca",
-  "Zona cervical",
-  "Zona dorsal",
-  "Zona lumbar",
-  "Cadera",
-  "Rodilla",
-  "Tobillo",
-  "Pie",
-] as const;
+export { ZONAS_ANATOMICAS as ZONAS_CUERPO } from "@/domain/contraindicaciones";
 
 /**
  * Versión de la política de tratamiento de datos vigente.

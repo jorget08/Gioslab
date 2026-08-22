@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { CONTRAINDICACIONES } from "@/domain/ejercicios";
+import { CONDICIONES_SISTEMICAS, ZONAS_ANATOMICAS } from "@/domain/contraindicaciones";
 import { PATRONES } from "@/domain/patrones";
 
 /**
@@ -42,7 +42,12 @@ export const ejercicioSchema = z.object({
     .optional()
     .transform((v) => v || undefined),
 
-  contraindicaciones: z.array(z.enum(CONTRAINDICACIONES)).default([]),
+  // Las dos familias en la misma lista: para el motor son lo mismo al cruzar
+  // ("¿tiene el atleta algo de esto?") y solo divergen después, al decidir si
+  // excluye el ejercicio o le cambia la ejecución.
+  contraindicaciones: z
+    .array(z.enum([...ZONAS_ANATOMICAS, ...CONDICIONES_SISTEMICAS]))
+    .default([]),
 
   activo: z.boolean().default(true),
 });

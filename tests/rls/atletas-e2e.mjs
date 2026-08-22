@@ -96,7 +96,7 @@ async function main() {
     p_version_politica: "v1",
     p_consiente_ciclo: true,
     p_lesiones: [
-      { zona: "Rodilla derecha", descripcion: "Condromalacia", estado: "cronica" },
+      { zona: "Rodilla", descripcion: "Condromalacia derecha", estado: "cronica" },
     ],
   });
   verificar("se crea sin error", error?.message ?? "sin-error", "sin-error");
@@ -117,7 +117,14 @@ async function main() {
 
   const { data: les } = await admin
     .from("athlete_injuries").select("body_region, status, tenant_id").eq("athlete_id", id);
-  verificar("guarda la lesión", les?.[0]?.body_region, "Rodilla derecha");
+  verificar("guarda la lesión con una zona del catálogo", les?.[0]?.body_region, "Rodilla");
+  // El lado del que ya no se puede escapar: la base rechaza cualquier zona
+  // fuera del catálogo, y de eso depende que el motor pueda cruzar la lesión
+  // contra las contraindicaciones del ejercicio.
+  const { error: eZona } = await admin.from("athlete_injuries").insert({
+    athlete_id: id, tenant_id: a?.tenant_id, body_region: "manguito rotador",
+  });
+  verificar("rechaza una zona fuera del catálogo", eZona?.code, "23514");
   verificar("el trigger le puso el tenant", les?.[0]?.tenant_id, a?.tenant_id);
 
   console.log("\n=== Sin autorización de ciclo NO se registra la segunda ===");

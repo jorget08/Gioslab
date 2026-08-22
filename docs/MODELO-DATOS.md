@@ -471,6 +471,40 @@ Los seis puntos originales están **cerrados** por sus aclaraciones técnicas de
 | 5. `pattern_classifications` | **Columna eliminada.** Era salida del motor guardada como si fuera entrada. Su sitio es `engine_runs.output` |
 | 6. ¿Un entrenador ve los atletas de sus colegas? | Resuelto por el modelo de membresías (1.4): el atleta pertenece al tenant donde se creó |
 
+### Contraindicaciones: un catálogo, dos familias, dos lados
+
+`athlete_injuries.body_region` y `exercise_library.contraindications` comparten
+catálogo **a la fuerza**: `ZONAS_CUERPO` se reexporta desde
+`domain/contraindicaciones.ts` para que no puedan divergir por descuido, y la
+base lo enforca con `zonas_anatomicas()` en un CHECK de las dos tablas.
+
+Esa identidad es lo único que hace posible el cruce. Con texto libre a un lado,
+"problemas de rodilla" contra "Rodilla" obligaría al motor a adivinar.
+
+| Familia | Efecto en el motor |
+|---|---|
+| Anatómica | **Filtra**: descarta el ejercicio |
+| Sistémica | **Filtra y ajusta**: cambia maniobra respiratoria, RIR y posición |
+
+Van en la misma columna porque al cruzar son lo mismo —"¿tiene el atleta algo de
+esta lista?"— y solo divergen después. Esa diferencia la sabe el catálogo; no
+hace falta duplicar la columna para expresarla.
+
+> ⚠️ **Hueco conocido.** Un ejercicio ya se puede marcar como contraindicado para
+> embarazo o hipertensión, pero **no hay dónde registrar que una atleta está
+> embarazada**: `athlete_injuries` guarda una zona del cuerpo. Hasta que exista
+> ese lado, las contraindicaciones sistémicas no se cruzan con nadie.
+
+### Un desplegable no es una restricción
+
+`body_region` vivió toda la Fase A sin CHECK. El formulario ofrecía una lista,
+pero la base aceptaba cualquier texto y el propio seed guardaba `'rodilla
+derecha'`. La restricción vive en la base o no existe.
+
+El CHECK se añadió `not valid`: bloquea toda escritura nueva pero no tira la
+migración por filas escritas cuando no había catálogo. Cuando los datos estén
+limpios se cierra con `validate constraint`.
+
 ### Por qué se guarda la medida y no la etiqueta
 
 Vale la pena dejarlo escrito, porque es la decisión que más se repite en este

@@ -219,18 +219,28 @@ values
 -- (ESPECIFICACION-FICHAS.md §4). Sirven para que el motor del grupo 3 se
 -- construya contra reglas reales en vez de inventadas.
 
-insert into public.exercise_library (id, name, target_muscle, movement_pattern, biomechanical_type)
+-- Las contraindicaciones cubren las DOS familias que definió Giovanni: zonas
+-- anatómicas (el motor descarta el ejercicio) y condiciones sistémicas (además
+-- le cambia la ejecución). La sentadilla trasera pesada es el caso claro de las
+-- dos a la vez.
+insert into public.exercise_library
+  (id, name, target_muscle, movement_pattern, biomechanical_type, contraindications)
 values
   ('00000000-4444-0000-0000-000000000001', '[demo] Sentadilla Barra Alta con Tacón',
-   'cuádriceps', 'squat_dominante_rodilla', 'rodilla dominante'),
+   'cuádriceps', 'squat_dominante_rodilla', 'rodilla dominante',
+   '["Rodilla"]'::jsonb),
   ('00000000-4444-0000-0000-000000000002', '[demo] Prensa 45°',
-   'cuádriceps', 'squat_dominante_rodilla', 'rodilla dominante'),
+   'cuádriceps', 'squat_dominante_rodilla', 'rodilla dominante',
+   '["Rodilla"]'::jsonb),
   ('00000000-4444-0000-0000-000000000003', '[demo] Sentadilla Trasera con Barra',
-   'cuádriceps', 'squat_dominante_rodilla', 'mixto'),
+   'cuádriceps', 'squat_dominante_rodilla', 'mixto',
+   '["Lumbar","Rodilla","Hernia discal / Patología axial","Hipertensión / Cardiovascular"]'::jsonb),
   ('00000000-4444-0000-0000-000000000004', '[demo] Hip Thrust',
-   'glúteo mayor', 'hip_hinge_dominante_cadera', 'cadera dominante'),
+   'glúteo mayor', 'hip_hinge_dominante_cadera', 'cadera dominante',
+   '["Embarazo"]'::jsonb),
   ('00000000-4444-0000-0000-000000000005', '[demo] Press Militar con Barra',
-   'deltoides', 'vertical_push', 'vertical');
+   'deltoides', 'vertical_push', 'vertical',
+   '["Hombro","Cervical","Hipertensión / Cardiovascular"]'::jsonb);
 
 insert into public.exercise_variants (exercise_id, variant_exercise_id, relation_type)
 values
@@ -268,6 +278,6 @@ where id::text like '00000000-3333-%';
 insert into public.athlete_injuries (athlete_id, tenant_id, body_region, description, status)
 values
   ('00000000-3333-0000-0000-000000000004', '00000000-1111-0000-0000-000000000001',
-   'zona lumbar', 'Molestia recurrente en peso muerto pesado', 'cronica'),
+   'Lumbar', 'Molestia recurrente en peso muerto pesado', 'cronica'),
   ('00000000-3333-0000-0000-000000000003', '00000000-1111-0000-0000-000000000001',
-   'rodilla derecha', 'Condromalacia diagnosticada en 2024', 'activa');
+   'Rodilla', 'Condromalacia derecha, diagnosticada en 2024', 'activa');

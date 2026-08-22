@@ -1,9 +1,10 @@
 # Preguntas pendientes para Giovanni
 
 Estado: **actualizado tras sus aclaraciones técnicas (2026-08-22).**
-Respondió las siete. Quedan **seis preguntas nuevas** —cuatro de precisión y dos
-de la biblioteca de ejercicios— y un bloqueo de fondo que sigue igual: la matriz
-completa de condicionales.
+Respondió las siete originales, y el 2026-08-22 respondió además la de
+contraindicaciones ampliando el modelo con una familia que no habíamos previsto.
+Quedan **seis abiertas** y un bloqueo de fondo: la matriz completa de
+condicionales.
 
 Fuentes: `fuentes-giovanni/aclaracionestecnicasjorgehernan.pdf`,
 `Modulo_Fisiologia_Femenina_GiosLab(1).pdf`,
@@ -74,19 +75,32 @@ binario `Restringido/Óptimo`. Se conservan **las dos cosas**: el estado binario
 para el motor y la severidad (`Severa`/`Limitada`/`Óptima`) para no perder una de
 sus reglas. ¿Correcto?
 
-### E. Contraindicaciones = zonas del cuerpo *(decisión nuestra, a confirmar)*
+### E. Contraindicaciones ✅ RESUELTA — y amplió el modelo
 
-Su ficha no define la forma de este campo. Lo modelamos como una **lista de
-zonas del cuerpo del mismo catálogo que usan las lesiones del atleta** (Hombro,
-Codo, Muñeca, Cervical, Dorsal, Lumbar, Cadera, Rodilla, Tobillo, Pie).
+Confirmó el cruce por lista cerrada *("si dejamos texto libre, el motor pierde
+precisión")* y añadió **una segunda familia que no habíamos previsto**:
 
-El motivo es que es lo único que permite el cruce. Si aquí escribiéramos texto
-libre —"problemas de rodilla"— el motor tendría que adivinar si eso es la misma
-"Rodilla" que la lesión del atleta, y **una prescripción que adivina no se puede
-explicar** (§3.6). Compartiendo catálogo, el cruce es una comparación exacta.
+| Familia | Ejemplos | Qué hace el motor |
+|---|---|---|
+| **Anatómica** | Hombro, Lumbar, Rodilla, Tobillo, Cadera, Codo, Muñeca/Antebrazo, Cervical | **Filtra**: descarta el ejercicio |
+| **Sistémica** | Hipertensión/Cardiovascular, Embarazo, Hernia discal, Diástasis abdominal | **Filtra Y ajusta la ejecución**: maniobra respiratoria, RIR, posición |
 
-¿Le sirve, o necesita contraindicaciones que no son una zona del cuerpo (por
-ejemplo hipertensión, embarazo, hernia discal)?
+Lo segundo es lo importante para el grupo 3: una contraindicación sistémica no
+siempre quita el ejercicio, a veces lo deja y cambia el cómo. Un motor que solo
+supiera incluir o excluir no podría expresar *"sí, pero sin Valsalva"*.
+
+**Sus reglas, textuales, para sembrar `rules` en la 3.3:**
+
+- Hipertensión → bloquear Valsalva, fallo extremo e isométricos muy largos
+- Embarazo → bloquear decúbito prono tras el primer trimestre, impacto y presión
+  intraabdominal extrema
+- Hernia discal → bloquear cargas axiales con compresión directa sobre columna
+- Diástasis → bloquear flexiones de tronco; priorizar core anti-extensión
+
+**Pendiente menor:** su lista anatómica trae 8 etiquetas; conservamos `Dorsal` y
+`Pie`, que ya estaban en el catálogo de lesiones. Quitarlos dejaría una fascitis
+plantar o una molestia dorsal sin forma de registrarse ni de cruzarse. Sobrarle
+una etiqueta al motor no cuesta nada; faltarle, sí. ¿Las quitamos?
 
 ### F. `biomechanical_type`: ¿sigue haciendo falta?
 
@@ -97,6 +111,15 @@ movimiento tiene catálogo cerrado, `biomechanical_type` guarda cosas como
 
 Se dejó el campo, pero **está sin catálogo y probablemente sobra**. Si aporta
 algo que el patrón no cubre, hace falta su lista; si no, se elimina.
+
+### G. Condiciones sistémicas del atleta: ¿dónde se registran?
+
+Consecuencia directa de su respuesta, y **es un hueco abierto**. Ya se puede
+marcar que un ejercicio está contraindicado para embarazo o hipertensión, pero
+**no hay dónde registrar que una atleta está embarazada**: `athlete_injuries`
+guarda una zona del cuerpo, y el embarazo no es una zona.
+
+Sin ese lado, el cruce no se completa. Es lo siguiente que hay que construir.
 
 ---
 

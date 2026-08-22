@@ -12,49 +12,8 @@
  * `sugerencias`. Así el vocabulario converge solo, sin que nadie decida por él.
  */
 
-import { ZONAS_CUERPO } from "@/domain/catalogos";
+import { leerContraindicaciones } from "@/domain/contraindicaciones";
 import { esPatron, type Patron } from "@/domain/patrones";
-
-/**
- * Contraindicaciones = zonas del cuerpo, EL MISMO catálogo que las lesiones.
- *
- * Es la decisión que hace que el motor funcione. `athlete_injuries.body_region`
- * usa `ZONAS_CUERPO`; si aquí escribiéramos texto libre ("problemas de rodilla"),
- * el cruce entre la lesión de un atleta y la contraindicación de un ejercicio
- * tendría que adivinar, y una prescripción que adivina no es auditable (§3.6).
- *
- * Compartiendo catálogo, el cruce es una comparación exacta.
- *
- * ⚠️ Decisión nuestra, no de Giovanni: su ficha no define la forma de este campo.
- * Anotada en PREGUNTAS-GIOVANNI para que la confirme.
- */
-export const CONTRAINDICACIONES = ZONAS_CUERPO;
-export type Contraindicacion = (typeof CONTRAINDICACIONES)[number];
-
-export function esContraindicacion(valor: unknown): valor is Contraindicacion {
-  return typeof valor === "string" && (CONTRAINDICACIONES as readonly string[]).includes(valor);
-}
-
-/**
- * Lee las contraindicaciones guardadas sin fiarse de su forma.
- *
- * La columna es `jsonb` y aceptó texto libre durante toda la Fase A, así que
- * puede traer cualquier cosa. Lo que no esté en el catálogo se descarta en vez
- * de pintarse: una contraindicación que el motor no va a poder cruzar, mostrada
- * como si fuera a protegerte, es peor que no mostrar nada.
- */
-export function leerContraindicaciones(crudo: unknown): Contraindicacion[] {
-  if (!Array.isArray(crudo)) return [];
-  const vistas = new Set<string>();
-  const salida: Contraindicacion[] = [];
-  for (const v of crudo) {
-    if (esContraindicacion(v) && !vistas.has(v)) {
-      vistas.add(v);
-      salida.push(v);
-    }
-  }
-  return salida;
-}
 
 /**
  * Normaliza el nombre antes de guardarlo.

@@ -40,18 +40,22 @@ insert into public.athletes (id, tenant_id, trainer_id, full_name, birth_date, s
   ('20000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-00000000000b','00000000-0000-0000-0000-0000000000b1','Atleta de B','2000-01-05','masculino');
 
 insert into public.athlete_injuries (athlete_id, tenant_id, body_region, description) values
-  ('20000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-00000000000b','hombro','tenant_id MENTIDO a propósito');
+  ('20000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-00000000000b','Hombro','tenant_id MENTIDO a propósito');
 
 commit;
 
 -- ===========================================================================
 \echo ''
 \echo '=== A. El trigger corrigió el tenant_id mentido? ==='
+-- Acotado al atleta de esta suite. Sin el WHERE se evaluaban también las
+-- lesiones del seed —que son de otro tenant y por tanto "fallaban"—, así que la
+-- prueba delataba un problema que no existía y tapaba el que sí quería medir.
 select
   case when tenant_id = '10000000-0000-0000-0000-00000000000a'
        then 'OK  trigger sobreescribió el tenant_id falso'
        else 'FALLO  quedó ' || tenant_id::text end as resultado
-from public.athlete_injuries;
+from public.athlete_injuries
+where athlete_id = '20000000-0000-0000-0000-000000000001';
 
 \echo ''
 \echo '=== B. Atletas visibles por rol (esperado: 3 / 2 / 1 / 1 / 0) ==='

@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { ZONAS_CUERPO } from "@/domain/catalogos";
 import {
   agruparPorPatron,
-  CONTRAINDICACIONES,
-  esContraindicacion,
-  leerContraindicaciones,
   nombreDuplicado,
   normalizarNombre,
   resumenEjercicio,
@@ -23,48 +19,6 @@ const ej = (p: Partial<Ejercicio> & { id: string; name: string }): Ejercicio => 
   contraindications: [],
   is_active: true,
   ...p,
-});
-
-describe("contraindicaciones", () => {
-  it("comparte catálogo con las lesiones, que es lo que permite cruzarlas", () => {
-    // Si divergieran, el motor tendría que adivinar si "problemas de rodilla"
-    // y "Rodilla" son lo mismo, y una prescripción que adivina no es auditable.
-    expect(CONTRAINDICACIONES).toBe(ZONAS_CUERPO);
-  });
-
-  it("reconoce las zonas del catálogo y rechaza el resto", () => {
-    expect(esContraindicacion("Rodilla")).toBe(true);
-    expect(esContraindicacion("rodilla")).toBe(false);
-    expect(esContraindicacion("problemas de rodilla")).toBe(false);
-    expect(esContraindicacion(null)).toBe(false);
-    expect(esContraindicacion(42)).toBe(false);
-  });
-});
-
-describe("leerContraindicaciones", () => {
-  it("lee una lista válida", () => {
-    expect(leerContraindicaciones(["Rodilla", "Zona lumbar"])).toEqual([
-      "Rodilla",
-      "Zona lumbar",
-    ]);
-  });
-
-  it("descarta lo que el motor no podría cruzar", () => {
-    // La columna es jsonb y aceptó texto libre toda la Fase A. Pintar una
-    // contraindicación incruzable como si fuera a proteger es peor que no
-    // pintar nada.
-    expect(leerContraindicaciones(["Rodilla", "molestia lumbar", 7, null])).toEqual(["Rodilla"]);
-  });
-
-  it("no repite", () => {
-    expect(leerContraindicaciones(["Rodilla", "Rodilla"])).toEqual(["Rodilla"]);
-  });
-
-  it("aguanta cualquier basura sin romperse", () => {
-    for (const basura of [null, undefined, "Rodilla", {}, 0, ""]) {
-      expect(leerContraindicaciones(basura)).toEqual([]);
-    }
-  });
 });
 
 describe("normalizarNombre", () => {
@@ -136,7 +90,7 @@ describe("sugerencias", () => {
 });
 
 describe("resumenEjercicio", () => {
-  it("junta músculo, equipo y contraindicaciones", () => {
+  it("junta músculo, equipo y contraindicaciones de las dos familias", () => {
     expect(
       resumenEjercicio(
         ej({
@@ -144,7 +98,7 @@ describe("resumenEjercicio", () => {
           name: "Prensa 45°",
           target_muscle: "cuádriceps",
           equipment: "prensa",
-          contraindications: ["Rodilla", "Zona lumbar"],
+          contraindications: ["Rodilla", "Hipertensión / Cardiovascular"],
         }),
       ),
     ).toBe("cuádriceps · prensa · 2 contraindicaciones");

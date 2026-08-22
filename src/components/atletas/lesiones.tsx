@@ -111,23 +111,25 @@ export function Lesiones({
           </Button>
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="lesion-zona">Zona</Label>
-          <Input
-            id="lesion-zona"
-            list="zonas-cuerpo"
-            value={zona}
-            onChange={(e) => setZona(e.target.value)}
-            placeholder="Rodilla, hombro, zona lumbar…"
-            className="min-h-11"
-          />
-          {/* Sugiere las zonas frecuentes sin impedir escribir otra. */}
-          <datalist id="zonas-cuerpo">
-            {ZONAS_CUERPO.map((z) => (
-              <option key={z} value={z} />
-            ))}
-          </datalist>
-        </div>
+        {/* Lista cerrada, no texto libre con sugerencias.
+            Giovanni: "el cruce por listas cerradas es la única forma de evitar
+            fallos; si dejamos texto libre, el motor pierde precisión". Antes se
+            podía escribir "manguito rotador" y ninguna contraindicación de
+            ejercicio iba a cruzar nunca con eso. Ahora se marca Hombro y el
+            detalle va en la descripción, que es justo el campo de al lado. */}
+        <CampoSelect
+          id="lesion-zona"
+          etiqueta="Zona"
+          value={zona}
+          onChange={(e) => setZona(e.target.value)}
+        >
+          <option value="">Elige la zona</option>
+          {ZONAS_CUERPO.map((z) => (
+            <option key={z} value={z}>
+              {z}
+            </option>
+          ))}
+        </CampoSelect>
 
         <div className="space-y-1.5">
           <Label htmlFor="lesion-desc">Descripción</Label>
@@ -135,7 +137,7 @@ export function Lesiones({
             id="lesion-desc"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
-            placeholder="Opcional"
+            placeholder="Manguito rotador, condromalacia…"
             className="min-h-11"
           />
         </div>

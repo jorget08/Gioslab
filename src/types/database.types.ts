@@ -1219,6 +1219,7 @@ export type Database = {
     Functions: {
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
       cambiar_tenant: { Args: { nuevo_tenant: string }; Returns: undefined }
+      condiciones_sistemicas: { Args: never; Returns: Json }
       crear_atleta: {
         Args: {
           p_consiente_ciclo?: boolean
@@ -1253,6 +1254,7 @@ export type Database = {
           valida: boolean
         }[]
       }
+      zonas_anatomicas: { Args: never; Returns: Json }
     }
     Enums: {
       tenant_type: "gym" | "solo"

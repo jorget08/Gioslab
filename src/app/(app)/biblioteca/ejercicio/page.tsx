@@ -14,12 +14,16 @@ import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  CONTRAINDICACIONES,
+  CONDICIONES_SISTEMICAS,
   leerContraindicaciones,
+  REGLA_SISTEMICA,
+  ZONAS_ANATOMICAS,
+  type Contraindicacion,
+} from "@/domain/contraindicaciones";
+import {
   nombreDuplicado,
   normalizarNombre,
   sugerencias,
-  type Contraindicacion,
   type Ejercicio,
 } from "@/domain/ejercicios";
 import { FICHA_PATRON, PATRONES } from "@/domain/patrones";
@@ -275,53 +279,82 @@ function Formulario() {
         </datalist>
       </Bloque>
 
-      <Bloque rotulo="Contraindicaciones">
-        <p className="text-xs text-muted-foreground">
-          Zonas del cuerpo que desaconsejan este ejercicio. Son el mismo catálogo que las
-          lesiones del atleta, y eso es lo que le permite al motor cruzarlas.
-        </p>
+      {/* Dos familias, y la diferencia no es cosmética (respuesta de Giovanni
+          del 2026-08-22): una zona anatómica hace que el motor DESCARTE el
+          ejercicio; una condición sistémica hace que además CAMBIE cómo se
+          ejecuta —maniobra respiratoria, RIR, posición—. Mezclarlas en una sola
+          lista escondería que hacen cosas distintas. */}
+      <Controller
+        control={control}
+        name="contraindicaciones"
+        render={({ field }) => {
+          const marcadas = (field.value ?? []) as Contraindicacion[];
+          const alternar = (c: Contraindicacion) =>
+            field.onChange(
+              marcadas.includes(c) ? marcadas.filter((x) => x !== c) : [...marcadas, c],
+            );
 
-        <Controller
-          control={control}
-          name="contraindicaciones"
-          render={({ field }) => {
-            const marcadas = (field.value ?? []) as Contraindicacion[];
+          const casilla = (c: Contraindicacion, detalle?: string) => {
+            const activa = marcadas.includes(c);
             return (
-              <div className="grid grid-cols-2 gap-2">
-                {CONTRAINDICACIONES.map((zona) => {
-                  const activa = marcadas.includes(zona);
-                  return (
-                    <label
-                      key={zona}
+              <label
+                key={c}
+                className={[
+                  "flex min-h-11 cursor-pointer select-none items-center gap-2 rounded-lg border px-3 py-2 text-sm",
+                  "focus-within:ring-2 focus-within:ring-ring/50",
+                  activa
+                    ? "border-primary bg-primary font-medium text-primary-foreground"
+                    : "border-input hover:bg-muted",
+                ].join(" ")}
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={activa}
+                  onChange={() => alternar(c)}
+                />
+                <span className="min-w-0">
+                  <span className="block">{c}</span>
+                  {detalle && (
+                    <span
                       className={[
-                        "flex min-h-11 cursor-pointer select-none items-center gap-2 rounded-lg border px-3 text-sm",
-                        "focus-within:ring-2 focus-within:ring-ring/50",
-                        activa
-                          ? "border-primary bg-primary font-medium text-primary-foreground"
-                          : "border-input hover:bg-muted",
+                        "block text-xs font-normal",
+                        activa ? "text-primary-foreground/80" : "text-muted-foreground",
                       ].join(" ")}
                     >
-                      <input
-                        type="checkbox"
-                        className="sr-only"
-                        checked={activa}
-                        onChange={() =>
-                          field.onChange(
-                            activa
-                              ? marcadas.filter((z) => z !== zona)
-                              : [...marcadas, zona],
-                          )
-                        }
-                      />
-                      {zona}
-                    </label>
-                  );
-                })}
-              </div>
+                      {detalle}
+                    </span>
+                  )}
+                </span>
+              </label>
             );
-          }}
-        />
-      </Bloque>
+          };
+
+          return (
+            <>
+              <Bloque rotulo="Zonas que desaconsejan el ejercicio">
+                <p className="text-xs text-muted-foreground">
+                  Mismo catálogo que las lesiones del atleta: es lo que permite cruzarlas
+                  exactamente. Si el atleta tiene esa zona marcada, el motor descarta el
+                  ejercicio.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {ZONAS_ANATOMICAS.map((z) => casilla(z))}
+                </div>
+              </Bloque>
+
+              <Bloque rotulo="Condiciones fisiológicas">
+                <p className="text-xs text-muted-foreground">
+                  Estas no solo descartan el ejercicio: también cambian cómo se ejecuta.
+                </p>
+                <div className="grid gap-2">
+                  {CONDICIONES_SISTEMICAS.map((c) => casilla(c, REGLA_SISTEMICA[c]))}
+                </div>
+              </Bloque>
+            </>
+          );
+        }}
+      />
 
       {errorGeneral && (
         <p role="alert" className="text-sm font-medium text-destructive">
