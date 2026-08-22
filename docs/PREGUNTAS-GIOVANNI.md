@@ -1,8 +1,9 @@
 # Preguntas pendientes para Giovanni
 
 Estado: **actualizado tras sus aclaraciones técnicas (2026-08-22).**
-Respondió las siete. Quedan **cuatro preguntas nuevas**, todas de precisión, y
-un bloqueo de fondo que sigue igual: la matriz completa de condicionales.
+Respondió las siete. Quedan **seis preguntas nuevas** —cuatro de precisión y dos
+de la biblioteca de ejercicios— y un bloqueo de fondo que sigue igual: la matriz
+completa de condicionales.
 
 Fuentes: `fuentes-giovanni/aclaracionestecnicasjorgehernan.pdf`,
 `Modulo_Fisiologia_Femenina_GiosLab(1).pdf`,
@@ -41,7 +42,7 @@ en un idioma y mitad en otro.
 
 ---
 
-## 🟡 Preguntas nuevas — todas de precisión
+## 🟡 Preguntas nuevas
 
 ### A. ¿Heath-Carter va o no? *(se contradice a sí mismo)*
 
@@ -73,6 +74,30 @@ binario `Restringido/Óptimo`. Se conservan **las dos cosas**: el estado binario
 para el motor y la severidad (`Severa`/`Limitada`/`Óptima`) para no perder una de
 sus reglas. ¿Correcto?
 
+### E. Contraindicaciones = zonas del cuerpo *(decisión nuestra, a confirmar)*
+
+Su ficha no define la forma de este campo. Lo modelamos como una **lista de
+zonas del cuerpo del mismo catálogo que usan las lesiones del atleta** (Hombro,
+Codo, Muñeca, Cervical, Dorsal, Lumbar, Cadera, Rodilla, Tobillo, Pie).
+
+El motivo es que es lo único que permite el cruce. Si aquí escribiéramos texto
+libre —"problemas de rodilla"— el motor tendría que adivinar si eso es la misma
+"Rodilla" que la lesión del atleta, y **una prescripción que adivina no se puede
+explicar** (§3.6). Compartiendo catálogo, el cruce es una comparación exacta.
+
+¿Le sirve, o necesita contraindicaciones que no son una zona del cuerpo (por
+ejemplo hipertensión, embarazo, hernia discal)?
+
+### F. `biomechanical_type`: ¿sigue haciendo falta?
+
+Antes de su MÓDULO 04 teníamos dos campos solapados. Ahora que el patrón de
+movimiento tiene catálogo cerrado, `biomechanical_type` guarda cosas como
+"rodilla dominante" o "cadera dominante", que es casi lo mismo que
+`squat_dominante_rodilla` y `hip_hinge_dominante_cadera`.
+
+Se dejó el campo, pero **está sin catálogo y probablemente sobra**. Si aporta
+algo que el patrón no cubre, hace falta su lista; si no, se elimina.
+
 ---
 
 ## 💡 Sus cinco recomendaciones — qué hacemos con cada una
@@ -92,8 +117,9 @@ sus reglas. ¿Correcto?
 - **La matriz completa de condicionales.** Dio la *forma* de la regla (`IF micro
   THEN macro`) y un ejemplo, más 15 reglas en prosa en los Excels. **No es la
   matriz.** Sigue bloqueando el cierre del grupo 3.
-- **Listado y medios de la biblioteca de ejercicios** — bloquea la 4.5. Ahora hay
-  catálogo de patrones, así que puede entregarlo ya clasificado.
+- **Listado y medios de la biblioteca de ejercicios** — bloquea la 4.5. La
+  pantalla para cargarlos ya existe (4.1) y agrupa por sus ocho patrones, así
+  que puede entregar el listado ya clasificado y entra directo.
 - **Assets de marca** (logo, colores, plantilla de reporte) — bloquea el grupo 5.
 - **2–3 atletas reales** para validar — bloquea la 2.10.
 
@@ -105,7 +131,7 @@ sus reglas. ¿Correcto?
 
 ---
 
-Gio, gracias — con esto se destrabó casi todo. Ya está programado: los ocho
+Giova, gracias los archivos se destrabó casi todo. Ya está programado: los ocho
 patrones de movimiento, los cuatro niveles de evidencia (y el motor ya sabe que
 ante dos reglas que se contradicen manda la de nivel más alto), y la pantalla de
 movilidad con las seis pruebas.
@@ -115,7 +141,7 @@ estaba guardando "Eficiente / Compensada / De Riesgo" como algo que el entrenado
 escribía a mano. Con tu aclaración quedó donde va — el entrenador mide rangos y el
 motor concluye. Ya lo corregí.
 
-Me quedan cuatro dudas cortas:
+Me quedan unas dudas cortas:
 
 **1. ¿Heath-Carter va o no?** En tus aclaraciones técnicas confirmas Jackson &
 Pollock, que es lo que programé y lo que hace tu Excel. Pero en el documento de
@@ -146,6 +172,23 @@ glúteo, vector de espalda). Ya están en el sistema desde tu ficha de patrones.
 razón es que si el entrenador escribe texto libre y el sistema lo interpreta, deja
 de poder explicar por qué decidió lo que decidió — y esa transparencia es lo que
 hace que un entrenador confíe en la herramienta.
+
+Aparte de eso, ya está lista la **pantalla de la biblioteca de ejercicios**:
+puedes crear, editar y clasificar cada ejercicio por su patrón, y se ven
+agrupados por los ocho que definiste. Dos cosas de ahí:
+
+**5. Contraindicaciones.** Las puse como una lista de zonas del cuerpo —hombro,
+lumbar, rodilla, tobillo…— usando exactamente las mismas que se registran en las
+lesiones del atleta. Lo hice así para que el sistema pueda cruzarlas: si un
+atleta tiene la rodilla marcada y un ejercicio está contraindicado para rodilla,
+el motor lo detecta solo. Si escribiéramos texto libre no habría forma de
+cruzarlo con certeza. ¿Te sirve así, o hay contraindicaciones que no son una
+zona del cuerpo, tipo hipertensión o embarazo?
+
+**6. "Tipo biomecánico".** En tus fichas viejas había un campo con valores como
+"rodilla dominante" o "cadera dominante". Ahora que definiste los ocho patrones,
+eso quedó casi repetido. Lo dejé por si acaso, pero está vacío de criterio: ¿lo
+quitamos, o guarda algo que el patrón no cubre?
 
 Y lo que más me sirve ahora mismo: **la matriz completa de condicionales.** Con la
 forma que me diste ya puedo construir el motor, pero necesito tus reglas para

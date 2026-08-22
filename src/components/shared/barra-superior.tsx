@@ -7,7 +7,7 @@ import { LogOut } from "lucide-react";
 import { SelectorTenant } from "@/components/shared/selector-tenant";
 import { Button } from "@/components/ui/button";
 import { useSesion } from "@/lib/auth/contexto";
-import { estaActiva, type EntradaNav } from "@/lib/navegacion";
+import { ADMINISTRACION, estaActiva, type EntradaNav } from "@/lib/navegacion";
 
 /**
  * Barra superior.
@@ -58,6 +58,27 @@ export function BarraSuperior({ entradas }: { entradas: EntradaNav[] }) {
           <span className="hidden max-w-40 truncate text-sm text-muted-foreground lg:inline">
             {sesion?.nombre ?? sesion?.email}
           </span>
+
+          {/* Administración no es una pestaña: lo del día a día va abajo, al
+              alcance del pulgar, y la configuración arriba, donde cuesta llegar
+              a propósito. Ver el comentario en lib/navegacion. */}
+          {sesion?.rol && ADMINISTRACION.roles.includes(sesion.rol) && (
+            <Button
+              asChild
+              variant={estaActiva(ADMINISTRACION.href, pathname) ? "secondary" : "ghost"}
+              size="icon"
+              className="size-11"
+            >
+              <Link
+                href={ADMINISTRACION.href}
+                aria-label={ADMINISTRACION.etiqueta}
+                aria-current={estaActiva(ADMINISTRACION.href, pathname) ? "page" : undefined}
+              >
+                <ADMINISTRACION.icono className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          )}
+
           <Button
             type="button"
             variant="ghost"

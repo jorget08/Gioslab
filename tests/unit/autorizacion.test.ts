@@ -68,6 +68,23 @@ describe("acceso por rol", () => {
       expect(puedeAcceder(rol, "/biblioteca")).toBe(true);
     }
   });
+
+  it("pero solo super_admin edita la biblioteca", () => {
+    // La metodología GQ es el producto que se vende: si cada gimnasio la edita,
+    // el motor deja de ser confiable (MODELO-DATOS §1.2). Es la misma frontera
+    // que aplica RLS; aquí solo se evita ofrecer una pantalla que fallaría.
+    expect(puedeAcceder("super_admin", "/biblioteca/ejercicio")).toBe(true);
+    for (const rol of ["gym", "trainer", "client"] as Rol[]) {
+      expect(puedeAcceder(rol, "/biblioteca/ejercicio")).toBe(false);
+    }
+  });
+
+  it("la subruta gana a la sección: la coincidencia más larga manda", () => {
+    // Si ganara el prefijo corto, el formulario heredaría los permisos de
+    // lectura y cualquier entrenador entraría a editar.
+    expect(rolesPermitidos("/biblioteca/ejercicio")).toEqual(["super_admin"]);
+    expect(rolesPermitidos("/biblioteca")).toContain("trainer");
+  });
 });
 
 describe("falla cerrado", () => {

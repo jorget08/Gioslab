@@ -30,7 +30,11 @@ export const RUTAS_PUBLICAS = [
  */
 const PERMISOS: ReadonlyArray<readonly [string, readonly Rol[]]> = [
   ["/admin", ["super_admin"]],
+  // Leer la biblioteca y editarla son cosas distintas: el entrenador necesita
+  // saber qué ejercicios existen, pero la metodología la cura Giovanni
+  // (MODELO-DATOS §1.2). Es la misma frontera que aplica RLS.
   ["/biblioteca", ["super_admin", "gym", "trainer"]],
+  ["/biblioteca/ejercicio", ["super_admin"]],
   ["/atletas", ["super_admin", "gym", "trainer"]],
   ["/equipo", ["super_admin", "gym", "trainer"]],
   ["/mi-rutina", ["client"]],

@@ -140,7 +140,7 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 ## 📚 Grupo 4 — Biblioteca de ejercicios (26 h)
 
-- [ ] **4.1 CRUD de ejercicios** (6 h)
+- [x] **4.1 CRUD de ejercicios** (6 h)
   Nombre, músculo objetivo, patrón, tipo biomecánico, contraindicaciones.
 
 - [ ] **4.2 Carga de fotos/videos** (6 h)

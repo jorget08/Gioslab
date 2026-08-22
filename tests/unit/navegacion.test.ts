@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { puedeAcceder, rolesPermitidos, type Rol } from "@/domain/autorizacion";
-import { estaActiva, NAVEGACION, navegacionDe } from "@/lib/navegacion";
+import { ADMINISTRACION, estaActiva, NAVEGACION, navegacionDe } from "@/lib/navegacion";
 
 const TODOS: Rol[] = ["super_admin", "gym", "trainer", "client"];
 
@@ -46,12 +46,25 @@ describe("navegacionDe", () => {
     expect(n.map((x) => x.href)).toEqual(["/mi-rutina"]);
   });
 
-  it("el entrenador ve inicio, atletas y equipo", () => {
-    expect(navegacionDe("trainer").map((x) => x.href)).toEqual(["/", "/atletas", "/equipo"]);
+  it("el entrenador ve inicio, atletas, equipo y biblioteca", () => {
+    expect(navegacionDe("trainer").map((x) => x.href)).toEqual([
+      "/",
+      "/atletas",
+      "/equipo",
+      "/biblioteca",
+    ]);
   });
 
-  it("super_admin además ve administración", () => {
-    expect(navegacionDe("super_admin").map((x) => x.href)).toContain("/admin");
+  it("todo el staff ve la biblioteca, aunque solo super_admin pueda editarla", () => {
+    // Leerla y escribirla son cosas distintas: el entrenador necesita saber qué
+    // ejercicios existen. Quien restringe la escritura es RLS, no el menú.
+    for (const rol of ["super_admin", "gym", "trainer"] as const) {
+      expect(navegacionDe(rol).map((x) => x.href)).toContain("/biblioteca");
+    }
+  });
+
+  it("administración no ocupa una pestaña: vive en la barra superior", () => {
+    expect(NAVEGACION.map((x) => x.href)).not.toContain("/admin");
   });
 
   it("sin rol no ve nada", () => {
@@ -62,6 +75,23 @@ describe("navegacionDe", () => {
   it("nadie ve más de 4 pestañas: en móvil no caben", () => {
     for (const rol of TODOS) {
       expect(navegacionDe(rol).length).toBeLessThanOrEqual(4);
+    }
+  });
+});
+
+describe("Administración, fuera de las pestañas", () => {
+  it("está registrada en el mapa de permisos", () => {
+    expect(rolesPermitidos(ADMINISTRACION.href)).not.toBeNull();
+  });
+
+  it("solo la ve quien puede entrar, y la ven todos los que pueden", () => {
+    // La misma paridad que se exige al menú principal: sacarla de las pestañas
+    // no puede servir de excusa para dejar de comprobarla.
+    for (const rol of TODOS) {
+      expect(
+        ADMINISTRACION.roles.includes(rol),
+        `desajuste para ${rol} en ${ADMINISTRACION.href}`,
+      ).toBe(puedeAcceder(rol, ADMINISTRACION.href));
     }
   });
 });

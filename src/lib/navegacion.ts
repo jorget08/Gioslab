@@ -45,20 +45,40 @@ export const NAVEGACION: readonly EntradaNav[] = [
     roles: ["super_admin", "gym", "trainer"],
   },
   {
+    href: "/biblioteca",
+    etiqueta: "Biblioteca",
+    corta: "Biblioteca",
+    icono: Dumbbell,
+    roles: ["super_admin", "gym", "trainer"],
+  },
+  {
     href: "/mi-rutina",
     etiqueta: "Mi rutina",
     corta: "Rutina",
     icono: Dumbbell,
     roles: ["client"],
   },
-  {
-    href: "/admin",
-    etiqueta: "Administración",
-    corta: "Admin",
-    icono: Settings,
-    roles: ["super_admin"],
-  },
 ] as const;
+
+/**
+ * Administración, aparte del menú principal.
+ *
+ * No es una pestaña: vive en un engranaje de la barra superior. Dos motivos, y
+ * el segundo es el que manda.
+ *
+ * 1. En la barra inferior caben cuatro pestañas y ya están ocupadas por lo del
+ *    día a día. Meter una quinta las aprieta justo a 360px.
+ * 2. Administrar la plataforma no es una tarea de gimnasio. Lo que se toca de
+ *    pie y con una mano va abajo, al alcance del pulgar; la configuración va
+ *    arriba, donde cuesta llegar a propósito.
+ */
+export const ADMINISTRACION: EntradaNav = {
+  href: "/admin",
+  etiqueta: "Administración",
+  corta: "Admin",
+  icono: Settings,
+  roles: ["super_admin"],
+};
 
 /** Entradas visibles para un rol. Sin rol no se muestra ninguna. */
 export function navegacionDe(rol: Rol | null | undefined): EntradaNav[] {
