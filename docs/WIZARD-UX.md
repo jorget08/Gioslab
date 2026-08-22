@@ -215,36 +215,64 @@ sin distinguirlos la gráfica de evolución mezclaría dos cosas distintas.
 
 ---
 
-## 7. Paso 4 — Movilidad y patrones
+## 7. Paso 4 — Movilidad
 
-Todo son desplegables con las escalas de la ficha de movilidad:
+> ✅ **Construido** (tarea 2.5), tras las aclaraciones de Giovanni del 2026-08-22.
+> El título ya no dice "y patrones": ver más abajo.
 
-| Prueba | Opciones |
-|---|---|
-| Dorsiflexión de tobillo | Óptima (>10 cm) · Limitada (5–10 cm) · Severa (<5 cm) |
-| Movilidad de hombro | Apto OverHead · Limitado / Inclinado |
-| Flexión de cadera | Normal (≥120°) · Limitada |
-| Rotación interna de cadera | Normal · Limitada (<30°) |
-| Extensión torácica | Normal · Cifosis / Cifótica |
+**Se teclea la medida, no se elige la etiqueta.** Es el cambio respecto al plan
+original, y tiene dos razones:
 
-Cada opción se presenta como **botón grande, no como lista desplegable**: con
-tres opciones, un desplegable son dos toques y una lista es uno.
+- Guardar `Limitada` perdería el dato. Dos atletas con 5.1 cm y 9.9 cm no están
+  igual, y si Giovanni mueve un umbral habría que remedir a todo el mundo. Con
+  los centímetros guardados, el histórico se reinterpreta solo (§3.5).
+- La clasificación aparece **en vivo, al lado del campo**, con el umbral escrito.
+  El entrenador ve *por qué* su 8.5 sale Restringido y puede discutirlo antes de
+  guardar, en vez de descubrirlo cuando el motor ya excluyó media rutina (§3.6).
+
+| Prueba | Unidad | Óptimo desde | Protocolo |
+|---|---|---|---|
+| Dorsiflexión de tobillo | cm | 10 | Test de pared |
+| Flexión de cadera | ° | 120 | Decúbito supino, sin despegar la lumbar |
+| Rotación interna de cadera | ° | 30 | Sentado, rodilla a 90° |
+| Extensión torácica | — | `Normal` | Observación de perfil *(único cualitativo)* |
+| Flexión de hombro | ° | 180 | Espalda contra la pared |
+| Rotación externa de hombro | ° | 90 | Codo al costado a 90° |
+
+Agrupadas por región en el orden en que se recorre al atleta: **tobillo → cadera
+→ torso → hombro**.
 
 ```
-   Dorsiflexión de tobillo (test de pared)
+   Dorsiflexión de tobillo                antes 7.5cm
+   Test de pared: distancia del dedo gordo al muro…
 
-   ┌────────────────────────────────┐
-   │  Óptima          más de 10 cm  │
-   ├────────────────────────────────┤
-   │  Limitada           5 a 10 cm  │  ← seleccionada
-   ├────────────────────────────────┤
-   │  Severa         menos de 5 cm  │
-   └────────────────────────────────┘
+   ┌──────────────────────┐ ┌──────────────┐
+   │ 3.5             cm   │ │   Severa     │
+   └──────────────────────┘ └──────────────┘
+   Óptimo desde 10 cm; por debajo, limita el rango
+   profundo en sentadilla.
 ```
 
-> ⚠️ La clasificación por patrón (Eficiente / Compensada / De Riesgo) **no está
-> definida**: no aparece en ninguno de los tres Excels. Es la pregunta 2 de
-> `PREGUNTAS-GIOVANNI.md`. Hasta que responda, este bloque no se construye.
+La dorsiflexión muestra **la severidad** (`Severa` / `Limitada` / `Óptima`) en
+vez del binario, porque la ficha define dos bandas restringidas con acciones
+distintas y colapsarlas perdería una regla. No se contradicen: ambas son
+`Restringido` para el motor.
+
+### Por qué ya no hay bloque de "patrones"
+
+Su **MÓDULO 02** aclaró que `Eficiente / Compensada / De Riesgo` es la **salida
+del motor por ejercicio**, no algo que el entrenador clasifique. Pedírselo era
+pedirle el trabajo del motor. Ese resultado vive en `engine_runs.output`.
+
+### Este paso cierra la evaluación biomecánica
+
+Los pasos 3 y 4 son **una sola evaluación** y acaban en la misma fila. Como la
+tabla es de solo inserción, el paso 3 no guarda: deja lo suyo en el borrador y el
+paso 4 inserta todo junto. El borrador es además lo que hace que sobreviva a que
+el sistema operativo cierre la app.
+
+Se puede guardar con pruebas sin tomar. La pantalla lo dice, porque el motor no
+puede concluir nada sobre una articulación que nadie midió.
 
 ---
 
@@ -315,17 +343,18 @@ Cada mensaje dice **qué pasó y qué hacer**. Ninguno dice solo "valor inválid
 
 ---
 
-## 11. Qué falta antes de construir cada paso
+## 11. Estado de cada paso
 
-| Paso | ¿Se puede construir ya? |
+| Paso | Estado |
 |---|---|
-| 0 Atleta | ✅ sí |
-| 1 Perfil y anamnesis | ✅ sí |
-| 2 Antropometría | ✅ sí — campos y fórmulas verificados contra el Excel |
-| 3 Segmentos | ⚠️ parcial — falta el catálogo de proporciones (pregunta 5) |
-| 4 Movilidad | ⚠️ parcial — falta Eficiente/Compensada/De Riesgo (pregunta 2) |
-| 5 Resumen | ✅ sí |
+| 0 Atleta | ✅ construido |
+| 1 Perfil y anamnesis | ✅ construido |
+| 2 Antropometría | ✅ construido — fórmulas verificadas contra el Excel |
+| 3 Segmentos | ✅ construido — ocho de las nueve proporciones siguen sin interpretación en su ficha, y se dice en pantalla |
+| 4 Movilidad | ✅ construido (2.5) — desbloqueado por el MÓDULO 02 |
+| 5 Resumen | ⏳ pendiente (2.9) |
 
-**Los pasos 0, 1, 2 y 5 se pueden construir hoy**, y son el 70 % del trabajo del
-grupo 2. Los pasos 3 y 4 se dejan con los desplegables que ya conocemos y se
-completan cuando Giovanni responda.
+La numeración interna del recorrido de evaluación es **3 → 4**, no 1 → 5: los
+pasos 0 a 2 son flujos propios que se entran por separado desde la ficha del
+atleta. La barra de progreso solo aparece cuando el recorrido tiene más de un
+paso, para no prometer pantallas que no vienen después.

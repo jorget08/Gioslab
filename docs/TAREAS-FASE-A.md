@@ -83,9 +83,11 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 - [ ] **2.4 Paso 3: segmentos óseos y proporciones** (4 h)
   Fémur, húmero, torso + cálculo automático de ratios de palanca.
 
-- [ ] **2.5 Paso 4: movilidad y patrones** (6 h)
-  Dorsiflexión, cadera, hombro + clasificación por patrón:
-  Eficiente / Compensada / De Riesgo.
+- [x] **2.5 Paso 4: movilidad** (6 h)
+  Seis tests de ROM con derivación en vivo de `Restringido/Óptimo`. **Sin bloque
+  de patrones:** Giovanni aclaró que Eficiente/Compensada/De Riesgo es salida del
+  motor por ejercicio, no algo que clasifique el entrenador (MÓDULO 02). Este
+  paso cierra la evaluación biomecánica: inserta la fila con lo del paso 3.
 
 - [ ] **2.6 Cálculo de somatotipo Heath-Carter (+ golden tests)** (8 h)
   Funciones puras con tests. Mismos datos → mismo resultado que el Excel de Giovanni.
@@ -93,7 +95,7 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 - [ ] **2.7 Cálculo de 1RM estimado y relaciones de palanca** (5 h)
   Fórmulas submáximas (Epley/Brzycki) + ratios del perfil.
 
-- [ ] **2.8 Guardado de borradores del wizard** (5 h)
+- [x] **2.8 Guardado de borradores del wizard** (5 h)
   Retomar una evaluación a medias sin perder datos. La realidad del gimnasio son
   las interrupciones.
 

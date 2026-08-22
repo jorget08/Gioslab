@@ -1,10 +1,10 @@
-# GiosLab — Modelo de datos (v1)
+# GiosLab — Modelo de datos (v2)
 
 > Tarea **0.4**. Este documento se decide **antes** de escribir migraciones.
 > Las migraciones del grupo 1 deben implementar lo que está aquí; si algo cambia,
 > se edita este archivo primero.
 
-Estado: **v1 — decidido salvo lo listado en §7 (pendiente de Giovanni).**
+Estado: **v2 — §7 cerrado tras las aclaraciones de Giovanni (2026-08-22).**
 
 ---
 
@@ -177,11 +177,14 @@ erDiagram
         numeric femur_length_cm
         numeric humerus_length_cm
         numeric torso_length_cm
-        text femur_class
-        text ankle_dorsiflexion
-        text hip_mobility
-        text shoulder_mobility
-        jsonb pattern_classifications
+        text femur_class "Corto|Promedio|Largo"
+        text torso_class "Corto|Promedio|Largo"
+        numeric ankle_dorsiflexion_cm
+        int hip_flexion_deg
+        int hip_internal_rotation_deg
+        text thoracic_extension "Normal|Cifotica"
+        int shoulder_flexion_deg
+        int shoulder_external_rotation_deg
     }
     EXERCISE_LIBRARY {
         uuid id PK
@@ -456,27 +459,28 @@ Cada migración concede explícitamente a `authenticated` y **nada a `anon`**.
 
 ## 7. Pendiente de Giovanni
 
-No modelo estos valores porque son dominio, y la fuente es él (`CLAUDE.md` §6, §7).
-Hasta que respondan, las columnas quedan como `text` libre y se convierten en `enum`
-después.
+Los seis puntos originales están **cerrados** por sus aclaraciones técnicas del
+2026-08-22 (migración `20260822100000_respuestas_giovanni.sql`).
 
-1. **Umbrales de clasificación ósea.** ¿A partir de qué medida un fémur es
-   "Largo" / "Medio" / "Corto"? ¿Es un valor absoluto en mm o un ratio contra la talla o
-   el torso? Bloquea `femur_class` y la tarea 2.4.
-2. **Escalas de movilidad.** ¿`ankle_dorsiflexion` es categórica (Limitada / Normal /
-   Amplia), un ángulo en grados, o centímetros del test de pared? Ídem cadera y hombro.
-3. **Catálogo de patrones de movimiento.** La lista cerrada de `movement_pattern`
-   (¿sentadilla, bisagra, empuje horizontal, tracción vertical…?).
-4. **Niveles de evidencia.** Los valores válidos de `evidence_level`. El ejemplo del
-   `CLAUDE.md` usa `criterio_profesional`; faltan los demás y su orden.
-5. **Estructura de `pattern_classifications`.** Sabemos que clasifica en
-   Eficiente / Compensada / De Riesgo, pero no qué patrones se evalúan ni si hay nota o
-   solo categoría.
-6. **¿Un entrenador ve los atletas de sus colegas del mismo gimnasio?** Es una decisión
-   de producto, no técnica, y cambia la política de RLS de `athletes`.
+| Punto original | Resolución |
+|---|---|
+| 1. Umbrales de clasificación ósea | No hay umbral: `femur_class` / `torso_class` son un juicio del entrenador. CHECK `[Corto, Promedio, Largo]`. Las columnas en cm quedan opcionales |
+| 2. Escalas de movilidad | Son **seis tests**, cada uno con unidad y umbral. Se guarda la medida (`ankle_dorsiflexion_cm`, `hip_flexion_deg`…) y `Restringido/Óptimo` se deriva en `src/domain/movilidad.ts` |
+| 3. Catálogo de patrones | Ocho claves cerradas, con CHECK en `exercise_library.movement_pattern` |
+| 4. Niveles de evidencia | Cuatro, con CHECK. **Y son el orden de resolución de conflictos del motor**, no un metadato: `src/domain/evidencia.ts` |
+| 5. `pattern_classifications` | **Columna eliminada.** Era salida del motor guardada como si fuera entrada. Su sitio es `engine_runs.output` |
+| 6. ¿Un entrenador ve los atletas de sus colegas? | Resuelto por el modelo de membresías (1.4): el atleta pertenece al tenant donde se creó |
 
-Los puntos 1 a 5 se resuelven en la **sesión grabada de la tarea 0.5**. El 6 se puede
-responder por WhatsApp.
+### Por qué se guarda la medida y no la etiqueta
+
+Vale la pena dejarlo escrito, porque es la decisión que más se repite en este
+modelo. Si guardáramos `Restringido`, mover un umbral obligaría a reinterpretar
+cada evaluación a mano; guardando `8.5`, el histórico se reinterpreta solo. Y una
+etiqueta pierde información que el dato conserva: 5.1 cm y 9.9 cm son ambos
+"Limitada" y no son lo mismo.
+
+Lo que **sigue abierto** —cuatro preguntas de precisión y la matriz completa de
+condicionales— está en `PREGUNTAS-GIOVANNI.md`.
 
 ---
 

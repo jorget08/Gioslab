@@ -26,9 +26,9 @@ begin;
   set local role authenticated;
   select pg_temp.como(:'admin');
   insert into public.exercise_library (id, name, movement_pattern, target_muscle)
-  values ('30000000-0000-0000-0000-000000000001','Sentadilla Barra Alta con Tacón','sentadilla','cuadriceps'),
-         ('30000000-0000-0000-0000-000000000002','Prensa 45 grados','sentadilla','cuadriceps'),
-         ('30000000-0000-0000-0000-000000000003','Sentadilla Barra Baja','sentadilla','cuadriceps');
+  values ('30000000-0000-0000-0000-000000000001','Sentadilla Barra Alta con Tacón','squat_dominante_rodilla','cuadriceps'),
+         ('30000000-0000-0000-0000-000000000002','Prensa 45 grados','squat_dominante_rodilla','cuadriceps'),
+         ('30000000-0000-0000-0000-000000000003','Sentadilla Barra Baja','squat_dominante_rodilla','cuadriceps');
   -- Se acota a los suyos: la biblioteca ya trae los del seed (tarea 1.9), y
   -- contar la tabla entera ataría esta prueba a que la base esté vacía.
   select case when count(*) = 3 then 'OK  super_admin creó 3 ejercicios'
@@ -80,11 +80,11 @@ begin;
   values
    ('40000000-0000-0000-0000-000000000001','femur-largo-dorsiflexion-limitada',1,
     '{"femur_class":"Largo"}'::jsonb, '{"priorizar":["Prensa 45 grados"]}'::jsonb,
-    'Version 1 de prueba','criterio_profesional', true),
+    'Version 1 de prueba','LEVEL_B_BIOMECHANICS', true),
    ('40000000-0000-0000-0000-000000000002','femur-largo-dorsiflexion-limitada',2,
     '{"femur_class":"Largo","ankle_dorsiflexion":"Limitada"}'::jsonb,
     '{"priorizar":["Sentadilla Barra Alta con Tacón"]}'::jsonb,
-    'Version 2 de prueba','criterio_profesional', false);
+    'Version 2 de prueba','LEVEL_B_BIOMECHANICS', false);
   select case when count(*) = 2 then 'OK  conviven 2 versiones de la misma regla'
               else 'FALLO' end as resultado
   from public.rules where rule_key = 'femur-largo-dorsiflexion-limitada';
@@ -138,7 +138,7 @@ begin
   set local role authenticated;
   perform pg_temp.como('00000000-0000-0000-0000-0000000000a0');
   insert into public.rules (rule_key, version, condition, actions, justification, evidence_level)
-  values ('regla-muda',1,'{}'::jsonb,'{}'::jsonb,'   ','criterio_profesional');
+  values ('regla-muda',1,'{}'::jsonb,'{}'::jsonb,'   ','LEVEL_B_BIOMECHANICS');
   raise notice 'FALLO  aceptó una regla sin justificación';
 exception when check_violation then
   raise notice 'OK  rechazada: sin justificación no se puede mostrar al entrenador';

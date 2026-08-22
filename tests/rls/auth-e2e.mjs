@@ -266,7 +266,7 @@ async function main() {
   await admin.from("rules").insert({
     rule_key: "regla-de-prueba-rls", version: 1,
     condition: { femur_class: "Largo" }, actions: { priorizar: ["Prensa"] },
-    justification: "Prueba", evidence_level: "criterio_profesional",
+    justification: "Prueba", evidence_level: "LEVEL_B_BIOMECHANICS",
   });
   verificar("trainer puede leer las reglas",
     await contarMios(await sesion("t2@rls-test.local"), "rules", "rule_key", ["regla-de-prueba-rls"]), 1);

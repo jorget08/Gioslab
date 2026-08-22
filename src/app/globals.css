@@ -82,6 +82,7 @@
   --gl-alerta-sv:  oklch(0.960 0.040  75);
   --gl-peligro:    oklch(0.525 0.185  27);
   --gl-ok:         oklch(0.520 0.105 160);
+  --gl-ok-sv:      oklch(0.960 0.030 165);
 
   --background: var(--gl-fondo);
   --foreground: var(--gl-tinta);
@@ -135,6 +136,7 @@
   --gl-alerta-sv:  oklch(0.300 0.050  70);
   --gl-peligro:    oklch(0.680 0.160  25);
   --gl-ok:         oklch(0.770 0.120 160);
+  --gl-ok-sv:      oklch(0.300 0.045 165);
 
   --background: var(--gl-fondo);
   --foreground: var(--gl-tinta);
@@ -187,6 +189,7 @@
     --gl-alerta-sv:  oklch(0.300 0.050  70);
     --gl-peligro:    oklch(0.680 0.160  25);
     --gl-ok:         oklch(0.770 0.120 160);
+    --gl-ok-sv:      oklch(0.300 0.045 165);
     --primary-foreground: oklch(0.185 0.030 230);
     --sidebar-primary-foreground: oklch(0.185 0.030 230);
   }

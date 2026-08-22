@@ -17,6 +17,8 @@ import {
   interpretarProporcion,
   type ClaseSegmento,
 } from "@/domain/segmentos";
+import { useSesion } from "@/lib/auth/contexto";
+import { guardarBorrador } from "@/lib/borradores";
 import { createClient } from "@/lib/supabase/client";
 
 interface Atleta {
@@ -34,14 +36,15 @@ interface Anterior {
 function Evaluacion() {
   const params = useSearchParams();
   const router = useRouter();
+  const { sesion } = useSesion();
   const atletaId = params.get("id") ?? "";
+  const usuarioId = sesion?.userId ?? "";
 
   const [atleta, setAtleta] = useState<Atleta | null>(null);
   const [anterior, setAnterior] = useState<Anterior | null>(null);
   const [cargando, setCargando] = useState(Boolean(atletaId));
   const [femur, setFemur] = useState<ClaseSegmento | undefined>();
   const [torso, setTorso] = useState<ClaseSegmento | undefined>();
-  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -79,27 +82,26 @@ function Evaluacion() {
   const proporcion = describirProporcion(femur, torso);
   const interpretacion = interpretarProporcion(proporcion);
 
-  async function guardar() {
-    if (!atleta) return;
-    setGuardando(true);
+  /**
+   * No guarda: pasa al paso 4.
+   *
+   * Segmentos y movilidad son UNA evaluación biomecánica y acaban en la misma
+   * fila. Como la tabla es de solo inserción (§3.5: una evaluación no se
+   * corrige, se anula y se repite), no se puede insertar aquí y completar allá.
+   * El borrador es el que transporta lo de este paso hasta el siguiente, que es
+   * además lo que hace que sobreviva a que el sistema cierre la app.
+   */
+  function continuar() {
+    if (!atleta || !usuarioId) return;
     setError(null);
 
-    const { error: e } = await createClient().from("biomech_evaluations").insert({
-      athlete_id: atleta.id,
-      tenant_id: atleta.tenant_id,
-      evaluated_at: new Date().toISOString(),
-      femur_class: femur ?? null,
-      torso_class: torso ?? null,
-      femur_torso_ratio: proporcion,
+    guardarBorrador("biomecanica", usuarioId, atleta.id, {
+      femur,
+      torso,
+      proporcion,
     });
 
-    if (e) {
-      setError("No pudimos guardar la evaluación. Inténtalo de nuevo.");
-      setGuardando(false);
-      return;
-    }
-
-    router.replace("/atletas");
+    router.push(`/atletas/movilidad?id=${atleta.id}`);
   }
 
   if (cargando) {
@@ -121,6 +123,7 @@ function Evaluacion() {
     <div className="space-y-4">
       <PasoWizard
         paso={3}
+        total={4}
         titulo={atleta.full_name}
         descripcion={
           anterior
@@ -190,17 +193,13 @@ function Evaluacion() {
         </Button>
         <Button
           type="button"
-          className="min-h-11 flex-1"
-          onClick={guardar}
-          disabled={guardando || !femur || !torso}
+          className="min-h-11 flex-[2]"
+          onClick={continuar}
+          disabled={!femur || !torso}
         >
-          {guardando ? "Guardando…" : "Guardar evaluación"}
+          Continuar a movilidad
         </Button>
       </div>
-
-      <p className="text-center text-xs text-muted-foreground">
-        La movilidad y los patrones llegan en el paso 4.
-      </p>
     </div>
   );
 }

@@ -85,11 +85,91 @@ export function ajusteBiomecanico(fase: FaseMenstrual): string {
     : "Estándar por Palancas";
 }
 
+/**
+ * Qué pasa en el cuerpo y qué hace el método al respecto.
+ *
+ * Del módulo de fisiología femenina que Giovanni entregó aparte. Hasta ahora
+ * solo guardábamos el multiplicador de volumen, que es la parte automatizable,
+ * pero el número por sí solo no le dice nada al entrenador: "×0.8" no explica
+ * por qué su atleta rinde menos esta semana.
+ *
+ * Esto es §3.6 aplicado al módulo FEMTECH: si el sistema recorta el volumen un
+ * 20%, tiene que poder decir por qué.
+ */
+export interface PrescripcionFase {
+  /** Lo que está ocurriendo fisiológicamente. */
+  efecto: string;
+  /** Lo que el método hace en consecuencia. */
+  ajuste: string;
+  /** Días del ciclo que abarca, para situar al entrenador. */
+  rango: string;
+}
+
+export const PRESCRIPCION_FASE: Record<FaseMenstrual, PrescripcionFase> = {
+  "Folicular Temprana": {
+    rango: "días 1 a 5",
+    efecto: "Inflamación, posible molestia abdominal y variabilidad de energía.",
+    ajuste:
+      "Volumen moderado. Autorregulación opcional en ejercicios con alta presión intraabdominal, como la sentadilla libre.",
+  },
+  "Folicular Tardía": {
+    rango: "días 6 a 13",
+    efecto: "Pico de estrógenos, máxima fuerza y mayor tolerancia al volumen.",
+    ajuste:
+      "Fase de sobrecarga progresiva: priorizar RIR 1-0 y buscar récords de carga en multiarticulares.",
+  },
+  Ovulatoria: {
+    rango: "días 14 a 16",
+    efecto: "Fuerza en su punto máximo, pero mayor laxitud ligamentosa por la relaxina.",
+    ajuste:
+      "Priorizar estabilidad biomecánica: preferir variantes en máquina o con apoyo guiado para proteger la articulación.",
+  },
+  "Lútea Tardía": {
+    rango: "días 17 al final",
+    efecto: "Aumento de progesterona, fatiga central y menor tolerancia al esfuerzo.",
+    ajuste:
+      "Reducir el volumen total de series entre un 20% y un 30%, o programar una semana de descarga.",
+  },
+  Anticonceptivo: {
+    rango: "todo el ciclo",
+    efecto:
+      "El anticonceptivo hormonal aplana la fluctuación de estrógenos y progesterona.",
+    ajuste: "Volumen plano, sin ajuste por fase.",
+  },
+};
+
+/**
+ * Duración del ciclo.
+ *
+ * Dos niveles, igual que las medidas antropométricas: su módulo especifica
+ * "editable de 21 a 35", pero un ciclo irregular de 38 días existe y bloquearlo
+ * dejaría a esa atleta fuera del módulo. Fuera de 21-45 sí es un error de
+ * digitación, y ahí coincide con el CHECK de la tabla.
+ */
+export const DURACION_CICLO = { min: 21, max: 45, normalMin: 21, normalMax: 35, defecto: 28 };
+
+export function avisoDuracionCiclo(dias: number): { nivel: "bloquea" | "advierte"; mensaje: string } | null {
+  if (dias < DURACION_CICLO.min || dias > DURACION_CICLO.max) {
+    return {
+      nivel: "bloquea",
+      mensaje: `La duración debe estar entre ${DURACION_CICLO.min} y ${DURACION_CICLO.max} días.`,
+    };
+  }
+  if (dias < DURACION_CICLO.normalMin || dias > DURACION_CICLO.normalMax) {
+    return {
+      nivel: "advierte",
+      mensaje: `Lo habitual es entre ${DURACION_CICLO.normalMin} y ${DURACION_CICLO.normalMax} días. Confirma que es correcto.`,
+    };
+  }
+  return null;
+}
+
 export interface AdaptacionCiclo {
   diaDelCiclo: number;
   fase: FaseMenstrual;
   multiplicadorVolumen: number;
   ajusteBiomecanico: string;
+  prescripcion: PrescripcionFase;
 }
 
 export function adaptacionPorCiclo(
@@ -102,5 +182,6 @@ export function adaptacionPorCiclo(
     fase,
     multiplicadorVolumen: multiplicadorVolumen(fase),
     ajusteBiomecanico: ajusteBiomecanico(fase),
+    prescripcion: PRESCRIPCION_FASE[fase],
   };
 }

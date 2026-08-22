@@ -29,7 +29,13 @@ export interface Borrador<T> {
   datos: T;
 }
 
-export type TipoBorrador = "medicion" | "segmentos" | "atleta";
+/**
+ * `biomecanica` cubre los pasos 3 y 4 juntos —segmentos y movilidad— porque son
+ * UNA evaluación: acaban en la misma fila de `biomech_evaluations`. El borrador
+ * es además lo que transporta el paso 3 hasta el paso 4, ya que la tabla es de
+ * solo inserción y no se puede completar una fila a medias.
+ */
+export type TipoBorrador = "medicion" | "biomecanica" | "atleta";
 
 const PREFIJO = "gioslab:borrador";
 

@@ -194,12 +194,21 @@ porque introduce un sesgo desconocido en el % graso.
 
 ## 6. Contradicciones con la documentación del proyecto
 
-| `CLAUDE.md` / tareas dicen | Los Excels dicen |
-|---|---|
-| Somatotipo Heath-Carter (§3.4, tarea 2.6) | Jackson & Pollock + Siri. Sin somatotipo. |
-| Ratios de palanca calculados (tarea 2.4) | Desplegables `[Corto, Promedio, Largo]`. |
-| Patrones: Eficiente / Compensada / De Riesgo (§4) | `Restringido`/`Óptimo` y perfiles por eje. |
-| 1RM estimado Epley/Brzycki (tarea 2.7) | No aparece en ninguna hoja. |
-| — | **FEMTECH no está en ninguna documentación del proyecto.** |
+Resueltas por sus aclaraciones técnicas del 2026-08-22, salvo una.
 
-Todas están en `PREGUNTAS-GIOVANNI.md` a la espera de su respuesta.
+| `CLAUDE.md` / tareas decían | Resolución |
+|---|---|
+| Somatotipo Heath-Carter (§3.4, tarea 2.6) | ⚠️ **Sigue abierta.** Su módulo 01 confirma J&P + Siri, pero su documento de recomendaciones vuelve a mencionar Heath-Carter. Pregunta A |
+| Ratios de palanca calculados (tarea 2.4) | ✅ Son desplegables `[Corto, Promedio, Largo]`. Las columnas en cm quedan opcionales |
+| Patrones: Eficiente / Compensada / De Riesgo (§4) | ✅ **No es un input.** Es la salida del motor por ejercicio (MÓDULO 02). El entrenador registra micro: `Restringido/Óptimo` |
+| 1RM estimado Epley/Brzycki (tarea 2.7) | ✅ **Epley**: `peso * (1 + reps/30)`. Necesita telemetría por serie, que es Fase B |
+| FEMTECH no estaba documentado | ✅ Confirmado como núcleo del producto, con consentimiento separado y su texto exacto |
+
+## 7. Los seis tests de movilidad, ya implementados
+
+Los umbrales de §4 se convirtieron en la escala del paso 4 (`src/domain/movilidad.ts`).
+Se guarda **la medida**, y `Restringido/Óptimo` se deriva del umbral: así, si él
+mueve un umbral, el histórico se reinterpreta solo.
+
+Único caso con más de dos estados: la **dorsiflexión**, porque su ficha define dos
+bandas restringidas con acciones distintas (`<5` y `<10`). Se conservan ambas.

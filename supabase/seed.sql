@@ -167,34 +167,39 @@ values
 -- ---------------------------------------------------------------------------
 -- Evaluaciones biomecánicas
 -- ---------------------------------------------------------------------------
--- Vocabulario tal cual aparece en las fichas de Giovanni.
+-- MICRO únicamente: lo que el entrenador mide. El macro
+-- (Eficiente/Compensada/De Riesgo) lo produce el motor y no se siembra.
+--
+-- Los tres perfiles están escogidos para que el motor del grupo 3 se construya
+-- contra casos que disparan reglas distintas:
+--   atleta 1  dorsiflexión limitada + fémur largo  → sentadilla comprometida
+--   atleta 2  todo en rango                        → sin restricción
+--   atleta 4  dorsiflexión severa + cifosis        → dos exclusiones a la vez
 
 insert into public.biomech_evaluations
   (athlete_id, tenant_id, evaluated_at, femur_class, torso_class,
-   ankle_dorsiflexion, shoulder_overhead, hip_mobility, hip_internal_rotation,
-   thoracic_extension, squat_dominance, femur_torso_ratio, axial_load_tolerance,
-   glute_vector, back_dominance, pattern_classifications)
+   ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg,
+   thoracic_extension, shoulder_flexion_deg, shoulder_external_rotation_deg,
+   squat_dominance, femur_torso_ratio, axial_load_tolerance,
+   glute_vector, back_dominance)
 values
   ('00000000-3333-0000-0000-000000000001', '00000000-1111-0000-0000-000000000001',
    '2026-02-10', 'Largo', 'Corto',
-   'Limitada (5-10 cm)', 'Apto OverHead', 'Normal (>=120°)', 'Limitada (<30°)',
-   'Normal', 'Dominante de Cadera', 'Fémur Largo / Torso Corto', 'Tolerancia Normal',
-   'Vector Horizontal', 'Vector Vertical (Dorsal)',
-   '{"sentadilla":"Compensada","bisagra":"Eficiente"}'::jsonb),
+   7.5, 130, 25, 'Normal', 180, 90,
+   'Dominante de Cadera', 'Fémur Largo / Torso Corto', 'Tolerancia Normal',
+   'Vector Horizontal', 'Vector Vertical (Dorsal)'),
 
   ('00000000-3333-0000-0000-000000000002', '00000000-1111-0000-0000-000000000001',
    '2026-07-02', 'Promedio', 'Promedio',
-   'Óptima (>10 cm)', 'Apto OverHead', 'Normal (>=120°)', 'Normal',
-   'Normal', 'Dominante de Rodilla', 'Proporción Equilibrada', 'Tolerancia Normal',
-   'Vector Vertical', 'Vector Horizontal (Grosor)',
-   '{"sentadilla":"Eficiente","empuje_vertical":"Eficiente"}'::jsonb),
+   12.0, 135, 40, 'Normal', 180, 90,
+   'Dominante de Rodilla', 'Proporción Equilibrada', 'Tolerancia Normal',
+   'Vector Vertical', 'Vector Horizontal (Grosor)'),
 
   ('00000000-3333-0000-0000-000000000004', '00000000-1111-0000-0000-000000000001',
    '2026-06-20', 'Largo', 'Promedio',
-   'Severa (<5 cm)', 'Limitado / Inclinado', 'Normal (>=120°)', 'Limitada (<30°)',
-   'Cifosis / Cifótica', 'Dominante de Cadera', 'Fémur Largo / Torso Corto',
-   'Sensibilidad Lumbar', 'Vector Horizontal', 'Vector Vertical (Dorsal)',
-   '{"sentadilla":"De Riesgo","empuje_vertical":"De Riesgo"}'::jsonb);
+   3.5, 125, 22, 'Cifótica', 150, 70,
+   'Dominante de Cadera', 'Fémur Largo / Torso Corto',
+   'Sensibilidad Lumbar', 'Vector Horizontal', 'Vector Vertical (Dorsal)');
 
 -- ---------------------------------------------------------------------------
 -- Módulo FEMTECH
@@ -217,15 +222,15 @@ values
 insert into public.exercise_library (id, name, target_muscle, movement_pattern, biomechanical_type)
 values
   ('00000000-4444-0000-0000-000000000001', '[demo] Sentadilla Barra Alta con Tacón',
-   'cuádriceps', 'sentadilla', 'rodilla dominante'),
+   'cuádriceps', 'squat_dominante_rodilla', 'rodilla dominante'),
   ('00000000-4444-0000-0000-000000000002', '[demo] Prensa 45°',
-   'cuádriceps', 'sentadilla', 'rodilla dominante'),
+   'cuádriceps', 'squat_dominante_rodilla', 'rodilla dominante'),
   ('00000000-4444-0000-0000-000000000003', '[demo] Sentadilla Trasera con Barra',
-   'cuádriceps', 'sentadilla', 'mixto'),
+   'cuádriceps', 'squat_dominante_rodilla', 'mixto'),
   ('00000000-4444-0000-0000-000000000004', '[demo] Hip Thrust',
-   'glúteo mayor', 'bisagra', 'cadera dominante'),
+   'glúteo mayor', 'hip_hinge_dominante_cadera', 'cadera dominante'),
   ('00000000-4444-0000-0000-000000000005', '[demo] Press Militar con Barra',
-   'deltoides', 'empuje vertical', 'vertical');
+   'deltoides', 'vertical_push', 'vertical');
 
 insert into public.exercise_variants (exercise_id, variant_exercise_id, relation_type)
 values
@@ -236,22 +241,22 @@ insert into public.rules
   (rule_key, version, condition, actions, justification, evidence_level, is_active, created_by)
 values
   ('seed-dorsiflexion-limitada', 1,
-   '{"ankle_dorsiflexion":"Limitada (5-10 cm)"}'::jsonb,
+   '{"dorsiflexion_severidad":"Limitada"}'::jsonb,
    '{"priorizar":["[demo] Sentadilla Barra Alta con Tacón"],"excluir":[]}'::jsonb,
    'Sugerir calzado de elevación o disco en sentadillas. Bloquear variantes de rango profundo.',
-   'criterio_profesional', true, '00000000-2222-0000-0000-00000000000a'),
+   'LEVEL_B_BIOMECHANICS', true, '00000000-2222-0000-0000-00000000000a'),
 
   ('seed-dorsiflexion-severa', 1,
-   '{"ankle_dorsiflexion":"Severa (<5 cm)"}'::jsonb,
+   '{"dorsiflexion_severidad":"Severa"}'::jsonb,
    '{"priorizar":["[demo] Prensa 45°"],"excluir":["[demo] Sentadilla Trasera con Barra"]}'::jsonb,
    'Priorizar Hack Squat y Prensa 45° más trabajo de movilidad de tobillo.',
-   'criterio_profesional', true, '00000000-2222-0000-0000-00000000000a'),
+   'LEVEL_B_BIOMECHANICS', true, '00000000-2222-0000-0000-00000000000a'),
 
   ('seed-femur-largo-torso-corto', 1,
    '{"femur_torso_ratio":"Fémur Largo / Torso Corto"}'::jsonb,
    '{"excluir":["[demo] Sentadilla Trasera con Barra"],"priorizar":["[demo] Prensa 45°"]}'::jsonb,
    'Sustituir Sentadilla Trasera con Barra por Front Squat, Goblet o Prensa para reducir el cizallamiento lumbar.',
-   'criterio_profesional', true, '00000000-2222-0000-0000-00000000000a');
+   'LEVEL_B_BIOMECHANICS', true, '00000000-2222-0000-0000-00000000000a');
 
 -- ---------------------------------------------------------------------------
 -- Consentimientos (Ley 1581)

@@ -120,6 +120,32 @@ async function main() {
     await cdp(ws, 4, "Page.navigate", { url: `${BASE}${ruta}` });
     await espera(2500); // hidratación y primera consulta a Supabase
 
+    // RELLENO: pares campo=valor separados por coma, para fotografiar un
+    // formulario CON datos. Un formulario vacío no enseña lo que más importa
+    // revisar —los avisos, las clasificaciones en vivo, los estados de error—,
+    // que es justo donde se rompe el diseño a 360px.
+    //
+    //   RELLENO='ankle_dorsiflexion_cm=8.5,hip_flexion_deg=115'
+    if (process.env.RELLENO) {
+      const pares = process.env.RELLENO.split(",").map((p) => {
+        const i = p.indexOf("=");
+        return [p.slice(0, i).trim(), p.slice(i + 1).trim()];
+      });
+      await cdp(ws, 42, "Runtime.evaluate", {
+        expression: `(() => {
+          const setter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype, "value").set;
+          for (const [id, v] of ${JSON.stringify(pares)}) {
+            const el = document.getElementById(id);
+            if (!el) { console.warn('[captura] sin campo', id); continue; }
+            setter.call(el, v);
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+          }
+        })()`,
+      });
+      await espera(800); // que React repinte los avisos
+    }
+
     const medidas = await cdp(ws, 5, "Runtime.evaluate", {
       expression: `JSON.stringify({
         innerWidth: window.innerWidth,

@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   adaptacionPorCiclo,
+  avisoDuracionCiclo,
   diaDelCiclo,
   faseMenstrual,
   multiplicadorVolumen,
+  PRESCRIPCION_FASE,
   type RegistroCiclo,
 } from "@/domain/calculations/ciclo-menstrual";
 
@@ -117,5 +119,49 @@ describe("casos límite", () => {
     const manana = new Date(2026, 7, 19, 7, 0);
     const noche = new Date(2026, 7, 19, 23, 30);
     expect(diaDelCiclo(BASE, manana)).toBe(diaDelCiclo(BASE, noche));
+  });
+});
+
+describe("prescripción por fase", () => {
+  it("cada fase tiene efecto fisiológico y ajuste, no solo un multiplicador", () => {
+    // El número por sí solo no le dice nada al entrenador: "×0.8" no explica
+    // por qué su atleta rinde menos esta semana (CLAUDE.md §3.6).
+    for (const fase of Object.keys(PRESCRIPCION_FASE) as (keyof typeof PRESCRIPCION_FASE)[]) {
+      expect(PRESCRIPCION_FASE[fase].efecto.length).toBeGreaterThan(0);
+      expect(PRESCRIPCION_FASE[fase].ajuste.length).toBeGreaterThan(0);
+      expect(PRESCRIPCION_FASE[fase].rango.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("adaptacionPorCiclo entrega la prescripción de la fase que calculó", () => {
+    const enFolicularTardia = adaptacionPorCiclo(BASE, new Date(2026, 7, 19));
+    expect(enFolicularTardia.fase).toBe("Folicular Tardía");
+    expect(enFolicularTardia.prescripcion).toBe(PRESCRIPCION_FASE["Folicular Tardía"]);
+    expect(enFolicularTardia.prescripcion.ajuste).toContain("RIR 1-0");
+  });
+
+  it("con anticonceptivos la prescripción explica por qué no hay ajuste", () => {
+    const conAnti = adaptacionPorCiclo({ ...BASE, usaAnticonceptivos: true });
+    expect(conAnti.multiplicadorVolumen).toBe(1);
+    expect(conAnti.prescripcion.ajuste).toContain("sin ajuste por fase");
+  });
+});
+
+describe("avisoDuracionCiclo", () => {
+  it("no dice nada dentro del rango habitual que especificó Giovanni", () => {
+    expect(avisoDuracionCiclo(28)).toBeNull();
+    expect(avisoDuracionCiclo(21)).toBeNull();
+    expect(avisoDuracionCiclo(35)).toBeNull();
+  });
+
+  it("advierte pero deja continuar en un ciclo irregular", () => {
+    // Un ciclo de 38 días existe. Bloquearlo dejaría a esa atleta sin el módulo.
+    const aviso = avisoDuracionCiclo(38);
+    expect(aviso?.nivel).toBe("advierte");
+  });
+
+  it("bloquea lo que la base rechazaría", () => {
+    expect(avisoDuracionCiclo(9)?.nivel).toBe("bloquea");
+    expect(avisoDuracionCiclo(46)?.nivel).toBe("bloquea");
   });
 });

@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.15"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -373,7 +393,7 @@ export type Database = {
       }
       biomech_evaluations: {
         Row: {
-          ankle_dorsiflexion: string | null
+          ankle_dorsiflexion_cm: number | null
           athlete_id: string
           axial_load_tolerance: string | null
           back_dominance: string | null
@@ -385,14 +405,13 @@ export type Database = {
           femur_length_cm: number | null
           femur_torso_ratio: string | null
           glute_vector: string | null
-          hip_internal_rotation: string | null
-          hip_mobility: string | null
+          hip_flexion_deg: number | null
+          hip_internal_rotation_deg: number | null
           humerus_length_cm: number | null
           id: string
           notes: string | null
-          pattern_classifications: Json
-          shoulder_mobility: string | null
-          shoulder_overhead: string | null
+          shoulder_external_rotation_deg: number | null
+          shoulder_flexion_deg: number | null
           squat_dominance: string | null
           tenant_id: string
           thoracic_extension: string | null
@@ -403,7 +422,7 @@ export type Database = {
           voided_reason: string | null
         }
         Insert: {
-          ankle_dorsiflexion?: string | null
+          ankle_dorsiflexion_cm?: number | null
           athlete_id: string
           axial_load_tolerance?: string | null
           back_dominance?: string | null
@@ -415,14 +434,13 @@ export type Database = {
           femur_length_cm?: number | null
           femur_torso_ratio?: string | null
           glute_vector?: string | null
-          hip_internal_rotation?: string | null
-          hip_mobility?: string | null
+          hip_flexion_deg?: number | null
+          hip_internal_rotation_deg?: number | null
           humerus_length_cm?: number | null
           id?: string
           notes?: string | null
-          pattern_classifications?: Json
-          shoulder_mobility?: string | null
-          shoulder_overhead?: string | null
+          shoulder_external_rotation_deg?: number | null
+          shoulder_flexion_deg?: number | null
           squat_dominance?: string | null
           tenant_id: string
           thoracic_extension?: string | null
@@ -433,7 +451,7 @@ export type Database = {
           voided_reason?: string | null
         }
         Update: {
-          ankle_dorsiflexion?: string | null
+          ankle_dorsiflexion_cm?: number | null
           athlete_id?: string
           axial_load_tolerance?: string | null
           back_dominance?: string | null
@@ -445,14 +463,13 @@ export type Database = {
           femur_length_cm?: number | null
           femur_torso_ratio?: string | null
           glute_vector?: string | null
-          hip_internal_rotation?: string | null
-          hip_mobility?: string | null
+          hip_flexion_deg?: number | null
+          hip_internal_rotation_deg?: number | null
           humerus_length_cm?: number | null
           id?: string
           notes?: string | null
-          pattern_classifications?: Json
-          shoulder_mobility?: string | null
-          shoulder_overhead?: string | null
+          shoulder_external_rotation_deg?: number | null
+          shoulder_flexion_deg?: number | null
           squat_dominance?: string | null
           tenant_id?: string
           thoracic_extension?: string | null
@@ -1365,6 +1382,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       tenant_type: ["gym", "solo"],
@@ -1372,3 +1392,4 @@ export const Constants = {
     },
   },
 } as const
+

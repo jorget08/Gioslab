@@ -135,21 +135,35 @@ end $$;
 reset role;
 
 \echo ''
-\echo '=== I. Evaluación biomecánica: las columnas pendientes aceptan texto libre ==='
+\echo '=== I. Evaluación biomecánica: guarda el MICRO con los catálogos cerrados ==='
 begin;
   set local role authenticated;
   select pg_temp.como(:'trainer_a1');
   insert into public.biomech_evaluations
-    (athlete_id, tenant_id, femur_length_cm, femur_class, ankle_dorsiflexion,
-     pattern_classifications)
+    (athlete_id, tenant_id, femur_length_cm, femur_class,
+     ankle_dorsiflexion_cm, hip_flexion_deg, thoracic_extension)
   values
-    (:'atleta_a1','10000000-0000-0000-0000-00000000000a', 48.5, 'Largo', 'Limitada',
-     '{"sentadilla":"Compensada"}'::jsonb);
-  select case when femur_class = 'Largo' and pattern_classifications->>'sentadilla' = 'Compensada'
-              then 'OK  acepta las escalas provisionales de Giovanni'
+    (:'atleta_a1','10000000-0000-0000-0000-00000000000a', 48.5, 'Largo',
+     8.5, 130, 'Cifótica');
+  select case when femur_class = 'Largo' and ankle_dorsiflexion_cm = 8.5
+              then 'OK  guarda la medida, no la interpretación'
               else 'FALLO' end as resultado
   from public.biomech_evaluations where athlete_id = :'atleta_a1';
 commit;
+
+\echo ''
+\echo '=== I.2 Los catálogos cerrados rechazan valores fuera del método ==='
+do $$
+begin
+  set local role authenticated;
+  perform pg_temp.como('00000000-0000-0000-0000-0000000000a2');
+  insert into public.biomech_evaluations (athlete_id, tenant_id, femur_class)
+  values ('20000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-00000000000a', 'Larguísimo');
+  raise notice 'FALLO  aceptó una clase de fémur inventada';
+exception when check_violation then
+  raise notice 'OK  rechazada la clase de fémur fuera del catálogo';
+end $$;
+reset role;
 
 \echo ''
 \echo '=== J. El trigger corrige un tenant_id falsificado en una medición ==='

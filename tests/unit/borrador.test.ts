@@ -18,7 +18,7 @@ const USUARIO = "usuario-1";
 describe("claves", () => {
   it("separa por tipo y atleta", () => {
     expect(claveBorrador("medicion", "abc")).toBe("gioslab:borrador:medicion:abc");
-    expect(claveBorrador("segmentos", "abc")).not.toBe(claveBorrador("medicion", "abc"));
+    expect(claveBorrador("biomecanica", "abc")).not.toBe(claveBorrador("medicion", "abc"));
   });
 
   it("reconoce las suyas y solo las suyas", () => {
