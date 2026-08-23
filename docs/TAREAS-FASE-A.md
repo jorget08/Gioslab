@@ -149,8 +149,10 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 - [ ] **4.3 Variantes y sustituciones entre ejercicios** (5 h)
   Relaciones que el motor usa para proponer alternativas.
 
-- [ ] **4.4 Buscador y filtros** (4 h)
-  Por músculo, patrón, equipo, contraindicación.
+- [x] **4.4 Buscador y filtros** (4 h)
+  Búsqueda por texto y filtros plegables por patrón, músculo, equipo y
+  contraindicación. El de contraindicaciones **excluye**: un entrenador busca lo
+  que puede dar a un atleta con la rodilla mal, no la lista de lo prohibido.
 
 - [?] **4.5 Importación masiva del contenido de Giovanni** (5 h)
   CSV. *Requiere:* listado v1 y medios de Giovanni.

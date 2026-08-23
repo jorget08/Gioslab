@@ -140,3 +140,125 @@ export function agruparPorPatron(
     ? [...conContenido, { patron: null, ejercicios: sinPatron }]
     : conContenido;
 }
+
+// ---------------------------------------------------------------------------
+// Buscador y filtros (tarea 4.4)
+// ---------------------------------------------------------------------------
+
+export interface FiltrosEjercicio {
+  texto: string;
+  patrones: readonly string[];
+  musculos: readonly string[];
+  equipos: readonly string[];
+  /**
+   * Zonas y condiciones que el atleta TIENE.
+   *
+   * ⚠️ Este filtro EXCLUYE, no incluye, y es la decisión de diseño del buscador.
+   *
+   * Un entrenador nunca busca "los ejercicios contraindicados para rodilla":
+   * busca los que le puede dar a alguien con la rodilla mal. Si el filtro
+   * incluyera, devolvería exactamente la lista de lo que NO debe prescribir, y
+   * el primero que la use sin leer la etiqueta le hace daño a un atleta.
+   *
+   * Es además lo que hará el motor, así que el buscador enseña el mismo
+   * razonamiento antes de que el motor exista.
+   */
+  aptoPara: readonly string[];
+  incluirArchivados: boolean;
+}
+
+export const SIN_FILTROS: FiltrosEjercicio = {
+  texto: "",
+  patrones: [],
+  musculos: [],
+  equipos: [],
+  aptoPara: [],
+  incluirArchivados: false,
+};
+
+/** Cuántos filtros hay puestos. Va en la insignia del botón. */
+export function filtrosActivos(f: FiltrosEjercicio): number {
+  return (
+    f.patrones.length +
+    f.musculos.length +
+    f.equipos.length +
+    f.aptoPara.length +
+    (f.incluirArchivados ? 1 : 0)
+  );
+}
+
+/**
+ * Filtra la biblioteca.
+ *
+ * Dentro de cada grupo se suma (O): elegir dos patrones enseña los dos. Entre
+ * grupos se resta (Y): un patrón y un músculo enseñan lo que cumple ambos. Es
+ * lo que espera cualquiera que haya usado una tienda en línea, y lo contrario
+ * —Y dentro del grupo— dejaría la lista vacía en cuanto se marcan dos cosas.
+ */
+export function filtrarEjercicios(
+  ejercicios: readonly Ejercicio[],
+  f: FiltrosEjercicio,
+): Ejercicio[] {
+  const q = plegar(f.texto);
+
+  return ejercicios.filter((e) => {
+    if (!f.incluirArchivados && !e.is_active) return false;
+
+    if (q) {
+      const heno = [e.name, e.target_muscle, e.equipment, e.biomechanical_type]
+        .filter(Boolean)
+        .map((v) => plegar(String(v)))
+        .join(" ");
+      if (!heno.includes(q)) return false;
+    }
+
+    if (f.patrones.length > 0 && !f.patrones.includes(e.movement_pattern ?? "")) return false;
+    if (f.musculos.length > 0 && !f.musculos.includes(e.target_muscle ?? "")) return false;
+    if (f.equipos.length > 0 && !f.equipos.includes(e.equipment ?? "")) return false;
+
+    if (f.aptoPara.length > 0) {
+      const contra = leerContraindicaciones(e.contraindications);
+      // Basta UNA coincidencia para descartarlo: si el atleta tiene la rodilla
+      // mal, un ejercicio contraindicado para rodilla no se le ofrece aunque
+      // cumpla todo lo demás.
+      if (contra.some((c) => f.aptoPara.includes(c))) return false;
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Los valores que existen de verdad en un campo, para ofrecerlos como filtro.
+ *
+ * Solo se ofrece lo que hay. Un filtro por "polea" cuando no existe ningún
+ * ejercicio de polea solo sirve para llevar a una lista vacía y hacer dudar de
+ * si la búsqueda está rota.
+ */
+export function valoresDisponibles(
+  ejercicios: readonly Ejercicio[],
+  campo: "target_muscle" | "equipment",
+): string[] {
+  return sugerencias(ejercicios.map((e) => e[campo]));
+}
+
+/** Los patrones presentes, en el orden del catálogo de Giovanni. */
+export function patronesDisponibles(
+  ejercicios: readonly Ejercicio[],
+  orden: readonly Patron[],
+): Patron[] {
+  const usados = new Set(ejercicios.map((e) => e.movement_pattern));
+  return orden.filter((p) => usados.has(p));
+}
+
+/** Las contraindicaciones que alguna ficha usa, para no ofrecer filtros vacíos. */
+export function contraindicacionesDisponibles(
+  ejercicios: readonly Ejercicio[],
+  orden: readonly string[],
+): string[] {
+  const usadas = new Set<string>();
+  for (const e of ejercicios) {
+    for (const c of leerContraindicaciones(e.contraindications)) usadas.add(c);
+  }
+  return orden.filter((c) => usadas.has(c));
+}

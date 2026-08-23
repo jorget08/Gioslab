@@ -7,17 +7,25 @@ import { useEffect, useMemo, useState } from "react";
 import { Guarda } from "@/components/shared/guarda";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FiltrosBiblioteca } from "@/components/biblioteca/filtros";
+import { CONTRAINDICACIONES } from "@/domain/contraindicaciones";
 import {
   agruparPorPatron,
+  contraindicacionesDisponibles,
+  filtrarEjercicios,
+  patronesDisponibles,
   resumenEjercicio,
+  SIN_FILTROS,
+  valoresDisponibles,
   type Ejercicio,
+  type FiltrosEjercicio,
 } from "@/domain/ejercicios";
 import { FICHA_PATRON, PATRONES } from "@/domain/patrones";
 import { useSesion } from "@/lib/auth/contexto";
 import { createClient } from "@/lib/supabase/client";
 
 /**
- * Biblioteca de ejercicios (tarea 4.1).
+ * Biblioteca de ejercicios (tareas 4.1 y 4.4).
  *
  * LA LEE TODO EL STAFF, LA ESCRIBE SOLO GIOVANNI. Quien lo impone es RLS
  * (`exercises_escribe_admin`), no esta pantalla: aquí solo se esconden botones
@@ -28,6 +36,10 @@ import { createClient } from "@/lib/supabase/client";
  * AGRUPADA POR PATRÓN, no alfabética. Es el eje con el que él piensa y con el
  * que el motor sustituye un ejercicio por otro: la pregunta al abrir esto es
  * "qué tengo para empuje vertical", no "qué empieza por P".
+ *
+ * EL FILTRO DE CONTRAINDICACIONES EXCLUYE, no busca. Un entrenador no quiere la
+ * lista de lo que está contraindicado para una rodilla: quiere lo que SÍ le
+ * puede dar a ese atleta. Ver el comentario de `FiltrosEjercicio.aptoPara`.
  */
 
 const COLUMNAS =
@@ -38,8 +50,8 @@ function Biblioteca() {
   const puedeEditar = sesion?.rol === "super_admin";
 
   const [ejercicios, setEjercicios] = useState<Ejercicio[] | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [verArchivados, setVerArchivados] = useState(false);
+  const [filtros, setFiltros] = useState<FiltrosEjercicio>(SIN_FILTROS);
+  const [panelAbierto, setPanelAbierto] = useState(false);
 
   useEffect(() => {
     let vivo = true;
@@ -55,22 +67,19 @@ function Biblioteca() {
     };
   }, []);
 
-  const archivados = (ejercicios ?? []).filter((e) => !e.is_active).length;
+  const todos = useMemo(() => ejercicios ?? [], [ejercicios]);
+  const archivados = todos.filter((e) => !e.is_active).length;
 
-  const visibles = useMemo(() => {
-    const q = busqueda.trim().toLowerCase();
-    return (ejercicios ?? [])
-      .filter((e) => (verArchivados ? true : e.is_active))
-      .filter(
-        (e) =>
-          !q ||
-          e.name.toLowerCase().includes(q) ||
-          (e.target_muscle ?? "").toLowerCase().includes(q) ||
-          (e.equipment ?? "").toLowerCase().includes(q),
-      );
-  }, [ejercicios, busqueda, verArchivados]);
-
+  const visibles = useMemo(() => filtrarEjercicios(todos, filtros), [todos, filtros]);
   const grupos = useMemo(() => agruparPorPatron(visibles, PATRONES), [visibles]);
+
+  // Las opciones salen de la biblioteca ACTIVA, no de lo ya filtrado: si
+  // dependieran del resultado, marcar un filtro haría desaparecer los demás y
+  // no habría forma de cambiar de idea sin limpiarlo todo.
+  const base = useMemo(
+    () => (filtros.incluirArchivados ? todos : todos.filter((e) => e.is_active)),
+    [todos, filtros.incluirArchivados],
+  );
 
   return (
     <div className="space-y-4">
@@ -86,20 +95,35 @@ function Biblioteca() {
         )}
       </div>
 
-      {(ejercicios?.length ?? 0) > 5 && (
-        <div className="relative">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
+      {todos.length > 0 && (
+        <>
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              value={filtros.texto}
+              onChange={(e) => setFiltros({ ...filtros, texto: e.target.value })}
+              placeholder="Buscar por nombre, músculo o equipo"
+              aria-label="Buscar ejercicio"
+              className="min-h-11 pl-9"
+            />
+          </div>
+
+          <FiltrosBiblioteca
+            filtros={filtros}
+            onChange={setFiltros}
+            abierto={panelAbierto}
+            onAbrir={setPanelAbierto}
+            patrones={patronesDisponibles(base, PATRONES)}
+            musculos={valoresDisponibles(base, "target_muscle")}
+            equipos={valoresDisponibles(base, "equipment")}
+            contraindicaciones={contraindicacionesDisponibles(base, CONTRAINDICACIONES)}
+            hayArchivados={archivados > 0}
+            resultados={visibles.length}
           />
-          <Input
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar por nombre, músculo o equipo"
-            aria-label="Buscar ejercicio"
-            className="min-h-11 pl-9"
-          />
-        </div>
+        </>
       )}
 
       {ejercicios === null ? (
@@ -109,11 +133,11 @@ function Biblioteca() {
       ) : visibles.length === 0 ? (
         <div className="rounded-lg border border-dashed p-6 text-center">
           <p className="text-sm text-muted-foreground">
-            {busqueda
-              ? `Ningún ejercicio coincide con "${busqueda}".`
-              : "La biblioteca está vacía."}
+            {todos.length === 0
+              ? "La biblioteca está vacía."
+              : "Ningún ejercicio cumple lo que buscas."}
           </p>
-          {!busqueda && puedeEditar && (
+          {todos.length === 0 && puedeEditar && (
             <Button asChild variant="outline" className="mt-3 min-h-11">
               <Link href="/biblioteca/ejercicio">Crear el primero</Link>
             </Button>
@@ -193,20 +217,7 @@ function Biblioteca() {
         </div>
       )}
 
-      {archivados > 0 && (
-        <Button
-          type="button"
-          variant="ghost"
-          className="min-h-11 w-full text-muted-foreground"
-          onClick={() => setVerArchivados((v) => !v)}
-        >
-          {verArchivados
-            ? "Ocultar archivados"
-            : `Ver ${archivados} ${archivados === 1 ? "archivado" : "archivados"}`}
-        </Button>
-      )}
-
-      {!puedeEditar && (ejercicios?.length ?? 0) > 0 && (
+      {!puedeEditar && todos.length > 0 && (
         <p className="text-xs text-muted-foreground">
           La biblioteca es común a toda la plataforma y la mantiene GiosLab. Si falta un
           ejercicio o algo está mal clasificado, avísanos.
