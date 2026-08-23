@@ -43,11 +43,16 @@ export function Guarda({
       // Si venimos de un enlace de correo fallido, el motivo viaja en la URL y
       // hay que llevárselo al login: si no, el usuario acaba ahí sin saber por
       // qué "el enlace no funciona".
+      //
+      // NO se añade `?siguiente=`. Antes sí, para devolver al usuario a donde
+      // iba, pero ese parámetro se queda pegado en la barra de direcciones y en
+      // el historial: quien fue rebotado una vez desde /equipo acababa
+      // entrando a /equipo cada vez que abría ese enlace, sin entender por qué.
+      // Un rebote automático no es una intención del usuario, así que no manda
+      // sobre a dónde va después. Donde el destino SÍ es deliberado —volver a
+      // una invitación— lo pone esa pantalla a mano.
       const error = leerErrorDeUrl(window.location.search, window.location.hash);
-      const destino = window.location.pathname + window.location.search;
-      router.replace(
-        urlDeLogin({ siguiente: error ? undefined : destino, error }),
-      );
+      router.replace(urlDeLogin({ error }));
       return;
     }
 

@@ -97,7 +97,10 @@ const PANTALLAS_AUTH = ["/login", "/registro", "/recuperar", "/nueva-contrasena"
  * Tres cosas que hay que resolver juntas, y por eso vive aquí y no repartido
  * por cada formulario:
  *
- *  - Respetar a dónde iba (`?siguiente=`) cuando el guarda lo interceptó.
+ *  - Respetar `?siguiente=` cuando alguien lo puso a propósito: hoy solo la
+ *    pantalla de invitación, para devolver al invitado a lo que estaba abriendo.
+ *    El rebote automático del guarda ya NO lo escribe, porque se quedaba pegado
+ *    en el historial y te metía en la misma sección cada vez.
  *  - No mandarlo a una pantalla que su rol no puede ver: un `client` con
  *    `?siguiente=/atletas` acabaría en "no tienes acceso" justo después de
  *    entrar, que es una bienvenida pésima. Va a su casa y ya está.

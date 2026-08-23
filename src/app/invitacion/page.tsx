@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
+import { urlDeLogin } from "@/domain/error-url";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ETIQUETA_ROL } from "@/lib/validation/invitacion";
@@ -105,7 +106,10 @@ function Invitacion() {
               <Link href={`/registro?invitacion=${encodeURIComponent(token)}`}>Crear cuenta</Link>
             </Button>
             <Button asChild variant="outline" className="min-h-11 w-full">
-              <Link href={`/login?siguiente=${encodeURIComponent(`/invitacion?token=${token}`)}`}>
+              {/* Este SÍ lleva `siguiente`, y es el único sitio que lo pone:
+                  aquí el destino es una intención del usuario —volver a la
+                  invitación que estaba abriendo—, no un rebote del guarda. */}
+              <Link href={urlDeLogin({ siguiente: `/invitacion?token=${token}` })}>
                 Ya tengo cuenta
               </Link>
             </Button>

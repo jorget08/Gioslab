@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Plus, Ruler, Search } from "lucide-react";
+import { Plus, Ruler, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -109,8 +109,11 @@ function Listado() {
             <li key={a.id}>
               <div className="flex min-h-14 items-center gap-2 pr-4">
                 {/* El nombre lleva a la ficha y ocupa toda la fila: es el gesto
-                    que se hace sin mirar. "Evaluar" queda como acción aparte
-                    para no perder el atajo de quien ya sabe a qué viene. */}
+                    que se hace sin mirar. El botón queda como atajo para quien
+                    ya sabe a qué viene, y dice "Medir" —no "Evaluar"— porque va
+                    exactamente al mismo sitio que el botón Medir de la ficha.
+                    Dos nombres para el mismo destino hacían dudar de si eran
+                    cosas distintas. */}
                 <Link
                   href={`/atletas/ficha?id=${a.id}`}
                   className="flex min-h-14 min-w-0 flex-1 flex-col justify-center py-2 pl-4"
@@ -123,17 +126,10 @@ function Listado() {
                     {a.training_goal ? ` · ${a.training_goal}` : ""}
                   </span>
                 </Link>
-                {/* Sin esto la fila no anuncia que lleva a algún sitio: el botón
-                    de la derecha se lleva toda la atención y la ficha queda
-                    escondida detrás de un toque que nadie adivina. */}
-                <ChevronRight
-                  className="size-4 shrink-0 text-muted-foreground"
-                  aria-hidden="true"
-                />
                 <Button asChild variant="outline" size="sm" className="min-h-11 shrink-0">
-                  <Link href={`/atletas/medir?id=${a.id}`} aria-label={`Evaluar a ${a.full_name}`}>
+                  <Link href={`/atletas/medir?id=${a.id}`} aria-label={`Medir a ${a.full_name}`}>
                     <Ruler className="size-4" aria-hidden="true" />
-                    Evaluar
+                    Medir
                   </Link>
                 </Button>
               </div>
