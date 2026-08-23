@@ -78,9 +78,20 @@ export function puedeAcceder(rol: Rol | null | undefined, pathname: string): boo
   return permitidos.includes(rol);
 }
 
-/** A dónde mandar a cada rol tras iniciar sesión. */
+/**
+ * A dónde mandar a cada rol tras iniciar sesión.
+ *
+ * El staff va directo a sus atletas, que es el trabajo. No hay panel de inicio
+ * en Fase A —métricas y actividad son Fase B— y una pantalla intermedia que
+ * solo dice "hola" es un toque de más cada vez que se abre la app.
+ *
+ * Sin rol devuelve "/", que es donde se explica que aún no hay espacio de
+ * trabajo. Es el único caso en que "/" es un destino y no un repartidor.
+ */
 export function rutaInicial(rol: Rol | null | undefined): string {
-  return rol === "client" ? "/mi-rutina" : "/";
+  if (rol === "client") return "/mi-rutina";
+  if (!rol) return "/";
+  return "/atletas";
 }
 
 /**

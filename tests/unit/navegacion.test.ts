@@ -46,13 +46,18 @@ describe("navegacionDe", () => {
     expect(n.map((x) => x.href)).toEqual(["/mi-rutina"]);
   });
 
-  it("el entrenador ve inicio, atletas, equipo y biblioteca", () => {
+  it("el entrenador ve atletas, equipo y biblioteca", () => {
     expect(navegacionDe("trainer").map((x) => x.href)).toEqual([
-      "/",
       "/atletas",
       "/equipo",
       "/biblioteca",
     ]);
+  });
+
+  it('no hay pestaña "Inicio": "/" reparte, no es una pantalla', () => {
+    // Una pestaña que solo reenvía a otra es ruido. Vuelve en Fase B, con
+    // contenido de verdad.
+    expect(NAVEGACION.map((x) => x.href)).not.toContain("/");
   });
 
   it("todo el staff ve la biblioteca, aunque solo super_admin pueda editarla", () => {

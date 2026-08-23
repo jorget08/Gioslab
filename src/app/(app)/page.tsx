@@ -1,49 +1,56 @@
 "use client";
 
-import { useRedirigirSegunRol } from "@/components/shared/guarda";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+import { rutaInicial } from "@/domain/autorizacion";
 import { useSesion } from "@/lib/auth/contexto";
 
-/** Panel. Provisional: la 1.8 lo reemplaza por el shell real. */
-export default function Inicio() {
-  const { sesion } = useSesion();
-  useRedirigirSegunRol();
+/**
+ * Puerta de entrada. No es una pantalla: reparte.
+ *
+ * Aquí vivía un panel provisional que decía "el wizard de evaluación llega en
+ * el grupo 2". Ya llegó, así que lo primero que veía alguien al entrar era una
+ * promesa vencida sobre lo que ya estaba construido.
+ *
+ * En Fase A no hay contenido de panel que merezca una pestaña propia —métricas
+ * y actividad son Fase B—, así que en vez de rellenarla con algo inventado se
+ * manda a cada quien a su trabajo: el entrenador a sus atletas, el cliente a su
+ * rutina. La pestaña "Inicio" desapareció por lo mismo: una pestaña que solo
+ * reenvía a otra es ruido.
+ *
+ * Lo único que SÍ se queda aquí es el caso sin espacio de trabajo, porque no
+ * hay ningún sitio a donde mandar a esa persona y necesita saber por qué.
+ */
+export default function Entrada() {
+  const { sesion, cargando } = useSesion();
+  const router = useRouter();
 
-  if (!sesion) return null;
+  const rol = sesion?.rol ?? null;
 
-  // Sin membresías no hay contexto de trabajo. Pasa con un usuario invitado al
-  // que aún no le han asignado tenant (tarea 1.7).
-  if (!sesion.rol) {
+  useEffect(() => {
+    // Sin rol no se redirige: abajo se le explica qué le falta. Mandarlo a
+    // /atletas solo le enseñaría una lista vacía sin decirle por qué.
+    if (cargando || !sesion || !rol) return;
+    router.replace(rutaInicial(rol));
+  }, [cargando, sesion, rol, router]);
+
+  if (!sesion || rol) {
+    // Mientras redirige. Es un instante, pero dejarlo en blanco parece un fallo.
     return (
-      <div className="rounded-lg border p-4">
-        <h1 className="font-medium">Tu cuenta todavía no tiene espacio de trabajo</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Si te invitó un gimnasio, pídele que confirme tu acceso.
-        </p>
-      </div>
+      <p role="status" className="text-sm text-muted-foreground">
+        Cargando…
+      </p>
     );
   }
 
-  const activo = sesion.membresias.find((m) => m.tenantId === sesion.tenantActivo);
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Hola, {sesion.nombre ?? sesion.email}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {activo ? `Trabajando en ${activo.nombreTenant}` : "Sin espacio activo"} · rol{" "}
-          {sesion.rol}
-        </p>
-      </div>
-
-      <section className="rounded-lg border p-4">
-        <h2 className="mb-1 text-sm font-medium">Siguiente paso</h2>
-        <p className="text-sm text-muted-foreground">
-          El wizard de evaluación llega en el grupo 2. Esta pantalla solo confirma que la
-          sesión, el rol y el espacio de trabajo están bien enlazados.
-        </p>
-      </section>
+    <div className="rounded-xl border bg-card p-4">
+      <h1 className="font-medium">Tu cuenta todavía no tiene espacio de trabajo</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Si te invitó un gimnasio, pídele que confirme tu acceso. En cuanto lo haga verás aquí
+        a tus atletas.
+      </p>
     </div>
   );
 }

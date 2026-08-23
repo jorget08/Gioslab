@@ -124,10 +124,19 @@ describe("ruta inicial por rol", () => {
     expect(rutaInicial("client")).toBe("/mi-rutina");
   });
 
-  it("el resto aterriza en el panel", () => {
+  it("el staff aterriza en sus atletas, que es el trabajo", () => {
+    // No hay panel de inicio en Fase A. Una pantalla intermedia que solo dice
+    // "hola" es un toque de más cada vez que se abre la app.
     for (const rol of ["super_admin", "gym", "trainer"] as Rol[]) {
-      expect(rutaInicial(rol)).toBe("/");
+      expect(rutaInicial(rol)).toBe("/atletas");
     }
+  });
+
+  it('sin rol va a "/", que es donde se explica que falta espacio de trabajo', () => {
+    // Único caso en que "/" es un destino y no un repartidor: a esa persona no
+    // hay a dónde mandarla, y necesita saber por qué.
+    expect(rutaInicial(null)).toBe("/");
+    expect(rutaInicial(undefined)).toBe("/");
   });
 });
 
@@ -166,14 +175,14 @@ describe("destinoTrasEntrar", () => {
   });
 
   it("sin destino pedido, cada rol va a su casa", () => {
-    expect(destinoTrasEntrar("trainer", null)).toBe("/");
+    expect(destinoTrasEntrar("trainer", null)).toBe("/atletas");
     expect(destinoTrasEntrar("client", null)).toBe("/mi-rutina");
-    expect(destinoTrasEntrar("super_admin", undefined)).toBe("/");
+    expect(destinoTrasEntrar("super_admin", undefined)).toBe("/atletas");
   });
 
   it("NUNCA devuelve al login: eso era un bucle infinito", () => {
     for (const r of ["/login", "/registro", "/recuperar", "/nueva-contrasena", "/auth/callback"]) {
-      expect(destinoTrasEntrar("trainer", r)).toBe("/");
+      expect(destinoTrasEntrar("trainer", r)).toBe("/atletas");
     }
   });
 
@@ -187,13 +196,13 @@ describe("destinoTrasEntrar", () => {
     // Un cliente con ?siguiente=/atletas acabaría en "no tienes acceso" justo
     // después de entrar. Va a su casa y ya está.
     expect(destinoTrasEntrar("client", "/atletas")).toBe("/mi-rutina");
-    expect(destinoTrasEntrar("trainer", "/admin")).toBe("/");
+    expect(destinoTrasEntrar("trainer", "/admin")).toBe("/atletas");
   });
 
   it("rechaza destinos externos, igual que destinoSeguro", () => {
     // Sin esto el login sería un redirector abierto, útil para phishing.
-    expect(destinoTrasEntrar("trainer", "https://malo.example")).toBe("/");
-    expect(destinoTrasEntrar("trainer", "//malo.example")).toBe("/");
+    expect(destinoTrasEntrar("trainer", "https://malo.example")).toBe("/atletas");
+    expect(destinoTrasEntrar("trainer", "//malo.example")).toBe("/atletas");
   });
 
   it("sin rol no adivina un destino privado", () => {

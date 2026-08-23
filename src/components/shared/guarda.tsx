@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { destinoTrasEntrar, puedeAcceder, rutaInicial, type Rol } from "@/domain/autorizacion";
+import { destinoTrasEntrar, type Rol } from "@/domain/autorizacion";
 import { leerErrorDeUrl, urlDeLogin } from "@/domain/error-url";
 import { useSesion } from "@/lib/auth/contexto";
 
@@ -97,19 +97,4 @@ export function useIrAlEntrar(pedido?: string | null) {
     if (cargando || !sesion) return;
     router.replace(destinoTrasEntrar(sesion.rol, pedido));
   }, [cargando, sesion, pedido, router]);
-}
-
-/**
- * Envío al sitio que le corresponde a cada rol. Se usa en las pantallas que son
- * un punto de entrada, no un destino.
- */
-export function useRedirigirSegunRol() {
-  const { sesion, cargando } = useSesion();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (cargando || !sesion) return;
-    const destino = rutaInicial(sesion.rol);
-    if (!puedeAcceder(sesion.rol, window.location.pathname)) router.replace(destino);
-  }, [cargando, sesion, router]);
 }

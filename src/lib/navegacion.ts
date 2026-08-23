@@ -1,4 +1,4 @@
-import { Dumbbell, Home, Settings, UserPlus, Users } from "lucide-react";
+import { Dumbbell, Settings, UserPlus, Users } from "lucide-react";
 
 import type { Rol } from "@/domain/autorizacion";
 
@@ -12,24 +12,21 @@ import type { Rol } from "@/domain/autorizacion";
  *
  * El orden importa: en móvil son las pestañas de la barra inferior, y la más
  * usada debe quedar donde llega el pulgar.
+ *
+ * NO hay pestaña "Inicio". En Fase A "/" no es una pantalla, es un repartidor
+ * que manda a cada rol a su trabajo; una pestaña que solo reenvía a otra es
+ * ruido. Cuando haya panel de verdad (Fase B) vuelve, y vuelve con contenido.
  */
 export interface EntradaNav {
   href: string;
   etiqueta: string;
   /** Versión corta para la barra inferior, donde no cabe todo. */
   corta: string;
-  icono: typeof Home;
+  icono: typeof Users;
   roles: readonly Rol[];
 }
 
 export const NAVEGACION: readonly EntradaNav[] = [
-  {
-    href: "/",
-    etiqueta: "Inicio",
-    corta: "Inicio",
-    icono: Home,
-    roles: ["super_admin", "gym", "trainer"],
-  },
   {
     href: "/atletas",
     etiqueta: "Atletas",
