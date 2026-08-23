@@ -10,6 +10,7 @@ import { Guarda } from "@/components/shared/guarda";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
 import { adaptacionPorCiclo } from "@/domain/calculations/ciclo-menstrual";
+import { esCondicionSistemica, REGLA_SISTEMICA } from "@/domain/contraindicaciones";
 import { edadEnAnios, ETIQUETA_ESTADO_LESION, ETIQUETA_SEXO } from "@/domain/catalogos";
 import {
   fechaCorta,
@@ -85,6 +86,11 @@ interface Ciclo {
   uses_hormonal_contraception: boolean;
 }
 
+interface Condicion {
+  condition: string;
+  notes: string | null;
+}
+
 interface Lesion {
   id: string;
   body_region: string;
@@ -106,6 +112,7 @@ function Ficha() {
   const [biomec, setBiomec] = useState<Biomecanica | null>(null);
   const [ciclo, setCiclo] = useState<Ciclo | null>(null);
   const [lesiones, setLesiones] = useState<Lesion[]>([]);
+  const [condiciones, setCondiciones] = useState<Condicion[]>([]);
   const [cargando, setCargando] = useState(Boolean(atletaId));
 
   useEffect(() => {
@@ -146,13 +153,19 @@ function Ficha() {
         .from("athlete_injuries")
         .select("id, body_region, description, status")
         .eq("athlete_id", atletaId),
-    ]).then(([a, m, b, c, l]) => {
+      supabase
+        .from("athlete_conditions")
+        .select("condition, notes")
+        .eq("athlete_id", atletaId)
+        .eq("is_active", true),
+    ]).then(([a, m, b, c, l, cond]) => {
       if (!vivo) return;
       setAtleta(a.data as Atleta | null);
       setMediciones((m.data ?? []) as Medicion[]);
       setBiomec((b.data?.[0] as Biomecanica) ?? null);
       setCiclo((c.data?.[0] as Ciclo) ?? null);
       setLesiones((l.data ?? []) as Lesion[]);
+      setCondiciones((cond.data ?? []) as Condicion[]);
       setCargando(false);
     });
 
@@ -413,6 +426,38 @@ function Ficha() {
           </div>
         </Bloque>
       )}
+
+      {/* ---------------------------------------------------------------- */}
+      {/* ---------------------------------------------------------------- */}
+      {/* Siempre visible, tenga o no condiciones: es lo que le dice al
+          entrenador que esto se puede registrar y que hay que mantenerlo al
+          día. Un embarazo empieza después del alta; si el bloque solo
+          apareciera cuando ya hay algo, nadie descubriría dónde marcarlo. */}
+      <Bloque rotulo="Condiciones fisiológicas">
+        {condiciones.length === 0 ? (
+          <SinDatos>Ninguna registrada.</SinDatos>
+        ) : (
+          <ul className="divide-y">
+            {condiciones.map((c) => (
+              <li key={c.condition} className="py-2">
+                <p className="text-sm font-medium">{c.condition}</p>
+                <p className="text-xs text-muted-foreground">
+                  {esCondicionSistemica(c.condition)
+                    ? REGLA_SISTEMICA[c.condition]
+                    : "Condición fuera del catálogo actual."}
+                </p>
+                {c.notes && <p className="mt-0.5 text-xs text-muted-foreground">{c.notes}</p>}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <Button asChild variant="outline" className="min-h-11 w-full">
+          <Link href={`/atletas/condiciones?id=${atleta.id}`}>
+            {condiciones.length === 0 ? "Registrar condiciones" : "Actualizar"}
+          </Link>
+        </Button>
+      </Bloque>
 
       {/* ---------------------------------------------------------------- */}
       {lesiones.length > 0 && (

@@ -84,6 +84,7 @@ async function limpiar() {
 async function main() {
   await limpiar();
   const ana = await sesion("ana@gioslab.test");
+  const diegoAnticipado = await sesion("diego@gioslab.test");
 
   console.log("\n=== Alta completa ===");
   const { data: id, error } = await ana.rpc("crear_atleta", {
@@ -126,6 +127,30 @@ async function main() {
   });
   verificar("rechaza una zona fuera del catálogo", eZona?.code, "23514");
   verificar("el trigger le puso el tenant", les?.[0]?.tenant_id, a?.tenant_id);
+
+  console.log("\n=== Condiciones fisiológicas: catálogo cerrado y aislamiento ===");
+  const { error: eCondMala } = await ana.from("athlete_conditions").insert({
+    athlete_id: id, tenant_id: a?.tenant_id, condition: "hipertension",
+  });
+  // Sin catálogo cerrado el motor no podría cruzarlas con las
+  // contraindicaciones del ejercicio, que es todo su propósito.
+  verificar("rechaza una condición fuera del catálogo", eCondMala?.code, "23514");
+
+  const { error: eCondOk } = await ana.from("athlete_conditions").insert({
+    athlete_id: id, tenant_id: a?.tenant_id, condition: "Embarazo",
+  });
+  verificar("acepta una del catálogo", eCondOk?.message ?? "sin-error", "sin-error");
+
+  // Una fila por condición y atleta: sin esto, marcar y desmarcar dejaría
+  // duplicados y el motor no sabría cuál mirar.
+  const { error: eDup } = await ana.from("athlete_conditions").insert({
+    athlete_id: id, tenant_id: a?.tenant_id, condition: "Embarazo",
+  });
+  verificar("no admite duplicados", eDup?.code, "23505");
+
+  const { data: verDiego } = await diegoAnticipado
+    .from("athlete_conditions").select("id").eq("athlete_id", id);
+  verificar("otro entrenador no ve las condiciones ajenas", verDiego?.length, 0);
 
   console.log("\n=== Sin autorización de ciclo NO se registra la segunda ===");
   const { data: id2 } = await ana.rpc("crear_atleta", {

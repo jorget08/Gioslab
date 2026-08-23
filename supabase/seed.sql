@@ -275,6 +275,16 @@ insert into public.athlete_consents (athlete_id, tenant_id, policy_version, gran
 select id, tenant_id, 'v1-2026-08', trainer_id from public.athletes
 where id::text like '00000000-3333-%';
 
+-- Condiciones fisiológicas. Andrés es el caso que enseña para qué sirven: el
+-- motor no le quita la sentadilla, le cambia CÓMO la ejecuta (sin Valsalva, sin
+-- series al fallo). Es la diferencia entre las dos familias.
+insert into public.athlete_conditions (athlete_id, tenant_id, condition, notes)
+values
+  ('00000000-3333-0000-0000-000000000002', '00000000-1111-0000-0000-000000000001',
+   'Hipertensión / Cardiovascular', 'Controlada con medicación; reportada por el atleta'),
+  ('00000000-3333-0000-0000-000000000005', '00000000-1111-0000-0000-000000000002',
+   'Diástasis abdominal', 'Posparto, 18 meses');
+
 insert into public.athlete_injuries (athlete_id, tenant_id, body_region, description, status)
 values
   ('00000000-3333-0000-0000-000000000004', '00000000-1111-0000-0000-000000000001',

@@ -182,6 +182,71 @@ export type Database = {
           },
         ]
       }
+      athlete_conditions: {
+        Row: {
+          athlete_id: string
+          condition: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          condition: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          condition?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_conditions_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_conditions_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes_listado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_conditions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_conditions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_consents: {
         Row: {
           athlete_id: string

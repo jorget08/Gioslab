@@ -490,10 +490,22 @@ Van en la misma columna porque al cruzar son lo mismo —"¿tiene el atleta algo
 esta lista?"— y solo divergen después. Esa diferencia la sabe el catálogo; no
 hace falta duplicar la columna para expresarla.
 
-> ⚠️ **Hueco conocido.** Un ejercicio ya se puede marcar como contraindicado para
-> embarazo o hipertensión, pero **no hay dónde registrar que una atleta está
-> embarazada**: `athlete_injuries` guarda una zona del cuerpo. Hasta que exista
-> ese lado, las contraindicaciones sistémicas no se cruzan con nadie.
+### Los dos lados del cruce, ya completos
+
+| Lado | Anatómico | Sistémico |
+|---|---|---|
+| **Atleta** | `athlete_injuries.body_region` | `athlete_conditions.condition` |
+| **Ejercicio** | `exercise_library.contraindications` (misma columna, las dos familias) | |
+
+`athlete_conditions` es tabla aparte y no una fila más en `athlete_injuries`
+porque la columna de esa se llama `body_region` y es NOT NULL: el embarazo no es
+una región del cuerpo, y meterlo ahí obligaría a que la columna mintiera. Además
+se capturan distinto —una lesión de una en una, las condiciones como cuatro
+casillas—, así que compartir formulario las confundiría.
+
+No lleva ciclo de estados sino `is_active`: el embarazo empieza y termina, la
+hipertensión no, y no hacía falta inventar un vocabulario para eso. La fila se
+conserva cuando deja de aplicar, porque es historial (§3.5).
 
 ### Un desplegable no es una restricción
 

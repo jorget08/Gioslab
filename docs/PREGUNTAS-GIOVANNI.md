@@ -112,14 +112,20 @@ movimiento tiene catálogo cerrado, `biomechanical_type` guarda cosas como
 Se dejó el campo, pero **está sin catálogo y probablemente sobra**. Si aporta
 algo que el patrón no cubre, hace falta su lista; si no, se elimina.
 
-### G. Condiciones sistémicas del atleta: ¿dónde se registran?
+### G. Condiciones sistémicas del atleta ✅ RESUELTA por nosotros
 
-Consecuencia directa de su respuesta, y **es un hueco abierto**. Ya se puede
-marcar que un ejercicio está contraindicado para embarazo o hipertensión, pero
-**no hay dónde registrar que una atleta está embarazada**: `athlete_injuries`
-guarda una zona del cuerpo, y el embarazo no es una zona.
+Era el hueco que dejó su respuesta: se podía marcar un ejercicio como
+contraindicado para embarazo, pero no había dónde registrar que una atleta lo
+está. Ya existe `athlete_conditions`, editable desde la ficha del atleta.
 
-Sin ese lado, el cruce no se completa. Es lo siguiente que hay que construir.
+**Pantalla aparte y no parte del alta**, a propósito: el embarazo empieza después
+de crear al atleta y la diástasis se resuelve meses más tarde. Capturarlas solo
+al principio garantizaría que estén desactualizadas justo cuando importan.
+
+Queda una pregunta menor para él: **¿el entrenador puede registrar estas
+condiciones, o deberían venir de un parte médico?** Hoy las marca el entrenador
+con lo que le cuenta el atleta. Es lo mismo que ya hace con las lesiones, pero
+la hipertensión es un diagnóstico, no una molestia.
 
 ---
 
