@@ -2,22 +2,27 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Campo } from "@/components/shared/campo";
+import { useIrAlEntrar } from "@/components/shared/guarda";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { destinoSeguro } from "@/domain/autorizacion";
 import { leerErrorDeUrl } from "@/domain/error-url";
 import { loginSchema, mensajeDeError, type LoginInput } from "@/lib/validation/auth";
 
 function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
+  const [entrando, setEntrando] = useState(false);
+
+  // Quien navega es esto, no el submit: la sesión tarda un instante en llegar
+  // al contexto y salir antes devolvía al usuario al login (ver el comentario
+  // de useIrAlEntrar). Además saca de aquí a quien ya tiene sesión abierta.
+  useIrAlEntrar(params.get("siguiente"));
 
   // Se DERIVA en cada render, no se siembra con useState: en una página
   // exportada estáticamente useSearchParams() llega vacío durante la
@@ -56,10 +61,9 @@ function LoginForm() {
       return;
     }
 
-    // `siguiente` lo pone el proxy al bloquear una ruta privada, para devolver
-    // al usuario a donde iba. destinoSeguro rechaza URLs externas: sin eso, el
-    // login sería un redirector abierto útil para phishing.
-    router.replace(destinoSeguro(params.get("siguiente")));
+    // No se navega aquí. El botón se queda en "Entrando…" hasta que la sesión
+    // aparece y useIrAlEntrar se lleva al usuario a donde toca.
+    setEntrando(true);
   }
 
   return (
@@ -96,8 +100,8 @@ function LoginForm() {
             </p>
           )}
 
-          <Button type="submit" disabled={isSubmitting} className="min-h-11 w-full">
-            {isSubmitting ? "Entrando…" : "Entrar"}
+          <Button type="submit" disabled={isSubmitting || entrando} className="min-h-11 w-full">
+            {isSubmitting || entrando ? "Entrando…" : "Entrar"}
           </Button>
         </form>
 

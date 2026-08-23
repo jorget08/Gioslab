@@ -2,23 +2,29 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Campo } from "@/components/shared/campo";
+import { useIrAlEntrar } from "@/components/shared/guarda";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { mensajeDeError, registroSchema, type RegistroInput } from "@/lib/validation/auth";
 
 function RegistroForm() {
-  const router = useRouter();
   const params = useSearchParams();
 
   // Si viene de un enlace de invitación, NO se le crea un tenant propio: su
   // espacio se lo da la invitación al aceptarla.
   const invitacion = params.get("invitacion");
+
+  // Misma carrera que en el login: signUp devuelve la sesión antes de que el
+  // contexto se entere, y navegar aquí devolvía al usuario al formulario. Se
+  // navega cuando la sesión aparece. Si el correo necesita confirmación no
+  // aparece ninguna, y entonces manda la pantalla de "revisa tu correo".
+  useIrAlEntrar(invitacion ? `/invitacion?token=${invitacion}` : null);
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [revisaTuCorreo, setRevisaTuCorreo] = useState(false);
 
@@ -62,7 +68,6 @@ function RegistroForm() {
       return;
     }
 
-    router.replace(invitacion ? `/invitacion?token=${invitacion}` : "/");
   }
 
   if (revisaTuCorreo) {

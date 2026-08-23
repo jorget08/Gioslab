@@ -84,6 +84,35 @@ export function rutaInicial(rol: Rol | null | undefined): string {
 }
 
 /**
+ * Pantallas de autenticación. Nunca son un destino válido DESPUÉS de entrar.
+ *
+ * `/invitacion` no está aquí a propósito: también es pública, pero sí es un
+ * destino legítimo —es a donde vuelve el invitado en cuanto tiene cuenta—.
+ */
+const PANTALLAS_AUTH = ["/login", "/registro", "/recuperar", "/nueva-contrasena", "/auth"];
+
+/**
+ * A dónde llevar a alguien que acaba de entrar.
+ *
+ * Tres cosas que hay que resolver juntas, y por eso vive aquí y no repartido
+ * por cada formulario:
+ *
+ *  - Respetar a dónde iba (`?siguiente=`) cuando el guarda lo interceptó.
+ *  - No mandarlo a una pantalla que su rol no puede ver: un `client` con
+ *    `?siguiente=/atletas` acabaría en "no tienes acceso" justo después de
+ *    entrar, que es una bienvenida pésima. Va a su casa y ya está.
+ *  - No devolverlo al login. Sin esa comprobación, `?siguiente=/login` es un
+ *    bucle infinito.
+ */
+export function destinoTrasEntrar(rol: Rol | null | undefined, pedido?: string | null): string {
+  const seguro = destinoSeguro(pedido, "");
+  const esAuth = PANTALLAS_AUTH.some((r) => seguro === r || seguro.startsWith(`${r}/`));
+
+  if (seguro && !esAuth && puedeAcceder(rol, seguro)) return seguro;
+  return rutaInicial(rol);
+}
+
+/**
  * Valida un destino de redirección.
  *
  * Solo rutas internas: aceptar una URL completa convertiría el login en un

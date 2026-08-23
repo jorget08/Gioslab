@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { puedeAcceder, rutaInicial, type Rol } from "@/domain/autorizacion";
+import { destinoTrasEntrar, puedeAcceder, rutaInicial, type Rol } from "@/domain/autorizacion";
 import { leerErrorDeUrl, urlDeLogin } from "@/domain/error-url";
 import { useSesion } from "@/lib/auth/contexto";
 
@@ -65,6 +65,33 @@ export function Guarda({
   }
 
   return <>{children}</>;
+}
+
+/**
+ * Sale del formulario de acceso EN CUANTO la sesión existe de verdad.
+ *
+ * Arregla el rebote del login: se pulsaba Entrar, la página volvía al login y
+ * había que pulsar otra vez.
+ *
+ * La causa era una carrera. `signInWithPassword` resuelve en cuanto Supabase
+ * guarda la sesión, pero el evento `SIGNED_IN` que actualiza este contexto
+ * llega DESPUÉS. Si el formulario navegaba ahí mismo, el `Guarda` del destino
+ * miraba un contexto que todavía decía "no hay sesión" y devolvía al login. Al
+ * segundo intento ya estaba puesta y por eso entraba.
+ *
+ * La solución no es esperar un rato —eso solo hace la carrera más difícil de
+ * perder—, sino invertir quién manda: aquí no se navega tras el submit, se
+ * navega cuando la sesión aparece. Si nunca aparece, no se navega, que es lo
+ * correcto.
+ */
+export function useIrAlEntrar(pedido?: string | null) {
+  const { sesion, cargando } = useSesion();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (cargando || !sesion) return;
+    router.replace(destinoTrasEntrar(sesion.rol, pedido));
+  }, [cargando, sesion, pedido, router]);
 }
 
 /**
