@@ -149,7 +149,10 @@ la hipertensión es un diagnóstico, no una molestia.
 - **Listado y medios de la biblioteca de ejercicios** — bloquea la 4.5. La
   pantalla para cargarlos ya existe (4.1) y agrupa por sus ocho patrones, así
   que puede entregar el listado ya clasificado y entra directo.
-- **Assets de marca** (logo, colores, plantilla de reporte) — bloquea el grupo 5.
+- **Assets de marca**: ✅ los **colores** llegaron el 2026-08-23 y ya están
+  aplicados —se muestrearon de su logo y de sus informes, no se aproximaron—.
+  Siguen faltando el **logo en archivo** (hoy la app usa solo el logotipo
+  tipográfico) y la **plantilla de reporte**, que es lo que bloquea el grupo 5.
 - **2–3 atletas reales** para validar — bloquea la 2.10.
 
 ---

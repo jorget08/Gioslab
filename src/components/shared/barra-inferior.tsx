@@ -42,7 +42,11 @@ export function BarraInferior({ entradas }: { entradas: EntradaNav[] }) {
                 className={[
                   "flex min-h-14 select-none flex-col items-center justify-center gap-0.5",
                   "text-xs transition-colors active:bg-muted",
-                  activa ? "text-primary" : "text-muted-foreground",
+                  // Dorado y no rojo: el rojo de marca está pensado para ir
+                  // relleno, y como texto sobre el fondo negro no llega al
+                  // contraste mínimo. El dorado sí, y es el mismo papel que
+                  // cumple en los informes de Giovanni.
+                  activa ? "text-[color:var(--gl-dorado)]" : "text-muted-foreground",
                 ].join(" ")}
               >
                 <Icono

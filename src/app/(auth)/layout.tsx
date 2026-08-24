@@ -23,7 +23,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           desplazaba todo hacia la derecha. */}
       <header className="mb-6 w-full max-w-sm text-center">
         <Link href="/" className="inline-flex min-h-11 items-center text-2xl font-semibold tracking-tight">
-          GiosLab<span className="text-muted-foreground">System</span>
+          GiosLab<span className="text-[color:var(--gl-dorado)]">System</span>
         </Link>
         <p className="mt-1 text-sm text-muted-foreground">
           Entrenamiento prescrito desde tu biomecánica

@@ -42,8 +42,8 @@ function Ficha({
         "min-h-11 select-none rounded-full border px-3 text-sm transition-colors",
         activa
           ? tono === "proteccion"
-            ? "border-[color:var(--gl-alerta)] bg-[color:var(--gl-alerta-sv)] font-medium text-[color:var(--gl-alerta)]"
-            : "border-primary bg-primary font-medium text-primary-foreground"
+            ? "border-[color:var(--gl-peligro)] bg-[color:var(--gl-acento-sv)] font-medium text-[color:var(--gl-peligro)]"
+            : "seleccionado"
           : "border-input hover:bg-muted",
       )}
     >
@@ -157,7 +157,10 @@ export function FiltrosBiblioteca({
           {/* El grupo que más valor aporta, y el único que EXCLUYE en vez de
               incluir. Va primero y con su explicación: si alguien lo lee al
               revés, la lista que se lleva es justo la que no debe prescribir.
-              Se pinta en ámbar para que no parezca un filtro más. */}
+              Se perfila en rojo y no en dorado: el dorado ya significa
+              "elegido" en el resto de la interfaz, y esto marca algo que hay
+              que evitar. Perfilado y no relleno, para no competir con el
+              botón principal de la pantalla. */}
           {contraindicaciones.length > 0 && (
             <Grupo
               titulo="Apto para un atleta con"

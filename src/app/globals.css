@@ -52,35 +52,48 @@
 }
 
 /* ===========================================================================
-   GIOSLAB — identidad "Laboratorio"
+   GIOSLAB — identidad de marca GQ
    ===========================================================================
-   El producto es un instrumento de medición, no una app de rutinas. La paleta
-   viene de ahí: fondo azul-negro profundo, cian de lectura de instrumento como
-   único acento, y los números en monoespaciada.
+   Los colores NO están elegidos por nosotros: salen del logo y de los informes
+   que Giovanni ya entrega a sus clientes. Se muestrearon de sus archivos en vez
+   de aproximarlos a ojo, porque una marca con clientes no se reinterpreta.
 
-   El acento se gasta en UN solo sitio —el dato y la acción principal— y todo lo
-   demás se mantiene callado. Si se reparte, deja de señalar nada.
+     rojo GQ    #E30A15   la marca y la acción principal
+     dorado GQ  #F8B751   los rótulos, lo activo y lo que pide atención
+     negro      #0D0D0D   el fondo
 
-   Cuando lleguen los colores de marca de Giovanni (CLAUDE.md §7), se cambian
-   --acento y --acento-fuerte y la app entera los sigue.
+   CÓMO SE REPARTEN, que es lo que evita que la app parezca una alarma:
+
+     ROJO   se usa RELLENO, con texto blanco encima: botón principal, foco.
+            Como texto sobre negro no llega al contraste mínimo, así que no se
+            usa para texto salvo en errores, donde sube de luminosidad.
+     DORADO se usa como TEXTO y como borde: rótulos de sección, pestaña activa,
+            avisos. Es lo que hace el propio PDF de Giovanni con las cabeceras.
+     NEGRO  domina. El color se gasta en poco sitio o deja de señalar nada.
+
+   El dorado absorbe además el papel de "aviso" que antes tenía un ámbar
+   aparte. Tener dos amarillos casi iguales —uno de marca y otro de estado—
+   habría hecho que ninguno de los dos significara nada.
    =========================================================================== */
 
 :root {
-  /* Neutros con sesgo azul: un gris puro al lado de un cian se ve sucio. */
-  --gl-fondo:      oklch(0.985 0.004 220);
-  --gl-superficie: oklch(1     0     0);
-  --gl-elevada:    oklch(0.968 0.006 220);
-  --gl-linea:      oklch(0.905 0.008 220);
-  --gl-tinta:      oklch(0.205 0.020 240);
-  --gl-tinta-2:    oklch(0.505 0.018 235);
+  /* Neutros con sesgo cálido: un gris neutro junto al rojo se ve verdoso. */
+  --gl-fondo:      oklch(0.986 0.003  60);
+  --gl-superficie: oklch(1     0       0);
+  --gl-elevada:    oklch(0.966 0.005  55);
+  --gl-linea:      oklch(0.900 0.008  45);
+  --gl-tinta:      oklch(0.200 0.012  40);
+  --gl-tinta-2:    oklch(0.500 0.014  45);
 
-  /* Cian de instrumento. En claro se oscurece para que el texto sobre él y el
-     propio acento sobre fondo claro mantengan contraste legible. */
-  --gl-acento:     oklch(0.545 0.098 205);
-  --gl-acento-sv:  oklch(0.955 0.028 205);
-  --gl-alerta:     oklch(0.545 0.130  65);
-  --gl-alerta-sv:  oklch(0.960 0.040  75);
-  --gl-peligro:    oklch(0.525 0.185  27);
+  /* En claro el rojo baja de luminosidad para que el blanco encima aguante, y
+     el dorado baja bastante más: un dorado brillante sobre blanco no se lee. */
+  --gl-acento:     oklch(0.520 0.215  28);
+  --gl-acento-sv:  oklch(0.958 0.030  25);
+  --gl-dorado:     oklch(0.585 0.115  72);
+  --gl-dorado-sv:  oklch(0.962 0.045  80);
+  --gl-alerta:     var(--gl-dorado);
+  --gl-alerta-sv:  var(--gl-dorado-sv);
+  --gl-peligro:    oklch(0.500 0.205  18);
   --gl-ok:         oklch(0.520 0.105 160);
   --gl-ok-sv:      oklch(0.960 0.030 165);
 
@@ -91,52 +104,59 @@
   --popover: var(--gl-superficie);
   --popover-foreground: var(--gl-tinta);
   --primary: var(--gl-acento);
-  --primary-foreground: oklch(0.99 0.005 205);
+  /* Blanco en los DOS temas: el rojo se usa siempre relleno y con la
+     luminosidad suficiente para que el blanco encima pase contraste. */
+  --primary-foreground: oklch(0.99 0.004 60);
   --secondary: var(--gl-elevada);
   --secondary-foreground: var(--gl-tinta);
   --muted: var(--gl-elevada);
   --muted-foreground: var(--gl-tinta-2);
-  --accent: var(--gl-acento-sv);
-  --accent-foreground: var(--gl-acento);
+  /* Lo "activo" es dorado, no rojo: el rojo relleno gritaría en cada pestaña. */
+  --accent: var(--gl-dorado-sv);
+  --accent-foreground: var(--gl-dorado);
   --destructive: var(--gl-peligro);
   --border: var(--gl-linea);
   --input: var(--gl-linea);
   --ring: var(--gl-acento);
   --chart-1: var(--gl-acento);
   --chart-2: var(--gl-ok);
-  --chart-3: var(--gl-alerta);
+  --chart-3: var(--gl-dorado);
   --chart-4: oklch(0.55 0.10 260);
   --chart-5: oklch(0.55 0.09 300);
   --sidebar: var(--gl-superficie);
   --sidebar-foreground: var(--gl-tinta);
   --sidebar-primary: var(--gl-acento);
-  --sidebar-primary-foreground: oklch(0.99 0.005 205);
-  --sidebar-accent: var(--gl-acento-sv);
-  --sidebar-accent-foreground: var(--gl-acento);
+  --sidebar-primary-foreground: oklch(0.99 0.004 60);
+  --sidebar-accent: var(--gl-dorado-sv);
+  --sidebar-accent-foreground: var(--gl-dorado);
   --sidebar-border: var(--gl-linea);
   --sidebar-ring: var(--gl-acento);
   --radius: 0.625rem;
 }
 
-/* El tema por defecto del producto. Una pantalla oscura cansa menos la vista en
-   un gimnasio con poca luz, que es donde se usa. */
+/* El tema de la marca, y el que verá casi todo el mundo. Además una pantalla
+   oscura cansa menos la vista en un gimnasio con poca luz. */
 .dark {
-  --gl-fondo:      oklch(0.180 0.020 235);
-  --gl-superficie: oklch(0.228 0.022 235);
-  --gl-elevada:    oklch(0.268 0.022 235);
-  --gl-linea:      oklch(0.318 0.022 235);
-  --gl-tinta:      oklch(0.945 0.010 220);
-  --gl-tinta-2:    oklch(0.700 0.020 225);
+  --gl-fondo:      oklch(0.155 0.006  30);
+  --gl-superficie: oklch(0.205 0.008  30);
+  --gl-elevada:    oklch(0.252 0.010  30);
+  --gl-linea:      oklch(0.312 0.012  30);
+  --gl-tinta:      oklch(0.960 0.005  70);
+  --gl-tinta-2:    oklch(0.705 0.012  60);
 
-  /* Sobre fondo oscuro el cian sube en luminosidad: es el punto donde brilla
-     como una lectura de instrumento sin llegar a vibrar. */
-  --gl-acento:     oklch(0.800 0.115 195);
-  --gl-acento-sv:  oklch(0.300 0.045 200);
-  --gl-alerta:     oklch(0.790 0.120  75);
-  --gl-alerta-sv:  oklch(0.300 0.050  70);
-  --gl-peligro:    oklch(0.680 0.160  25);
-  --gl-ok:         oklch(0.770 0.120 160);
-  --gl-ok-sv:      oklch(0.300 0.045 165);
+  /* Rojo y dorado tal cual salieron del logo. */
+  --gl-acento:     oklch(0.578 0.233  28);
+  --gl-acento-sv:  oklch(0.272 0.060  25);
+  --gl-dorado:     oklch(0.822 0.139  76);
+  --gl-dorado-sv:  oklch(0.285 0.050  72);
+  --gl-alerta:     var(--gl-dorado);
+  --gl-alerta-sv:  var(--gl-dorado-sv);
+  /* Los errores SON texto, así que suben de luminosidad hasta poder leerse
+     sobre negro. Quedan más claros que el rojo de marca, que solo aparece
+     relleno: es lo que los distingue sin meter un segundo rojo inventado. */
+  --gl-peligro:    oklch(0.705 0.185  22);
+  --gl-ok:         oklch(0.780 0.130 158);
+  --gl-ok-sv:      oklch(0.285 0.045 160);
 
   --background: var(--gl-fondo);
   --foreground: var(--gl-tinta);
@@ -145,30 +165,28 @@
   --popover: var(--gl-superficie);
   --popover-foreground: var(--gl-tinta);
   --primary: var(--gl-acento);
-  /* Texto OSCURO sobre el botón cian: sobre un acento claro, el texto blanco
-     no llega al contraste mínimo. */
-  --primary-foreground: oklch(0.185 0.030 230);
+  --primary-foreground: oklch(0.99 0.004 60);
   --secondary: var(--gl-elevada);
   --secondary-foreground: var(--gl-tinta);
   --muted: var(--gl-elevada);
   --muted-foreground: var(--gl-tinta-2);
-  --accent: var(--gl-acento-sv);
-  --accent-foreground: var(--gl-acento);
+  --accent: var(--gl-dorado-sv);
+  --accent-foreground: var(--gl-dorado);
   --destructive: var(--gl-peligro);
   --border: var(--gl-linea);
   --input: var(--gl-linea);
   --ring: var(--gl-acento);
   --chart-1: var(--gl-acento);
   --chart-2: var(--gl-ok);
-  --chart-3: var(--gl-alerta);
+  --chart-3: var(--gl-dorado);
   --chart-4: oklch(0.72 0.11 260);
   --chart-5: oklch(0.72 0.10 310);
   --sidebar: var(--gl-superficie);
   --sidebar-foreground: var(--gl-tinta);
   --sidebar-primary: var(--gl-acento);
-  --sidebar-primary-foreground: oklch(0.185 0.030 230);
-  --sidebar-accent: var(--gl-acento-sv);
-  --sidebar-accent-foreground: var(--gl-acento);
+  --sidebar-primary-foreground: oklch(0.99 0.004 60);
+  --sidebar-accent: var(--gl-dorado-sv);
+  --sidebar-accent-foreground: var(--gl-dorado);
   --sidebar-border: var(--gl-linea);
   --sidebar-ring: var(--gl-acento);
 }
@@ -177,21 +195,21 @@
    un interruptor, bastará con que ponga la clase .dark en <html>. */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --gl-fondo:      oklch(0.180 0.020 235);
-    --gl-superficie: oklch(0.228 0.022 235);
-    --gl-elevada:    oklch(0.268 0.022 235);
-    --gl-linea:      oklch(0.318 0.022 235);
-    --gl-tinta:      oklch(0.945 0.010 220);
-    --gl-tinta-2:    oklch(0.700 0.020 225);
-    --gl-acento:     oklch(0.800 0.115 195);
-    --gl-acento-sv:  oklch(0.300 0.045 200);
-    --gl-alerta:     oklch(0.790 0.120  75);
-    --gl-alerta-sv:  oklch(0.300 0.050  70);
-    --gl-peligro:    oklch(0.680 0.160  25);
-    --gl-ok:         oklch(0.770 0.120 160);
-    --gl-ok-sv:      oklch(0.300 0.045 165);
-    --primary-foreground: oklch(0.185 0.030 230);
-    --sidebar-primary-foreground: oklch(0.185 0.030 230);
+    --gl-fondo:      oklch(0.155 0.006  30);
+    --gl-superficie: oklch(0.205 0.008  30);
+    --gl-elevada:    oklch(0.252 0.010  30);
+    --gl-linea:      oklch(0.312 0.012  30);
+    --gl-tinta:      oklch(0.960 0.005  70);
+    --gl-tinta-2:    oklch(0.705 0.012  60);
+    --gl-acento:     oklch(0.578 0.233  28);
+    --gl-acento-sv:  oklch(0.272 0.060  25);
+    --gl-dorado:     oklch(0.822 0.139  76);
+    --gl-dorado-sv:  oklch(0.285 0.050  72);
+    --gl-alerta:     var(--gl-dorado);
+    --gl-alerta-sv:  var(--gl-dorado-sv);
+    --gl-peligro:    oklch(0.705 0.185  22);
+    --gl-ok:         oklch(0.780 0.130 158);
+    --gl-ok-sv:      oklch(0.285 0.045 160);
   }
 }
 
@@ -312,10 +330,27 @@
 }
 
 /* Rótulos de sección: versalitas espaciadas, como en una ficha de laboratorio. */
+/* Estado "elegido" de una casilla, una ficha o una opción.
+   ==========================================================
+   NO usa el rojo, y es deliberado. El rojo marca LA acción principal de la
+   pantalla; si además pinta cada casilla marcada, deja de señalar nada y el
+   botón de guardar desaparece entre diez rectángulos del mismo color.
+
+   El dorado dice "esto está puesto" sin competir, y es el papel que ya cumple
+   en el resto de la interfaz. */
+.seleccionado {
+  border-color: var(--gl-dorado);
+  background-color: var(--gl-dorado-sv);
+  color: var(--gl-dorado);
+  font-weight: 500;
+}
+
 .rotulo {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 0.6875rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--muted-foreground);
+  /* Dorado, como las cabeceras de columna de su PDF. Es donde el color de
+     marca aporta estructura sin competir con el dato. */
+  color: var(--gl-dorado);
 }

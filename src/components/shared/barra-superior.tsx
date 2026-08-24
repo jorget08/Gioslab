@@ -30,7 +30,7 @@ export function BarraSuperior({ entradas }: { entradas: EntradaNav[] }) {
     >
       <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-2">
         <Link href="/" className="flex min-h-11 shrink-0 items-center font-semibold tracking-tight">
-          GiosLab<span className="text-muted-foreground">System</span>
+          GiosLab<span className="text-[color:var(--gl-dorado)]">System</span>
         </Link>
 
         <nav aria-label="Secciones" className="ml-4 hidden gap-1 md:flex">

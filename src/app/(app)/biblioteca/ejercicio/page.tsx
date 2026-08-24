@@ -303,7 +303,7 @@ function Formulario() {
                   "flex min-h-11 cursor-pointer select-none items-center gap-2 rounded-lg border px-3 py-2 text-sm",
                   "focus-within:ring-2 focus-within:ring-ring/50",
                   activa
-                    ? "border-primary bg-primary font-medium text-primary-foreground"
+                    ? "seleccionado"
                     : "border-input hover:bg-muted",
                 ].join(" ")}
               >
@@ -319,7 +319,9 @@ function Formulario() {
                     <span
                       className={[
                         "block text-xs font-normal",
-                        activa ? "text-primary-foreground/80" : "text-muted-foreground",
+                        // Sobre el fondo dorado suave el blanco desaparecería en el tema
+                      // claro. El propio dorado, algo apagado, se lee en los dos.
+                      activa ? "text-[color:var(--gl-dorado)]/85" : "text-muted-foreground",
                       ].join(" ")}
                     >
                       {detalle}
