@@ -96,6 +96,12 @@ export function aplicaModuloCiclo(sexo: string | undefined): boolean {
 /** Traduce los errores de Postgres al guardar un atleta. */
 export function mensajeDeErrorAtleta(codigo: string | undefined, fallback: string): string {
   switch (codigo) {
+    // Código propio de crear_atleta. NO es lo mismo que 42501: aquí el permiso
+    // está bien y lo que falta es pertenecer a un espacio de trabajo, que lo
+    // arregla otra persona invitándote. Decir "no tienes permiso" mandaba a
+    // buscar el problema al sitio equivocado.
+    case "GL001":
+      return "Tu cuenta todavía no pertenece a ningún espacio de trabajo, así que no hay dónde guardar el atleta.";
     case "42501":
       return "No tienes permiso para crear atletas en este espacio de trabajo";
     case "23514":

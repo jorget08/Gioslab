@@ -22,6 +22,7 @@ import {
   SEXOS,
   VERSION_POLITICA,
 } from "@/domain/catalogos";
+import { useSesion } from "@/lib/auth/contexto";
 import { createClient } from "@/lib/supabase/client";
 import {
   aplicaModuloCiclo,
@@ -33,6 +34,7 @@ import {
 
 function FormularioAtleta() {
   const router = useRouter();
+  const { sesion } = useSesion();
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
 
   const {
@@ -94,6 +96,28 @@ function FormularioAtleta() {
     }
 
     router.replace(`/atletas?nuevo=${data}`);
+  }
+
+  // Se comprueba ANTES de pintar el formulario, no al guardar. Giovanni lo
+  // rellenó entero y solo entonces descubrió que su cuenta no pertenecía a
+  // ningún espacio: perdió el trabajo y el mensaje llegaba tarde.
+  //
+  // Se mira el espacio y no el rol, que es donde estaba la trampa: un
+  // super_admin SIEMPRE tiene rol, aunque no pertenezca a ningún sitio.
+  if (sesion && !sesion.tenantActivo) {
+    return (
+      <div className="space-y-3 rounded-xl border border-dashed p-6 text-center">
+        <h1 className="font-medium">No hay dónde guardar el atleta</h1>
+        <p className="text-sm text-muted-foreground">
+          Tu cuenta todavía no pertenece a ningún espacio de trabajo. Si te invitó un
+          gimnasio, pídele que confirme tu acceso; si trabajas por tu cuenta, escríbenos para
+          activarte el tuyo.
+        </p>
+        <Button asChild variant="outline" className="min-h-11">
+          <Link href="/atletas">Volver</Link>
+        </Button>
+      </div>
+    );
   }
 
   return (

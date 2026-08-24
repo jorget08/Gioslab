@@ -196,6 +196,39 @@ async function main() {
     .from("athletes_listado").select("ultima_evaluacion").eq("id", id).single();
   verificar("la recién creada no tiene", nueva?.ultima_evaluacion, null);
 
+  console.log("\n=== Sin espacio de trabajo: mensaje propio, no 'no tienes permiso' ===");
+  // Le pasó a Giovanni: es super_admin, tiene todos los permisos del mundo, y
+  // le salió "No tienes permiso" cuando lo que faltaba era pertenecer a un
+  // espacio. Un código propio permite decirle a cada quien lo que le pasa.
+  const correoSuelto = "e2e-sinespacio@gioslab.test";
+  const yaExiste = (await admin.auth.admin.listUsers()).data?.users
+    ?.find((u) => u.email === correoSuelto);
+  if (yaExiste) await admin.auth.admin.deleteUser(yaExiste.id);
+  await admin.auth.admin.createUser({
+    email: correoSuelto, password: CLAVE, email_confirm: true,
+    user_metadata: { full_name: "[e2e] Sin espacio" },
+  });
+  const suelto = await sesion(correoSuelto);
+  const { error: eSuelto } = await suelto.rpc("crear_atleta", {
+    p_nombre: "[e2e] No debe existir", p_fecha_nacimiento: "1990-01-01", p_sexo: "femenino",
+  });
+  verificar("recibe GL001 y no 42501", eSuelto?.code, "GL001");
+  const { count: nEspacio } = await admin
+    .from("athletes").select("id", { count: "exact", head: true })
+    .eq("full_name", "[e2e] No debe existir");
+  verificar("y no se creó nada", nEspacio, 0);
+  const paraBorrar = (await admin.auth.admin.listUsers()).data?.users
+    ?.find((u) => u.email === correoSuelto);
+  if (paraBorrar) await admin.auth.admin.deleteUser(paraBorrar.id);
+
+  console.log("\n=== Giovanni (super_admin) SÍ puede crear: tiene espacio propio ===");
+  const gio = await sesion("admin@gioslab.test");
+  const { data: idGio, error: eGio } = await gio.rpc("crear_atleta", {
+    p_nombre: "[e2e] Atleta de Giovanni", p_fecha_nacimiento: "1995-04-10", p_sexo: "masculino",
+  });
+  verificar("crea sin error", eGio?.message ?? "sin-error", "sin-error");
+  verificar("y queda en SU espacio, no en el del gimnasio", Boolean(idGio), true);
+
   console.log("\n=== Un anónimo no puede crear atletas ===");
   const anon = createClient(URL_SB, PUB, { auth: { persistSession: false } });
   const { error: eAnon } = await anon.rpc("crear_atleta", {

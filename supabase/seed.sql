@@ -21,7 +21,8 @@
 delete from auth.users where email like '%@gioslab.test';
 delete from public.tenants where id in (
   '00000000-1111-0000-0000-000000000001',
-  '00000000-1111-0000-0000-000000000002'
+  '00000000-1111-0000-0000-000000000002',
+  '00000000-1111-0000-0000-000000000003'
 );
 delete from public.rules where rule_key like 'seed-%';
 delete from public.exercise_library where name like '[demo]%';
@@ -87,12 +88,22 @@ update public.users set is_super_admin = true
 -- ---------------------------------------------------------------------------
 insert into public.tenants (id, type, name, plan) values
   ('00000000-1111-0000-0000-000000000001', 'gym',  'Gimnasio Central GQ', 'pro'),
-  ('00000000-1111-0000-0000-000000000002', 'solo', 'Diego Salazar',        'trial');
+  ('00000000-1111-0000-0000-000000000002', 'solo', 'Diego Salazar',        'trial'),
+  -- Giovanni también entrena: sin espacio propio, su cuenta de super_admin no
+  -- puede dar de alta a nadie porque mi_tenant() sale NULL. Ser administrador
+  -- de la plataforma no implica tener dónde guardar un atleta.
+  ('00000000-1111-0000-0000-000000000003', 'solo', 'Giovanni Quiroz',      'pro');
 
 -- Carolina administra el gimnasio; Ana entrena allí.
 insert into public.memberships (user_id, tenant_id, role) values
   ('00000000-2222-0000-0000-00000000000b', '00000000-1111-0000-0000-000000000001', 'gym'),
   ('00000000-2222-0000-0000-00000000000c', '00000000-1111-0000-0000-000000000001', 'trainer');
+
+-- Giovanni, en el suyo. mi_rol() le seguirá devolviendo 'super_admin' —eso es
+-- de plataforma y manda sobre el rol del espacio—, pero mi_tenant() ya tiene a
+-- dónde apuntar, que es lo que hacía falta para poder crear atletas.
+insert into public.memberships (user_id, tenant_id, role) values
+  ('00000000-2222-0000-0000-00000000000a', '00000000-1111-0000-0000-000000000003', 'trainer');
 
 -- Diego es el caso interesante: trabaja en el gimnasio Y tiene alumnos propios.
 -- Es el que permite probar el selector de espacio de trabajo sin montar nada.
