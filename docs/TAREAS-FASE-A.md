@@ -10,18 +10,18 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 ## 🧱 Grupo 0 — Preparación técnica (23 h)
 
-- [ ] **0.1 Crear repo privado + proyecto Next.js con Tailwind** (3 h)
+- [x] **0.1 Crear repo privado + proyecto Next.js con Tailwind** (3 h)
   Repo privado en GitHub, Next.js con TypeScript y Tailwind, README, estructura de
   carpetas, `.gitignore` correcto. *Terminado:* la app corre en local.
 
-- [ ] **0.2 Crear proyecto Supabase (dev) y conectarlo** (2 h)
+- [x] **0.2 Crear proyecto Supabase (dev) y conectarlo** (2 h)
   Postgres + Auth + Storage. Variables de entorno, cliente conectado desde la app.
 
-- [ ] **0.3 Configurar despliegue automático (Vercel, entorno dev)** (2 h)
+- [x] **0.3 Configurar despliegue automático (Vercel, entorno dev)** (2 h)
   Cada push a `main` despliega. *Terminado:* URL de pruebas para mostrarle avances a
   Giovanni desde el celular.
 
-- [ ] **0.4 Diseñar el modelo de datos completo (diagrama ER)** (4 h)
+- [x] **0.4 Diseñar el modelo de datos completo (diagrama ER)** (4 h)
   Diagrama completo antes de escribir migraciones: gyms → trainers → athletes,
   evaluaciones versionadas, ejercicios, reglas, planes. Ahorra retrabajos.
 
@@ -33,54 +33,54 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 ## 🗄️ Grupo 1 — Base de datos y autenticación (43 h)
 
-- [ ] **1.1 Migraciones: gyms, trainers, athletes (multi-tenant)** (4 h)
+- [x] **1.1 Migraciones: gyms, trainers, athletes (multi-tenant)** (4 h)
   Con `tenant_id` y campos de auditoría (`created_at`, `updated_at`, `created_by`).
 
-- [ ] **1.2 Migraciones: evaluaciones y mediciones con historial** (4 h)
+- [x] **1.2 Migraciones: evaluaciones y mediciones con historial** (4 h)
   Versionadas por fecha. Nunca sobreescribir una medición anterior.
 
-- [ ] **1.3 Migraciones: biblioteca de ejercicios, reglas y planes** (4 h)
+- [x] **1.3 Migraciones: biblioteca de ejercicios, reglas y planes** (4 h)
   `exercise_library`, `rules` (JSON versionado), `workout_plans`.
 
-- [ ] **1.4 Seguridad RLS por rol y tenant** (6 h)
+- [x] **1.4 Seguridad RLS por rol y tenant** (6 h)
   Row Level Security en Supabase. Probar con un usuario real por cada rol.
   Crítico: datos sensibles de salud (Ley 1581).
 
-- [ ] **1.5 Registro, login y recuperación de contraseña** (5 h)
+- [x] **1.5 Registro, login y recuperación de contraseña** (5 h)
   Supabase Auth + correos + formularios validados con Zod.
 
-- [ ] **1.6 Roles y protección de rutas (4 roles)** (6 h)
+- [x] **1.6 Roles y protección de rutas (4 roles)** (6 h)
   `super_admin`, `gym`, `trainer`, `client`. Middleware que bloquea rutas y acciones.
 
-- [ ] **1.7 Invitaciones por correo (gym → entrenador → cliente)** (6 h)
+- [x] **1.7 Invitaciones por correo (gym → entrenador → cliente)** (6 h)
   Token por correo, aceptación y vinculación al tenant correcto.
 
-- [ ] **1.8 Layout base de la app (móvil primero)** (6 h)
+- [x] **1.8 Layout base de la app (móvil primero)** (6 h)
   Navegación, menú y shell responsive. Prueba de fuego: usarlo en el celular.
   Aplicar desde aquí las reglas de "listo para Capacitor" del `CLAUDE.md` §3.3:
   áreas seguras, objetivos táctiles de 44px, sin selección de texto en la interfaz,
   transiciones propias.
 
-- [ ] **1.9 Datos de prueba (seeds)** (2 h)
+- [x] **1.9 Datos de prueba (seeds)** (2 h)
   1 gimnasio, 2 entrenadores, 5 atletas ficticios.
 
 ---
 
 ## 🧙 Grupo 2 — Wizard de evaluación (58 h)
 
-- [ ] **2.1 Boceto UX del wizard (pasos y validaciones)** (4 h)
+- [x] **2.1 Boceto UX del wizard (pasos y validaciones)** (4 h)
   Papel o Figma. Pasos, campos obligatorios, validaciones y mensajes de error
   definidos **antes** de codificar.
 
-- [ ] **2.2 Paso 1: perfil y anamnesis** (6 h)
+- [x] **2.2 Paso 1: perfil y anamnesis** (6 h)
   Datos personales, historial, lesiones previas, objetivos jerarquizados,
   consentimiento de datos.
 
-- [ ] **2.3 Paso 2: antropometría** (8 h)
+- [x] **2.3 Paso 2: antropometría** (8 h)
   Talla, peso, pliegues, perímetros, diámetros. Teclado numérico, flujo rápido:
   se llena de pie en el gimnasio.
 
-- [ ] **2.4 Paso 3: segmentos óseos y proporciones** (4 h)
+- [x] **2.4 Paso 3: segmentos óseos y proporciones** (4 h)
   Fémur, húmero, torso + cálculo automático de ratios de palanca.
 
 - [x] **2.5 Paso 4: movilidad** (6 h)
@@ -89,11 +89,14 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   motor por ejercicio, no algo que clasifique el entrenador (MÓDULO 02). Este
   paso cierra la evaluación biomecánica: inserta la fila con lo del paso 3.
 
-- [ ] **2.6 Cálculo de somatotipo Heath-Carter (+ golden tests)** (8 h)
-  Funciones puras con tests. Mismos datos → mismo resultado que el Excel de Giovanni.
+- [?] **2.6 Cálculo de somatotipo Heath-Carter (+ golden tests)** (8 h)
+  **Bloqueada por contradicción.** Su módulo 01 confirma Jackson & Pollock —ya
+  implementado y verificado al decimal contra su Excel— pero su documento de
+  recomendaciones vuelve a pedir Heath-Carter. Pregunta A de PREGUNTAS-GIOVANNI.
 
-- [ ] **2.7 Cálculo de 1RM estimado y relaciones de palanca** (5 h)
-  Fórmulas submáximas (Epley/Brzycki) + ratios del perfil.
+- [?] **2.7 Cálculo de 1RM estimado y relaciones de palanca** (5 h)
+  Fórmula confirmada (Epley), pero necesita telemetría por serie —peso levantado
+  y repeticiones— que solo existe con el registro de sesiones, en Fase B.
 
 - [x] **2.8 Guardado de borradores del wizard** (5 h)
   Retomar una evaluación a medias sin perder datos. La realidad del gimnasio son
@@ -101,6 +104,17 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 - [x] **2.9 Ficha del atleta: resultados + historial** (8 h)
   Vista completa: resultados, somatotipo, clasificaciones, comparación entre fechas.
+
+- [x] **2.11 Contraindicaciones en dos familias** (4 h) · *fuera del plan original*
+  Anatómicas y sistémicas, catálogo cerrado en las dos puntas del cruce. Salió de
+  la respuesta de Giovanni y destapó que `body_region` no tenía CHECK.
+
+- [x] **2.12 Condiciones fisiológicas del atleta** (3 h) · *fuera del plan original*
+  Embarazo, hipertensión, hernia, diástasis. Cierra el cruce: sin esto el motor
+  sabía qué contraindica cada ejercicio pero no qué tiene cada persona.
+
+- [x] **2.13 Registro del ciclo menstrual (FEMTECH)** (4 h) · *fuera del plan original*
+  Faltaba la pantalla: la app solo LEÍA los registros. Con consentimiento aparte.
 
 - [?] **2.10 Validación: atletas reales vs. Excels de Giovanni** (4 h)
   Giovanni carga 2–3 atletas reales; los resultados deben coincidir.
@@ -153,6 +167,10 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Búsqueda por texto y filtros plegables por patrón, músculo, equipo y
   contraindicación. El de contraindicaciones **excluye**: un entrenador busca lo
   que puede dar a un atleta con la rodilla mal, no la lista de lo prohibido.
+
+- [x] **4.6 Identidad de marca GQ** (3 h) · *fuera del plan original*
+  Rojo, dorado y negro muestreados de su logo y sus informes. Media entrega de
+  los assets: faltan el logo en archivo y la plantilla de reporte.
 
 - [?] **4.5 Importación masiva del contenido de Giovanni** (5 h)
   CSV. *Requiere:* listado v1 y medios de Giovanni.
