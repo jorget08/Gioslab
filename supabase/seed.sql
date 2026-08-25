@@ -282,9 +282,20 @@ values
 -- ---------------------------------------------------------------------------
 -- Consentimientos (Ley 1581)
 -- ---------------------------------------------------------------------------
+-- Mismo formato que escribe crear_atleta: 'salud-v1' y 'ciclo-v1'. Antes el
+-- seed ponía 'v1-2026-08' para todo, así que las atletas con datos de ciclo
+-- salían SIN su autorización registrada — justo lo que la Ley 1581 exige poder
+-- demostrar, y encima la pantalla del ciclo las habría bloqueado.
 insert into public.athlete_consents (athlete_id, tenant_id, policy_version, granted_by)
-select id, tenant_id, 'v1-2026-08', trainer_id from public.athletes
+select id, tenant_id, 'salud-v1', trainer_id from public.athletes
 where id::text like '00000000-3333-%';
+
+-- El de ciclo, solo para quien tiene registros sembrados.
+insert into public.athlete_consents (athlete_id, tenant_id, policy_version, granted_by)
+select distinct a.id, a.tenant_id, 'ciclo-v1', a.trainer_id
+from public.athletes a
+join public.menstrual_cycle_logs m on m.athlete_id = a.id
+where a.id::text like '00000000-3333-%';
 
 -- Condiciones fisiológicas. Andrés es el caso que enseña para qué sirven: el
 -- motor no le quita la sentadilla, le cambia CÓMO la ejecuta (sin Valsalva, sin

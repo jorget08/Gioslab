@@ -404,26 +404,51 @@ function Ficha() {
       </Bloque>
 
       {/* ---------------------------------------------------------------- */}
-      {adaptacion && (
+      {/* Visible para toda atleta, haya registro o no. Antes solo aparecía
+          cuando ya existían datos, así que no había forma de descubrir dónde
+          se metían: Giovanni buscó dónde apuntar la fecha del periodo y no
+          encontró nada. Un bloque que solo existe cuando ya está lleno no
+          enseña a nadie a llenarlo. */}
+      {atleta.sex === "femenino" && (
         <Bloque rotulo="Ciclo menstrual">
-          <div className="flex items-baseline justify-between gap-3">
-            <div>
-              <p className="text-lg font-medium">{adaptacion.fase}</p>
-              {adaptacion.fase !== "Anticonceptivo" && (
-                <p className="text-xs text-muted-foreground">
-                  Día {adaptacion.diaDelCiclo} · {adaptacion.prescripcion.rango}
-                </p>
-              )}
-            </div>
-            <span className="text-2xl font-semibold tabular-nums">
-              ×{adaptacion.multiplicadorVolumen}
-            </span>
-          </div>
+          {adaptacion ? (
+            <>
+              <div className="flex items-baseline justify-between gap-3">
+                <div>
+                  <p className="text-lg font-medium">{adaptacion.fase}</p>
+                  {adaptacion.fase !== "Anticonceptivo" && (
+                    <p className="text-xs text-muted-foreground">
+                      Día {adaptacion.diaDelCiclo} · {adaptacion.prescripcion.rango}
+                    </p>
+                  )}
+                </div>
+                <span className="text-2xl font-semibold tabular-nums">
+                  ×{adaptacion.multiplicadorVolumen}
+                </span>
+              </div>
 
-          <div className="space-y-2 text-sm">
-            <p className="text-muted-foreground">{adaptacion.prescripcion.efecto}</p>
-            <p>{adaptacion.prescripcion.ajuste}</p>
-          </div>
+              <div className="space-y-2 text-sm">
+                <p className="text-muted-foreground">{adaptacion.prescripcion.efecto}</p>
+                <p>{adaptacion.prescripcion.ajuste}</p>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Calculado sobre el último registro, del {fechaCorta(`${ciclo?.last_period_start}T12:00:00`)}.
+                Conviene anotar cada mes.
+              </p>
+            </>
+          ) : (
+            <SinDatos>
+              Sin registro. Anotando el primer día de la última menstruación, el sistema calcula
+              la fase y ajusta el volumen de entrenamiento.
+            </SinDatos>
+          )}
+
+          <Button asChild variant="outline" className="min-h-11 w-full">
+            <Link href={`/atletas/ciclo?id=${atleta.id}`}>
+              {adaptacion ? "Anotar nuevo periodo" : "Registrar el ciclo"}
+            </Link>
+          </Button>
         </Bloque>
       )}
 
