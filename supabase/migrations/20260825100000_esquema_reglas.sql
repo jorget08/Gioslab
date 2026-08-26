@@ -51,6 +51,50 @@ create index rules_nivel_activas_idx on public.rules (nivel) where is_active;
 -- absurdo: una regla sin condición dispararía en todas las evaluaciones, y una
 -- sin acciones se evaluaría cada vez para no hacer nada.
 
+-- ---------------------------------------------------------------------------
+-- Lo que ya estaba escrito antes de que existiera la gramática
+-- ---------------------------------------------------------------------------
+--
+-- Poner el CHECK sin ocuparse de las filas existentes reventó el primer intento
+-- de aplicar esta migración: el proyecto remoto tenía reglas con la forma
+-- anterior, `{"dorsiflexion_severidad":"Limitada"}`, que ningún CHECK nuevo
+-- puede aceptar.
+--
+-- Se descartaron dos salidas:
+--   · `not valid`, como en las lesiones. Allí servía porque una zona mal escrita
+--     sigue siendo información legible. Aquí no: una regla que el motor no sabe
+--     interpretar se queda en la tabla con aspecto de metodología viva y no
+--     dispara nunca. Es peor que no tenerla.
+--   · Borrarlas. La tabla `rules` ES el activo del negocio; una migración que
+--     borra metodología sin dejar rastro no es aceptable aunque hoy solo haya
+--     datos de demostración.
+--
+-- Se apartan a una tabla de cuarentena, tal cual estaban. Nada se pierde, la
+-- restricción entra limpia, y quien quiera reescribirlas en la gramática nueva
+-- tiene el original delante.
+
+create table public.rules_pre_gramatica as
+select r.*, now() as archivada_en
+from public.rules r
+where not (
+  coalesce(jsonb_typeof(r.condition -> 'todas') = 'array', false)
+  and coalesce(jsonb_array_length(r.condition -> 'todas') > 0, false)
+  and jsonb_typeof(r.actions) = 'object'
+  and r.actions <> '{}'::jsonb
+);
+
+comment on table public.rules_pre_gramatica is
+  'Reglas escritas antes de la gramática de la 3.1 (migración 20260825100000). El motor no sabe interpretarlas. Se conservan para poder reescribirlas, no para usarlas.';
+
+delete from public.rules r
+ where exists (select 1 from public.rules_pre_gramatica q where q.id = r.id);
+
+-- Es metodología: no la ve nadie salvo quien administre la base directamente.
+-- RLS activo y sin políticas deniega por defecto, que es lo que se quiere en una
+-- tabla que solo existe para consultarse a mano.
+revoke all on public.rules_pre_gramatica from anon, authenticated;
+alter table public.rules_pre_gramatica enable row level security;
+
 -- OJO CON EL NULL. `jsonb_typeof(condition -> 'todas')` devuelve NULL cuando la
 -- clave no existe, y un CHECK que evalúa a NULL se considera SATISFECHO. Sin el
 -- coalesce, la forma vieja `{"femur_class":"Largo"}` pasaba tan campante: la
