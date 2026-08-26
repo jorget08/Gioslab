@@ -265,7 +265,10 @@ async function main() {
   console.log("\n=== Metodología (el activo del negocio) ===");
   await admin.from("rules").insert({
     rule_key: "regla-de-prueba-rls", version: 1,
-    condition: { femur_class: "Largo" }, actions: { priorizar: ["Prensa"] },
+    nivel: 1,
+    // Gramática de la 3.1: la base rechaza cualquier otra forma.
+    condition: { todas: [{ hecho: "dorsiflexion_cm", op: "<", valor: 5 }] },
+    actions: { priorizar: ["Prensa"] },
     justification: "Prueba", evidence_level: "LEVEL_B_BIOMECHANICS",
   });
   verificar("trainer puede leer las reglas",

@@ -24,7 +24,9 @@ delete from public.tenants where id in (
   '00000000-1111-0000-0000-000000000002',
   '00000000-1111-0000-0000-000000000003'
 );
-delete from public.rules where rule_key like 'seed-%';
+delete from public.rules where rule_key in ('dorsiflexion-severa','dorsiflexion-limitada',
+  'hipertension-valsalva','ciclo-lutea-tardia','dominancia-rodilla','volumen-base-mujer-magra')
+  or rule_key like 'seed-%';
 delete from public.exercise_library where name like '[demo]%';
 
 -- ---------------------------------------------------------------------------
@@ -258,26 +260,56 @@ values
   ('00000000-4444-0000-0000-000000000003', '00000000-4444-0000-0000-000000000002', 'sustitucion'),
   ('00000000-4444-0000-0000-000000000003', '00000000-4444-0000-0000-000000000001', 'sustitucion');
 
+-- Reglas sacadas LITERALMENTE de su matriz de condicionales (2026-08-25), en
+-- la gramática de la 3.1. Son las que el motor del grupo 3 usa para probarse:
+-- una por nivel, para que ningún nivel se construya sin un caso real.
 insert into public.rules
-  (rule_key, version, condition, actions, justification, evidence_level, is_active, created_by)
+  (rule_key, version, nivel, condition, actions, justification, evidence_level, is_active, created_by)
 values
-  ('seed-dorsiflexion-limitada', 1,
-   '{"dorsiflexion_severidad":"Limitada"}'::jsonb,
-   '{"priorizar":["[demo] Sentadilla Barra Alta con Tacón"],"excluir":[]}'::jsonb,
-   'Sugerir calzado de elevación o disco en sentadillas. Bloquear variantes de rango profundo.',
+  -- Nivel 1 · su fila "d < 5 cm / Severa"
+  ('dorsiflexion-severa', 1, 1,
+   '{"todas":[{"hecho":"dorsiflexion_cm","op":"<","valor":5}]}'::jsonb,
+   '{"excluir_ejercicios":["[demo] Sentadilla Trasera con Barra"],
+     "sustituir_por":["[demo] Prensa 45°","[demo] Sentadilla Barra Alta con Tacón"],
+     "modificador":"Prescribir automovilización de tobillo"}'::jsonb,
+   'Por debajo de 5 cm el valgo dinámico de rodilla se dispara por compensación cinemática (WBLT, Konor et al.).',
    'LEVEL_B_BIOMECHANICS', true, '00000000-2222-0000-0000-00000000000a'),
 
-  ('seed-dorsiflexion-severa', 1,
-   '{"dorsiflexion_severidad":"Severa"}'::jsonb,
-   '{"priorizar":["[demo] Prensa 45°"],"excluir":["[demo] Sentadilla Trasera con Barra"]}'::jsonb,
-   'Priorizar Hack Squat y Prensa 45° más trabajo de movilidad de tobillo.',
+  -- Nivel 1 · su fila "5 ≤ d < 10 / Limitada": NO excluye, adapta.
+  ('dorsiflexion-limitada', 1, 1,
+   '{"todas":[{"hecho":"dorsiflexion_cm","op":"entre","valor":[5,10]}]}'::jsonb,
+   '{"modificador":"Elevar talones 2.5 cm o usar zapatilla de halterofilia"}'::jsonb,
+   'Entre 5 y 10 cm la sentadilla es viable con adaptación: por debajo de 10 cm se altera la cinemática.',
    'LEVEL_B_BIOMECHANICS', true, '00000000-2222-0000-0000-00000000000a'),
 
-  ('seed-femur-largo-torso-corto', 1,
-   '{"femur_torso_ratio":"Fémur Largo / Torso Corto"}'::jsonb,
-   '{"excluir":["[demo] Sentadilla Trasera con Barra"],"priorizar":["[demo] Prensa 45°"]}'::jsonb,
-   'Sustituir Sentadilla Trasera con Barra por Front Squat, Goblet o Prensa para reducir el cizallamiento lumbar.',
-   'LEVEL_B_BIOMECHANICS', true, '00000000-2222-0000-0000-00000000000a');
+  -- Nivel 1 · contraindicación sistémica: no quita el ejercicio, cambia el cómo.
+  ('hipertension-valsalva', 1, 1,
+   '{"todas":[{"hecho":"condiciones","op":"incluye","valor":"Hipertensión / Cardiovascular"}]}'::jsonb,
+   '{"prohibir_maniobra":["Valsalva"],"rir":{"piso":2}}'::jsonb,
+   'La maniobra de Valsalva eleva la presión intratorácica de forma aguda. Se mantiene RIR ≥ 2 y respiración continua.',
+   'LEVEL_A_SCIENCE', true, '00000000-2222-0000-0000-00000000000a'),
+
+  -- Nivel 2 · su tabla de ciclo, fila "Lútea Tardía"
+  ('ciclo-lutea-tardia', 1, 2,
+   '{"todas":[{"hecho":"fase_ciclo","op":"=","valor":"Lútea Tardía"}]}'::jsonb,
+   '{"volumen_factor":0.75,"rir":{"delta":2}}'::jsonb,
+   'Caída hormonal y fatiga central: se reduce el volumen un 25% y se evita el fallo muscular.',
+   'LEVEL_A_SCIENCE', true, '00000000-2222-0000-0000-00000000000a'),
+
+  -- Nivel 3 · su tabla de dominancias. Compensa, no refuerza lo dominante.
+  ('dominancia-rodilla', 1, 3,
+   '{"todas":[{"hecho":"dominancia_sentadilla","op":"=","valor":"Dominante de Rodilla"}]}'::jsonb,
+   '{"ratio_patron":{"hip_hinge_dominante_cadera":0.6,"squat_dominante_rodilla":0.4}}'::jsonb,
+   'Se compensa la dominancia estructural repartiendo 60/40 en favor de la cadera.',
+   'LEVEL_C_CONSENSUS', true, '00000000-2222-0000-0000-00000000000a'),
+
+  -- Nivel 4 · su tabla de composición corporal, umbrales de mujer.
+  ('volumen-base-mujer-magra', 1, 4,
+   '{"todas":[{"hecho":"sexo","op":"=","valor":"femenino"},
+              {"hecho":"porcentaje_graso","op":"<","valor":20}]}'::jsonb,
+   '{"volumen_series":{"min":16,"max":22}}'::jsonb,
+   'Alta capacidad de recuperación: 16 a 22 series efectivas por grupo muscular y semana.',
+   'LEVEL_C_CONSENSUS', true, '00000000-2222-0000-0000-00000000000a');
 
 -- ---------------------------------------------------------------------------
 -- Consentimientos (Ley 1581)

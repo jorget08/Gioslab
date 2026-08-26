@@ -142,7 +142,8 @@ async function main() {
   verificar("y se ve la mejora en la segunda", Number(tomas?.[1]?.body_fat_pct) < 18, true);
 
   console.log("\n=== Metodología cargada ===");
-  verificar("3 reglas activas", await contar(ana, "rules"), 3);
+  // Una por nivel del motor, más las dos bandas de dorsiflexión.
+  verificar("6 reglas activas, cubriendo los 4 niveles", await contar(ana, "rules"), 6);
   verificar("5 ejercicios en la biblioteca", await contar(ana, "exercise_library"), 5);
 
   console.log("\n=== Los datos sensibles siguen protegidos ===");

@@ -76,18 +76,19 @@ reset role;
 begin;
   set local role authenticated;
   select pg_temp.como(:'admin');
-  insert into public.rules (id, rule_key, version, condition, actions, justification, evidence_level, is_active)
+  insert into public.rules (id, rule_key, version, nivel, condition, actions, justification, evidence_level, is_active)
   values
-   ('40000000-0000-0000-0000-000000000001','femur-largo-dorsiflexion-limitada',1,
-    '{"femur_class":"Largo"}'::jsonb, '{"priorizar":["Prensa 45 grados"]}'::jsonb,
+   ('40000000-0000-0000-0000-000000000001','dorsiflexion-de-prueba',1,1,
+    '{"todas":[{"hecho":"dorsiflexion_cm","op":"<","valor":5}]}'::jsonb,
+    '{"priorizar":["Prensa 45 grados"]}'::jsonb,
     'Version 1 de prueba','LEVEL_B_BIOMECHANICS', true),
-   ('40000000-0000-0000-0000-000000000002','femur-largo-dorsiflexion-limitada',2,
-    '{"femur_class":"Largo","ankle_dorsiflexion":"Limitada"}'::jsonb,
+   ('40000000-0000-0000-0000-000000000002','dorsiflexion-de-prueba',2,1,
+    '{"todas":[{"hecho":"dorsiflexion_cm","op":"entre","valor":[5,10]}]}'::jsonb,
     '{"priorizar":["Sentadilla Barra Alta con Tacón"]}'::jsonb,
     'Version 2 de prueba','LEVEL_B_BIOMECHANICS', false);
   select case when count(*) = 2 then 'OK  conviven 2 versiones de la misma regla'
               else 'FALLO' end as resultado
-  from public.rules where rule_key = 'femur-largo-dorsiflexion-limitada';
+  from public.rules where rule_key = 'dorsiflexion-de-prueba';
 commit;
 
 do $$
@@ -137,11 +138,42 @@ do $$
 begin
   set local role authenticated;
   perform pg_temp.como('00000000-0000-0000-0000-0000000000a0');
-  insert into public.rules (rule_key, version, condition, actions, justification, evidence_level)
-  values ('regla-muda',1,'{}'::jsonb,'{}'::jsonb,'   ','LEVEL_B_BIOMECHANICS');
+  insert into public.rules (rule_key, version, nivel, condition, actions, justification, evidence_level)
+  values ('regla-muda',1,1,
+    '{"todas":[{"hecho":"dorsiflexion_cm","op":"<","valor":5}]}'::jsonb,
+    '{"priorizar":["X"]}'::jsonb,'   ','LEVEL_B_BIOMECHANICS');
   raise notice 'FALLO  aceptó una regla sin justificación';
 exception when check_violation then
   raise notice 'OK  rechazada: sin justificación no se puede mostrar al entrenador';
+end $$;
+reset role;
+
+\echo ''
+\echo '=== G.2 La forma de la condición y de las acciones se exige en la base ==='
+do $$
+begin
+  set local role authenticated;
+  perform pg_temp.como('00000000-0000-0000-0000-0000000000a0');
+  -- La forma vieja, sin `todas`: dispararía en toda evaluación.
+  insert into public.rules (rule_key, version, nivel, condition, actions, justification, evidence_level)
+  values ('regla-informe',1,1,'{"femur_class":"Largo"}'::jsonb,
+    '{"priorizar":["X"]}'::jsonb,'Con justificacion','LEVEL_B_BIOMECHANICS');
+  raise notice 'FALLO  aceptó una condición sin predicados';
+exception when check_violation then
+  raise notice 'OK  rechazada: una condición sin predicados dispararía siempre';
+end $$;
+
+do $$
+begin
+  set local role authenticated;
+  perform pg_temp.como('00000000-0000-0000-0000-0000000000a0');
+  insert into public.rules (rule_key, version, nivel, condition, actions, justification, evidence_level)
+  values ('regla-inutil',1,1,
+    '{"todas":[{"hecho":"dorsiflexion_cm","op":"<","valor":5}]}'::jsonb,
+    '{}'::jsonb,'Con justificacion','LEVEL_B_BIOMECHANICS');
+  raise notice 'FALLO  aceptó una regla que no hace nada';
+exception when check_violation then
+  raise notice 'OK  rechazada: una regla sin acciones se evalúa para nada';
 end $$;
 reset role;
 

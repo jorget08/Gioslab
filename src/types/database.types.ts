@@ -1022,6 +1022,7 @@ export type Database = {
           id: string
           is_active: boolean
           justification: string
+          nivel: number
           rule_key: string
           version: number
         }
@@ -1034,6 +1035,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           justification: string
+          nivel: number
           rule_key: string
           version: number
         }
@@ -1046,6 +1048,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           justification?: string
+          nivel?: number
           rule_key?: string
           version?: number
         }

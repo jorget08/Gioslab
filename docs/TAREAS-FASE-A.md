@@ -25,7 +25,7 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Diagrama completo antes de escribir migraciones: gyms → trainers → athletes,
   evaluaciones versionadas, ejercicios, reglas, planes. Ahorra retrabajos.
 
-- [?] **0.5 Documentar la matriz de reglas desde los Excels (spec v1)** (12 h)
+- [x] **0.5 Documentar la matriz de reglas desde los Excels (spec v1)** (12 h)
   Traducir cada condicional a: condición → acción → justificación → nivel de evidencia.
   Insumo directo del grupo 3. *Requiere:* Excels + sesión grabada con Giovanni.
 
@@ -124,9 +124,12 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 ## ⚙️ Grupo 3 — Motor de reglas (el corazón) (58 h)
 
-- [ ] **3.1 Diseño del esquema de reglas en BD** (5 h)
-  Regla = condición (JSON) → acciones → justificación → versión → activa/inactiva.
-  **Las reglas son datos, no código.**
+- [x] **3.1 Diseño del esquema de reglas en BD** (5 h)
+  Gramática fijada en `src/domain/reglas.ts` y documentada en
+  `docs/ESQUEMA-REGLAS.md`. Catálogo cerrado de hechos, operadores por tipo y
+  acciones sacadas una a una de su matriz. La columna `nivel` codifica el orden
+  de ejecución del motor, distinto de `evidence_level`, que desempata dentro de
+  cada nivel.
 
 - [ ] **3.2 Motor evaluador de reglas** (12 h)
   Evalúa condiciones sobre el perfil del atleta y produce selecciones/exclusiones.
