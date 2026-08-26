@@ -114,6 +114,16 @@ export const HECHOS = {
     tipo: "numero", unidad: "°", nivel: 1,
     origen: "biomech_evaluations.hip_internal_rotation_deg",
   },
+  thomas_test_grados: {
+    etiqueta: "Thomas Test",
+    tipo: "numero", unidad: "°", nivel: 1,
+    origen: "biomech_evaluations.thomas_test_deg (negativo = flexores acortados)",
+  },
+  slr_grados: {
+    etiqueta: "Elevación de pierna recta",
+    tipo: "numero", unidad: "°", nivel: 1,
+    origen: "biomech_evaluations.slr_deg",
+  },
   extension_toracica: {
     etiqueta: "Extensión torácica",
     tipo: "opcion", nivel: 1, dominio: ["Normal", "Cifótica"],
@@ -135,6 +145,14 @@ export const HECHOS = {
     etiqueta: "Fase del ciclo",
     tipo: "opcion", nivel: 2, dominio: FASES_CICLO,
     origen: "calculado sobre menstrual_cycle_logs (ciclo-menstrual.ts)",
+  },
+  // Bandera de SEGURIDAD dentro de Folicular Tardía, no una fase. Giovanni la
+  // conservó al pasar el ciclo de cinco fases a cuatro: durante el pico sube la
+  // laxitud del cruzado anterior y hay que priorizar cadena cinética cerrada.
+  pico_ovulatorio: {
+    etiqueta: "Pico ovulatorio",
+    tipo: "booleano", nivel: 2,
+    origen: "calculado sobre menstrual_cycle_logs (picoOvulatorio, días 12-14)",
   },
   usa_anticonceptivos: {
     etiqueta: "Usa anticonceptivos hormonales",

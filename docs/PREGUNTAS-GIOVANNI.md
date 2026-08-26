@@ -1,13 +1,13 @@
 # Preguntas pendientes para Giovanni
 
 Estado: **actualizado tras sus aclaraciones técnicas (2026-08-22).**
-**Actualizado el 2026-08-25: llegó la matriz completa de condicionales**, que
-era el bloqueo de fondo, y con ella las respuestas a las cuatro preguntas de
-precisión. El grupo 3 deja de estar bloqueado.
+**Actualizado el 2026-08-26.** Llegó la matriz completa de condicionales, que era
+el bloqueo de fondo, y después las respuestas a las cuatro contradicciones que
+abría. Con eso el motor tiene **luz verde**: él mismo confirmó que la
+interpretación de las dos jerarquías es correcta.
 
-A cambio aparecieron **cuatro contradicciones nuevas** —dos de sus documentos
-entre sí y dos con lo ya construido— que hay que resolver antes de programar el
-motor. Son las que están abiertas ahora.
+Todo lo suyo está aplicado. Quedan **tres preguntas abiertas**, todas menores
+—F, K y la contradicción entre sus dos documentos del 26— y ninguna bloquea.
 
 Fuentes: `fuentes-giovanni/aclaracionestecnicasjorgehernan.pdf`,
 `Modulo_Fisiologia_Femenina_GiosLab(1).pdf`,
@@ -61,14 +61,13 @@ el flujo sigue igual. No miden lo mismo y ahora está claro.
 
 **Efecto:** la 2.6 deja de bloquear la Fase A y baja de prioridad.
 
-### B. Flexión de hombro ✅ RESUELTA — pero con un número en disputa
+### B. Flexión de hombro ✅ RESUELTA — 170°, disputa cerrada
 
 Confirmó que 180° estricto genera falsos positivos y dio tres bandas citando a
 la AAOS: **≥170° óptimo · 150–169° limitación leve · <150° restricción severa**.
 
-⚠️ **Pero su matriz, del mismo día, dice `< 175° = Restringida`.** Dos números
-distintos para el mismo test. Se toma 170 —es el documento que responde a la
-pregunta y el único que cita fuente— a la espera de que lo confirme.
+Su matriz decía 175 y se le preguntó cuál valía. Confirmó **170** y descartó los
+175 de su propio documento. Implementado.
 
 ### C. Duración del ciclo ✅ RESUELTA — nos da la razón
 
@@ -149,49 +148,69 @@ Para detectar una asimetría harían falta los dos lados de brazo, muslo y
 pantorrilla — seis campos en vez de tres. No se añadió por cuenta propia porque
 duplica el trabajo de medición en el gimnasio y eso lo decide él.
 
-### H. Cambió la batería de movilidad, ¿sustituye o suma? 🔴
+### H. Batería de movilidad ✅ RESUELTA — se SUMAN
 
-Su matriz introduce dos tests que no teníamos (**Thomas Test** y **SLRT**) y a la
-vez **deja fuera dos que salieron de su propia ficha**:
+*"Los tests nuevos SE SUMAN, no reemplazan. Mantener flexión de cadera y
+rotación interna de cadera, cruciales para valorar el espacio femoroacetabular.
+No borres ni migres datos guardados."*
 
-| Test | Implementado | En su matriz nueva |
+Ya están los ocho tests. **Cero migración de datos**, que era el riesgo.
+
+Corrigió además dos umbrales:
+
+| | Antes | Ahora | Motivo |
+|---|---|---|---|
+| Flexión de hombro | 180° | **170°** | AAOS: lo normal va de 165° a 180°. Con 180 estricto, 178° salía restringido |
+| Rotación externa de hombro | 90° | **90°** (sin cambio) | Los 70° de su matriz son el mínimo de población sedentaria, no de quien hace trabajo overhead |
+
+### I. Regla de la ovulación ✅ RESUELTA — no se cayó
+
+*"No se cayó, se convierte en un submódulo de seguridad dentro de la Folicular
+Tardía."* Confirmó el fondo: durante el pico sube la laxitud del ligamento
+cruzado anterior.
+
+Implementado como **bandera y no como fase**, que es la distinción que importa:
+la fase gestiona volumen metabólico y esto es seguridad articular. Días 12–14
+levantan `picoOvulatorio` sin dejar de ser Folicular Tardía, y eso dispara la
+prioridad a cadena cinética cerrada.
+
+Los multiplicadores también se afinaron con su matriz: Folicular Tardía pasa de
+×1.1 a **×1.15** y Lútea Tardía de ×0.8 a **×0.75**.
+
+### J. Las dos jerarquías ✅ RESUELTA — luz verde
+
+*"Tu interpretación es 100% CORRECTA. Es exactamente así como debe construirse
+la arquitectura del motor."* Los Niveles 1–4 son el orden de ejecución y los
+LEVEL_A–D el desempate dentro de cada nivel. El esquema de la 3.1 se queda como
+está.
+
+---
+
+## 🔴 Contradicción NUEVA entre sus dos documentos del 2026-08-26
+
+Mandó dos PDF el mismo día que dicen lo contrario en el punto que más importa.
+
+| | `Aclaracion_Onboarding_Gradual` | `Sugerencia_Desarrollo` (Modo Express) |
 |---|---|---|
-| Rotación externa de hombro | óptimo ≥ 90° | limitada < **70°** |
-| Flexión de cadera | óptimo ≥ 120° | **no aparece** |
-| Rotación interna de cadera | óptimo ≥ 30° | **no aparece** |
-| Thomas Test | — | nuevo |
-| SLRT (isquiotibiales) | — | nuevo |
+| Nombre | *"NO nombrar la función como Modo Genérico o Modo Rápido"* | *"Modo Express"* |
+| Datos que faltan | El software **restringe** ejercicios de alto riesgo | **"Asume valores por defecto de movilidad en rango Estándar/Neutro"** |
 
-No es lo mismo sustituir que sumar: si sustituye, hay que migrar las
-evaluaciones ya hechas y decidir qué pasa con los valores guardados.
+**La segunda es peligrosa y va contra todo lo construido.** Dar por buena una
+movilidad que nadie midió es exactamente lo que el sistema evita desde la 2.5:
+`estadoROM` devuelve `null` y no `Óptimo` para un test sin tomar, porque tratar
+un dato ausente como favorable sería prescribir sentadilla profunda a alguien a
+quien nadie le miró el tobillo.
 
-### I. Se cayó una regla de seguridad del ciclo 🔴
+**Se sigue la Aclaración**, que además es la que él mismo escribe como posición
+considerada y la que corrige el nombre. Del Modo Express se conserva una cosa
+que sí es buena: el **Módulo 2, "sin plicómetro"**, para clientes a distancia.
+Eso ya está medio construido —la tabla distingue `body_fat_pct_source` entre
+`calculado` y `manual` desde la 1.2— y solo falta la casilla en la interfaz.
 
-Su matriz pasa el ciclo de 5 fases a 4: **Ovulatoria desaparece** absorbida por
-Folicular Tardía (días 6–14) y entra **Lútea Temprana** (15–22).
-
-El problema es lo que se va con la Ovulatoria: *"mayor laxitud ligamentosa por
-relaxina → priorizar variantes en máquina o con apoyo guiado"*. Eso lo escribió
-él y **es una regla de protección articular**, no un ajuste de volumen. ¿La
-descarta a conciencia o hay que reubicarla dentro de Folicular Tardía?
-
-Cambian además los multiplicadores: Folicular Tardía pasa de ×1.1 a 110–120 %, y
-Lútea Tardía de ×0.8 a −25/−30 %.
-
-### J. ¿Las dos jerarquías conviven? 🔴
-
-Ahora hay dos, y definen cómo se programa el motor:
-
-- `LEVEL_A > B > C > D` — la que dio antes, para resolver reglas en conflicto.
-- `Nivel 1 → 2 → 3 → 4` — la de la matriz: seguridad, fisiología, vectores,
-  composición.
-
-**Nuestra lectura, que es la que se va a programar salvo que diga lo contrario:**
-no compiten, son ejes distintos. Los Niveles 1–4 son el ORDEN DE EJECUCIÓN
-—primero se filtra por seguridad, después se modula el volumen, después se
-asignan vectores— y los LEVEL_A–D resuelven el empate entre dos reglas *dentro*
-del mismo nivel. Encajan bien; solo hace falta que lo confirme, porque él escribió
-"en caso de conflicto se aplica la de mayor jerarquía", que suena a lo otro.
+**Lo que entra de ahí y es barato:** marcar el perfil como *"Evaluación
+pendiente"* mientras falten datos biomecánicos. Es derivable de lo que ya hay y
+le dice al entrenador qué le falta. El plan de inicio en sí es el generador de
+rutinas, o sea Fase B.
 
 ---
 
@@ -334,6 +353,25 @@ mujer y verás el bloque.
 PDF pasa a ser algo secundario. Eso choca con lo que me dijiste antes, que el PDF
 era lo que vendía el producto, y con el plan, donde el PDF es una parte grande.
 No lo cambio a menos que me digas que sí, que ahora prefieres la pantalla.
+
+Y una cosa que necesito que decidas, porque tus dos últimos documentos dicen lo
+contrario:
+
+En el de **onboarding gradual** dices que el sistema debe restringir los
+ejercicios de riesgo mientras falten datos, y que no llamemos a esto "modo
+rápido". En el de **Modo Express** dices que asuma movilidad "estándar/neutro"
+cuando no se ha medido.
+
+Yo voy con el primero, y te explico por qué: dar por buena una movilidad que
+nadie midió es justo lo que el sistema evita hoy. Si a alguien no le miden el
+tobillo, el sistema NO asume que está bien — lo deja como "sin medir" y no le
+prescribe sentadilla profunda. Asumir "normal" es lo que haría un plan genérico
+cualquiera, y es donde se lesiona la gente.
+
+Lo que sí me llevo de ese documento es lo de **"sin plicómetro"** para clientes a
+distancia: eso está bien pensado y además ya está medio hecho, porque el sistema
+distingue entre un porcentaje graso calculado y uno metido a mano. Falta solo la
+casilla.
 
 Y sigo esperando dos cosas tuyas para poder avanzar en los informes: **el logo en
 archivo** (idealmente en PNG con fondo transparente o SVG) y **la plantilla de

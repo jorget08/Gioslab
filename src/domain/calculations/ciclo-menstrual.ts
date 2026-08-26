@@ -1,17 +1,29 @@
 /**
  * Módulo FEMTECH — adaptación por fase del ciclo menstrual.
  *
- * Traducción de las fórmulas de la sección 5 de la ficha de Giovanni.
+ * Traducción de sus fórmulas. Los cortes de fase y los multiplicadores salen de
+ * su matriz de condicionales (2026-08-25), que es posterior y más precisa que el
+ * documento de fisiología femenina con el que se construyó esto al principio.
  *
  * Nada de esto se guarda en la base: depende de la fecha de hoy, así que se
  * calcula al vuelo desde el último registro de ciclo (CLAUDE.md §3.4).
  */
 
+/**
+ * Cuatro fases endocrinas, no cinco.
+ *
+ * "Ovulatoria" desapareció como fase en la matriz de Giovanni: queda absorbida
+ * por Folicular Tardía, que ahora llega hasta el día 14. Al preguntarle si eso
+ * enterraba su regla de laxitud ligamentosa respondió que no —"no se cayó, se
+ * convierte en un submódulo de seguridad dentro de la Folicular Tardía"—, así
+ * que el pico ovulatorio vive ahora como BANDERA y no como fase. Ver
+ * `picoOvulatorio`.
+ */
 export type FaseMenstrual =
   | "Anticonceptivo"
   | "Folicular Temprana"
   | "Folicular Tardía"
-  | "Ovulatoria"
+  | "Lútea Temprana"
   | "Lútea Tardía";
 
 export interface RegistroCiclo {
@@ -45,11 +57,11 @@ export function diaDelCiclo(registro: RegistroCiclo, hoy: Date = new Date()): nu
 }
 
 /**
- * Fase según el día del ciclo.
+ * Fase según el día del ciclo, con los cortes de su matriz.
  *
  *   ≤ 5   Folicular Temprana
- *   ≤ 13  Folicular Tardía
- *   ≤ 16  Ovulatoria
+ *   ≤ 14  Folicular Tardía   (absorbe la ovulación)
+ *   ≤ 22  Lútea Temprana
  *   resto Lútea Tardía
  *
  * Los anticonceptivos hormonales tienen prioridad sobre todo lo demás: aplanan
@@ -60,29 +72,53 @@ export function faseMenstrual(registro: RegistroCiclo, hoy: Date = new Date()): 
 
   const dia = diaDelCiclo(registro, hoy);
   if (dia <= 5) return "Folicular Temprana";
-  if (dia <= 13) return "Folicular Tardía";
-  if (dia <= 16) return "Ovulatoria";
+  if (dia <= 14) return "Folicular Tardía";
+  if (dia <= 22) return "Lútea Temprana";
   return "Lútea Tardía";
 }
 
 /**
- * Multiplicador de volumen de entrenamiento.
- * Folicular Tardía 1.1× · Lútea Tardía 0.8× · resto 1.0×
+ * ¿Está en el pico ovulatorio?
+ *
+ * Es una BANDERA dentro de Folicular Tardía, no una fase. La diferencia importa:
+ * la fase gestiona volumen metabólico y esto es una regla de SEGURIDAD
+ * ARTICULAR. Durante el pico de estrógenos y el aumento de relaxina sube la
+ * laxitud del ligamento cruzado anterior, así que se prioriza cadena cinética
+ * cerrada y se restringe el impacto.
+ *
+ * Días 12 a 14, los que él fijó para un ciclo estándar. NO se escala con la
+ * duración del ciclo a propósito: sus cortes de fase también son días fijos, y
+ * escalar solo esto los dejaría en desacuerdo. Para ciclos por encima de 35 días
+ * él mismo dijo que el ajuste va por RIR/RPE y no por calendario.
+ */
+export function picoOvulatorio(registro: RegistroCiclo, hoy: Date = new Date()): boolean {
+  if (registro.usaAnticonceptivos) return false;
+  const dia = diaDelCiclo(registro, hoy);
+  return dia >= 12 && dia <= 14;
+}
+
+/**
+ * Multiplicador de volumen de entrenamiento, según su matriz.
+ *
+ *   Folicular Tardía  1.15×   (él da 110–120 %; su pseudocódigo usa 1.15)
+ *   Lútea Tardía      0.75×   (da −25/−30 %; su pseudocódigo usa 0.75)
+ *   resto             1.00×
+ *
+ * Antes eran 1.1 y 0.8, de su documento de fisiología femenina. La matriz es
+ * posterior y más precisa, así que manda.
  */
 export function multiplicadorVolumen(fase: FaseMenstrual): number {
-  if (fase === "Folicular Tardía") return 1.1;
-  if (fase === "Lútea Tardía") return 0.8;
+  if (fase === "Folicular Tardía") return 1.15;
+  if (fase === "Lútea Tardía") return 0.75;
   return 1;
 }
 
 /**
- * Ajuste biomecánico. En la fase ovulatoria la laxitud ligamentosa aumenta, y
- * su método prioriza máquinas para reducir la exigencia de estabilización.
+ * Ajuste biomecánico. Depende del PICO ovulatorio, no de la fase: es la regla
+ * de seguridad articular que Giovanni conservó como submódulo.
  */
-export function ajusteBiomecanico(fase: FaseMenstrual): string {
-  return fase === "Ovulatoria"
-    ? "Priorizar Máquinas (Laxitud)"
-    : "Estándar por Palancas";
+export function ajusteBiomecanico(pico: boolean): string {
+  return pico ? "Priorizar Máquinas (Laxitud)" : "Estándar por Palancas";
 }
 
 /**
@@ -90,11 +126,11 @@ export function ajusteBiomecanico(fase: FaseMenstrual): string {
  *
  * Del módulo de fisiología femenina que Giovanni entregó aparte. Hasta ahora
  * solo guardábamos el multiplicador de volumen, que es la parte automatizable,
- * pero el número por sí solo no le dice nada al entrenador: "×0.8" no explica
+ * pero el número por sí solo no le dice nada al entrenador: "×0.75" no explica
  * por qué su atleta rinde menos esta semana.
  *
  * Esto es §3.6 aplicado al módulo FEMTECH: si el sistema recorta el volumen un
- * 20%, tiene que poder decir por qué.
+ * 25%, tiene que poder decir por qué.
  */
 export interface PrescripcionFase {
   /** Lo que está ocurriendo fisiológicamente. */
@@ -113,22 +149,21 @@ export const PRESCRIPCION_FASE: Record<FaseMenstrual, PrescripcionFase> = {
       "Volumen moderado. Autorregulación opcional en ejercicios con alta presión intraabdominal, como la sentadilla libre.",
   },
   "Folicular Tardía": {
-    rango: "días 6 a 13",
+    rango: "días 6 a 14",
     efecto: "Pico de estrógenos, máxima fuerza y mayor tolerancia al volumen.",
     ajuste:
       "Fase de sobrecarga progresiva: priorizar RIR 1-0 y buscar récords de carga en multiarticulares.",
   },
-  Ovulatoria: {
-    rango: "días 14 a 16",
-    efecto: "Fuerza en su punto máximo, pero mayor laxitud ligamentosa por la relaxina.",
-    ajuste:
-      "Priorizar estabilidad biomecánica: preferir variantes en máquina o con apoyo guiado para proteger la articulación.",
+  "Lútea Temprana": {
+    rango: "días 15 a 22",
+    efecto: "Progesterona elevada.",
+    ajuste: "Volumen de mantenimiento activo, con RIR 1-2.",
   },
   "Lútea Tardía": {
-    rango: "días 17 al final",
+    rango: "días 23 al final",
     efecto: "Aumento de progesterona, fatiga central y menor tolerancia al esfuerzo.",
     ajuste:
-      "Reducir el volumen total de series entre un 20% y un 30%, o programar una semana de descarga.",
+      "Reducir el volumen total de series entre un 25% y un 30%, o programar una semana de descarga.",
   },
   Anticonceptivo: {
     rango: "todo el ciclo",
@@ -170,6 +205,8 @@ export interface AdaptacionCiclo {
   multiplicadorVolumen: number;
   ajusteBiomecanico: string;
   prescripcion: PrescripcionFase;
+  /** Bandera de seguridad articular, no una fase. Ver `picoOvulatorio`. */
+  picoOvulatorio: boolean;
 }
 
 export function adaptacionPorCiclo(
@@ -177,11 +214,13 @@ export function adaptacionPorCiclo(
   hoy: Date = new Date(),
 ): AdaptacionCiclo {
   const fase = faseMenstrual(registro, hoy);
+  const pico = picoOvulatorio(registro, hoy);
   return {
     diaDelCiclo: diaDelCiclo(registro, hoy),
     fase,
     multiplicadorVolumen: multiplicadorVolumen(fase),
-    ajusteBiomecanico: ajusteBiomecanico(fase),
+    ajusteBiomecanico: ajusteBiomecanico(pico),
     prescripcion: PRESCRIPCION_FASE[fase],
+    picoOvulatorio: pico,
   };
 }

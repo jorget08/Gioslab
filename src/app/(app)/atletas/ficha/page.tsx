@@ -80,6 +80,8 @@ interface Biomecanica {
   ankle_dorsiflexion_cm: number | null;
   hip_flexion_deg: number | null;
   hip_internal_rotation_deg: number | null;
+  thomas_test_deg: number | null;
+  slr_deg: number | null;
   thoracic_extension: string | null;
   shoulder_flexion_deg: number | null;
   shoulder_external_rotation_deg: number | null;
@@ -116,7 +118,7 @@ const PERIMETROS_FICHA = [
 ] as const;
 
 const COLUMNAS_BIOMEC =
-  "evaluated_at, femur_class, torso_class, femur_torso_ratio, ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thoracic_extension, shoulder_flexion_deg, shoulder_external_rotation_deg";
+  "evaluated_at, femur_class, torso_class, femur_torso_ratio, ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thomas_test_deg, slr_deg, thoracic_extension, shoulder_flexion_deg, shoulder_external_rotation_deg";
 
 function Ficha() {
   const atletaId = useSearchParams().get("id") ?? "";
@@ -229,6 +231,8 @@ function Ficha() {
         ankle_dorsiflexion_cm: biomec.ankle_dorsiflexion_cm,
         hip_flexion_deg: biomec.hip_flexion_deg,
         hip_internal_rotation_deg: biomec.hip_internal_rotation_deg,
+        thomas_test_deg: biomec.thomas_test_deg,
+        slr_deg: biomec.slr_deg,
         thoracic_extension: biomec.thoracic_extension as "Normal" | "Cifótica" | null,
         shoulder_flexion_deg: biomec.shoulder_flexion_deg,
         shoulder_external_rotation_deg: biomec.shoulder_external_rotation_deg,

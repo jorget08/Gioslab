@@ -198,25 +198,26 @@ values
 insert into public.biomech_evaluations
   (athlete_id, tenant_id, evaluated_at, femur_class, torso_class,
    ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg,
+   thomas_test_deg, slr_deg,
    thoracic_extension, shoulder_flexion_deg, shoulder_external_rotation_deg,
    squat_dominance, femur_torso_ratio, axial_load_tolerance,
    glute_vector, back_dominance)
 values
   ('00000000-3333-0000-0000-000000000001', '00000000-1111-0000-0000-000000000001',
    '2026-02-10', 'Largo', 'Corto',
-   7.5, 130, 25, 'Normal', 180, 90,
+   7.5, 130, 25, 5, 80, 'Normal', 180, 90,
    'Dominante de Cadera', 'Fémur Largo / Torso Corto', 'Tolerancia Normal',
    'Vector Horizontal', 'Vector Vertical (Dorsal)'),
 
   ('00000000-3333-0000-0000-000000000002', '00000000-1111-0000-0000-000000000001',
    '2026-07-02', 'Promedio', 'Promedio',
-   12.0, 135, 40, 'Normal', 180, 90,
+   12.0, 135, 40, 10, 90, 'Normal', 180, 90,
    'Dominante de Rodilla', 'Proporción Equilibrada', 'Tolerancia Normal',
    'Vector Vertical', 'Vector Horizontal (Grosor)'),
 
   ('00000000-3333-0000-0000-000000000004', '00000000-1111-0000-0000-000000000001',
    '2026-06-20', 'Largo', 'Promedio',
-   3.5, 125, 22, 'Cifótica', 150, 70,
+   3.5, 125, 22, -8, 62, 'Cifótica', 150, 70,
    'Dominante de Cadera', 'Fémur Largo / Torso Corto',
    'Sensibilidad Lumbar', 'Vector Horizontal', 'Vector Vertical (Dorsal)');
 

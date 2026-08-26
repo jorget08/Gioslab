@@ -24,6 +24,8 @@ export const TESTS_MOVILIDAD = [
   "ankle_dorsiflexion_cm",
   "hip_flexion_deg",
   "hip_internal_rotation_deg",
+  "thomas_test_deg",
+  "slr_deg",
   "thoracic_extension",
   "shoulder_flexion_deg",
   "shoulder_external_rotation_deg",
@@ -84,16 +86,42 @@ export const TESTS: Record<Exclude<TestMovilidad, "thoracic_extension">, MetaTes
     umbralOptimo: 30,
     implicacion: "Óptimo desde 30°; por debajo, hay que abrir el stance de sentadilla",
   },
+  // Thomas Test y SLR se SUMAN a los anteriores, no los sustituyen: se le
+  // preguntó expresamente y mantuvo la flexión y la rotación interna de cadera,
+  // "cruciales para valorar el espacio femoroacetabular".
+  thomas_test_deg: {
+    etiqueta: "Thomas Test",
+    protocolo: "Tumbado al borde de la camilla, rodilla contraria al pecho; se mide la pierna que cuelga",
+    unidad: "°",
+    // El único test que admite negativos, y son los que importan: por debajo de
+    // cero el muslo no llega a la horizontal, o sea flexores acortados.
+    min: -40,
+    max: 40,
+    umbralOptimo: 0,
+    implicacion: "Óptimo desde 0°; en negativo hay acortamiento de flexores de cadera",
+  },
+  slr_deg: {
+    etiqueta: "Elevación de pierna recta",
+    protocolo: "Decúbito supino, pierna extendida, se eleva hasta la primera resistencia",
+    unidad: "°",
+    min: 0,
+    max: 130,
+    umbralOptimo: 70,
+    implicacion: "Óptimo desde 70°; por debajo, bloquea el peso muerto desde el suelo",
+  },
   shoulder_flexion_deg: {
     etiqueta: "Flexión de hombro",
     protocolo: "Espalda contra la pared, brazo extendido por encima de la cabeza",
     unidad: "°",
     min: 0,
     max: 180,
-    // Su ficha dice literalmente "normal (180°)". No lo suavizamos a 170: sería
-    // aflojar un criterio suyo por nuestra cuenta. Anotado en PREGUNTAS-GIOVANNI.
-    umbralOptimo: 180,
-    implicacion: "Óptimo a 180°; por debajo, restringe el trabajo por encima de la cabeza",
+    // 170 y no 180. Giovanni lo corrigió citando a la AAOS: la flexión
+    // normotípica va de 165° a 180° según la báscula escapular y la cifosis de
+    // cada uno, así que tratar 178° como restringido generaba falsos positivos
+    // y bloqueaba trabajo overhead sin motivo. También descartó los 175° de su
+    // propia matriz.
+    umbralOptimo: 170,
+    implicacion: "Óptimo desde 170°; por debajo, restringe el trabajo por encima de la cabeza",
   },
   shoulder_external_rotation_deg: {
     etiqueta: "Rotación externa de hombro",
@@ -174,6 +202,8 @@ export interface MedidasMovilidad {
   ankle_dorsiflexion_cm?: number | null;
   hip_flexion_deg?: number | null;
   hip_internal_rotation_deg?: number | null;
+  thomas_test_deg?: number | null;
+  slr_deg?: number | null;
   thoracic_extension?: ExtensionToracica | null;
   shoulder_flexion_deg?: number | null;
   shoulder_external_rotation_deg?: number | null;
@@ -218,9 +248,15 @@ export function perfilMovilidad(m: MedidasMovilidad): ResultadoTest[] {
     implicacion: EXTENSION_TORACICA.implicacion,
   };
 
-  // La torácica va entre las de cadera y las de hombro, que es el orden
-  // anatómico en que se recorre al atleta: tobillo → cadera → torso → hombro.
-  return [...numericos.slice(0, 3), toracica, ...numericos.slice(3)];
+  // Orden anatómico: tobillo → cadera → torso → hombro. Se parte por nombre y
+  // no por índice porque al añadir tests el corte fijo se descolocaba.
+  const esHombro = (t: string) =>
+    t === "shoulder_flexion_deg" || t === "shoulder_external_rotation_deg";
+  return [
+    ...numericos.filter((r) => !esHombro(r.test)),
+    toracica,
+    ...numericos.filter((r) => esHombro(r.test)),
+  ];
 }
 
 /** Cuántos tests se tomaron, para el aviso de evaluación incompleta. */

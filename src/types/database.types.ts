@@ -492,8 +492,10 @@ export type Database = {
           notes: string | null
           shoulder_external_rotation_deg: number | null
           shoulder_flexion_deg: number | null
+          slr_deg: number | null
           squat_dominance: string | null
           tenant_id: string
+          thomas_test_deg: number | null
           thoracic_extension: string | null
           torso_class: string | null
           torso_length_cm: number | null
@@ -521,8 +523,10 @@ export type Database = {
           notes?: string | null
           shoulder_external_rotation_deg?: number | null
           shoulder_flexion_deg?: number | null
+          slr_deg?: number | null
           squat_dominance?: string | null
           tenant_id: string
+          thomas_test_deg?: number | null
           thoracic_extension?: string | null
           torso_class?: string | null
           torso_length_cm?: number | null
@@ -550,8 +554,10 @@ export type Database = {
           notes?: string | null
           shoulder_external_rotation_deg?: number | null
           shoulder_flexion_deg?: number | null
+          slr_deg?: number | null
           squat_dominance?: string | null
           tenant_id?: string
+          thomas_test_deg?: number | null
           thoracic_extension?: string | null
           torso_class?: string | null
           torso_length_cm?: number | null

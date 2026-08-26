@@ -55,7 +55,12 @@ type TestNumerico = keyof typeof TESTS;
 const NUMERICOS = Object.keys(TESTS) as TestNumerico[];
 
 /** Orden anatómico de recorrido: tobillo → cadera → torso → hombro. */
-const CADERA: TestNumerico[] = ["hip_flexion_deg", "hip_internal_rotation_deg"];
+const CADERA: TestNumerico[] = [
+  "hip_flexion_deg",
+  "hip_internal_rotation_deg",
+  "thomas_test_deg",
+  "slr_deg",
+];
 const HOMBRO: TestNumerico[] = ["shoulder_flexion_deg", "shoulder_external_rotation_deg"];
 
 function aNumero(v: string | undefined): number | null {
@@ -91,7 +96,7 @@ function Movilidad() {
       supabase
         .from("biomech_evaluations")
         .select(
-          "ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, shoulder_flexion_deg, shoulder_external_rotation_deg",
+          "ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thomas_test_deg, slr_deg, shoulder_flexion_deg, shoulder_external_rotation_deg",
         )
         .eq("athlete_id", atletaId)
         .is("voided_at", null)
@@ -182,6 +187,8 @@ function Movilidad() {
       ankle_dorsiflexion_cm: aNumero(rom.ankle_dorsiflexion_cm),
       hip_flexion_deg: aNumero(rom.hip_flexion_deg),
       hip_internal_rotation_deg: aNumero(rom.hip_internal_rotation_deg),
+      thomas_test_deg: aNumero(rom.thomas_test_deg),
+      slr_deg: aNumero(rom.slr_deg),
       thoracic_extension: toracica ?? null,
       shoulder_flexion_deg: aNumero(rom.shoulder_flexion_deg),
       shoulder_external_rotation_deg: aNumero(rom.shoulder_external_rotation_deg),
