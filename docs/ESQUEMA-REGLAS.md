@@ -163,7 +163,53 @@ edita una regla quiere ver de una vez todo lo que está mal.
 
 ---
 
-## 8. Lo que falta confirmar con Giovanni
+## 8. Cómo lo ejecuta el motor (tarea 3.2)
+
+`src/domain/motor.ts` interpreta esta gramática. Cuatro decisiones lo definen:
+
+**Tres valores, no dos.** Un predicado sobre un hecho que no tenemos no es
+falso: es *indecidible*. Si fuera falso, `dorsiflexión < 5` no dispararía en
+quien no tiene el tobillo medido y se le prescribiría sentadilla profunda. El
+motor lo separa y lo denuncia en `sinEvaluar`, y marca la prescripción como
+incompleta.
+
+Dentro de una condición, un `no-cumple` manda sobre un `sin-dato`: si la regla
+ya no aplica por otro motivo, no tiene sentido reclamar una medición.
+
+**La seguridad se acumula, las magnitudes compiten.** Dos reglas que prohíben
+maniobras distintas prohíben las dos; dos suelos de RIR dejan el más alto. Pero
+dos factores de volumen **no se multiplican** —0.75 × 0.9 dejaría el volumen en
+0.67, mucho más agresivo de lo que dice ninguna— así que compiten y gana la de
+mayor evidencia.
+
+**Los empates se denuncian.** Dos reglas del mismo nivel de evidencia que se
+contradicen son un defecto de la matriz. El motor elige una para poder seguir,
+pero lo deja escrito con `empate: true`.
+
+**Todo lleva su porqué.** Cada exclusión arrastra la regla que la causó y su
+justificación (§3.6). Un ejercicio puede caerse por más de un motivo y se
+enseñan todos: si solo se viera uno, el entrenador creería que basta con
+corregir eso.
+
+### El cruce de contraindicaciones
+
+Es lo único que el motor hace sin una fila de `rules`, y no es una excepción de
+verdad: Giovanni lo especificó como mecanismo —*"cruzamiento directo con base de
+datos de ejercicios"*—, no como regla. Los datos que cruza salen enteros de la
+base. Se explica solo, con una entrada sintética, para que el entrenador no vea
+desaparecer un ejercicio sin motivo.
+
+### Un detalle que ahorra vergüenzas
+
+Una regla de fase del ciclo **necesita el predicado de sexo**. Sin él queda "sin
+evaluar" en un atleta hombre —no hay ciclo que mirar— y el motor le reclamaría
+al entrenador que midiera la fase menstrual de un varón. El pseudocódigo de
+Giovanni ya lo trae; la regla del seed no, y se descubrió al probar el motor
+contra datos reales.
+
+---
+
+## 9. Lo que falta confirmar con Giovanni
 
 Tres cosas de la matriz afectan a este esquema y están abiertas en
 `PREGUNTAS-GIOVANNI.md`:

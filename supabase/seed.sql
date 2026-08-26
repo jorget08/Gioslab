@@ -297,8 +297,14 @@ values
    'LEVEL_A_SCIENCE', true, '00000000-2222-0000-0000-00000000000a'),
 
   -- Nivel 2 · su tabla de ciclo, fila "Lútea Tardía"
+  -- El predicado de sexo NO es decorativo: sin él la regla queda "sin evaluar"
+  -- en un atleta hombre —no hay ciclo que mirar— y el motor le reclamaría al
+  -- entrenador que midiera la fase menstrual de un varón. Con él la regla se
+  -- descarta limpiamente, porque un "no cumple" manda sobre un "sin dato".
+  -- Es además como está escrito en su propio pseudocódigo.
   ('ciclo-lutea-tardia', 1, 2,
-   '{"todas":[{"hecho":"fase_ciclo","op":"=","valor":"Lútea Tardía"}]}'::jsonb,
+   '{"todas":[{"hecho":"sexo","op":"=","valor":"femenino"},
+              {"hecho":"fase_ciclo","op":"=","valor":"Lútea Tardía"}]}'::jsonb,
    '{"volumen_factor":0.75,"rir":{"delta":2}}'::jsonb,
    'Caída hormonal y fatiga central: se reduce el volumen un 25% y se evita el fallo muscular.',
    'LEVEL_A_SCIENCE', true, '00000000-2222-0000-0000-00000000000a'),

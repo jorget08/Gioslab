@@ -136,9 +136,11 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   de ejecución del motor, distinto de `evidence_level`, que desempata dentro de
   cada nivel.
 
-- [ ] **3.2 Motor evaluador de reglas** (12 h)
-  Evalúa condiciones sobre el perfil del atleta y produce selecciones/exclusiones.
-  El núcleo del producto: tomarse el tiempo, hacerlo bien.
+- [x] **3.2 Motor evaluador de reglas** (12 h)
+  `src/domain/motor.ts`, función pura sobre hechos + reglas + biblioteca.
+  Ejecuta el tubo de cuatro niveles, cruza contraindicaciones, resuelve
+  conflictos por evidencia y denuncia empates y datos que faltan. Cada decisión
+  arrastra su justificación. `hechos-atleta.ts` es el puente con la base.
 
 - [ ] **3.3 Carga de las reglas de los Excels a la BD** (8 h)
   Migrar la spec de la tarea 0.5. Al terminar, los Excels quedan oficialmente
