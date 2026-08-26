@@ -65,6 +65,11 @@ interface Medicion {
   bmi: number | null;
   waist_hip_ratio: number | null;
   sum_7_skinfolds_mm: number | null;
+  chest_cm: number | null;
+  arm_relaxed_cm: number | null;
+  arm_flexed_cm: number | null;
+  thigh_cm: number | null;
+  calf_cm: number | null;
 }
 
 interface Biomecanica {
@@ -99,7 +104,16 @@ interface Lesion {
 }
 
 const COLUMNAS_MEDICION =
-  "id, measured_at, weight_kg, height_cm, body_fat_pct, fat_mass_kg, lean_mass_kg, bmi, waist_hip_ratio, sum_7_skinfolds_mm";
+  "id, measured_at, weight_kg, height_cm, body_fat_pct, fat_mass_kg, lean_mass_kg, bmi, waist_hip_ratio, sum_7_skinfolds_mm, chest_cm, arm_relaxed_cm, arm_flexed_cm, thigh_cm, calf_cm";
+
+/** Los que se enseñan en la ficha, en el orden en que se recorre al atleta. */
+const PERIMETROS_FICHA = [
+  { campo: "chest_cm", etiqueta: "Tórax" },
+  { campo: "arm_relaxed_cm", etiqueta: "Brazo relajado" },
+  { campo: "arm_flexed_cm", etiqueta: "Brazo contraído" },
+  { campo: "thigh_cm", etiqueta: "Muslo" },
+  { campo: "calf_cm", etiqueta: "Pantorrilla" },
+] as const;
 
 const COLUMNAS_BIOMEC =
   "evaluated_at, femur_class, torso_class, femur_torso_ratio, ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thoracic_extension, shoulder_flexion_deg, shoulder_external_rotation_deg";
@@ -335,6 +349,27 @@ function Ficha() {
           </>
         )}
       </Bloque>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Aparte de la composición y no dentro: la composición dice CUÁNTO
+          cambió el cuerpo y esto dice DÓNDE. Es la petición de Giovanni —con
+          cintura y cadera no se puede seguir la hipertrofia— y solo aparece si
+          hay alguno tomado, porque son opcionales. */}
+      {ultima && PERIMETROS_FICHA.some((p) => ultima[p.campo] !== null) && (
+        <Bloque rotulo="Perímetros">
+          <div className="divide-y">
+            {PERIMETROS_FICHA.filter((p) => ultima[p.campo] !== null).map((p) => (
+              <Dato
+                key={p.campo}
+                rotulo={p.etiqueta}
+                valor={ultima[p.campo]}
+                unidad="cm"
+                variacion={cmp(p.campo, "cm")}
+              />
+            ))}
+          </div>
+        </Bloque>
+      )}
 
       {/* ---------------------------------------------------------------- */}
       <Bloque

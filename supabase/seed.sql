@@ -151,18 +151,24 @@ values
 -- visible la evolución, que es el valor del producto (§3.5). Los valores
 -- calculados de la primera son los del Excel de Giovanni, verificados.
 
+-- Los perímetros de María Fernanda cuentan la historia que Giovanni quería ver:
+-- el peso baja 1.5 kg pero el brazo y el muslo SUBEN. Sin estas columnas la
+-- ficha solo podría decir "perdió grasa", no dónde ganó músculo.
 insert into public.anthropometric_measurements
   (athlete_id, tenant_id, measured_at, height_cm, weight_kg,
    triceps_mm, subscapular_mm, suprailiac_mm, abdominal_mm, thigh_mm, calf_mm, chest_mm,
-   waist_cm, hip_cm, sum_6_skinfolds_mm, sum_7_skinfolds_mm,
+   waist_cm, hip_cm, chest_cm, arm_relaxed_cm, arm_flexed_cm, thigh_cm, calf_cm,
+   sum_6_skinfolds_mm, sum_7_skinfolds_mm,
    body_density, body_fat_pct, fat_mass_kg, lean_mass_kg, bmi, waist_hip_ratio)
 values
   ('00000000-3333-0000-0000-000000000001', '00000000-1111-0000-0000-000000000001',
-   '2026-02-10', 165.0, 62.5, 12.0, 10.0, 14.0, 16.0, 18.0, 8.0, 6.0, 68.0, 96.0,
+   '2026-02-10', 165.0, 62.5, 12.0, 10.0, 14.0, 16.0, 18.0, 8.0, 6.0,
+   68.0, 96.0, 88.0, 27.5, 29.0, 55.0, 34.0,
    78.0, 84.0, 1.05765, 18.0, 11.3, 51.2, 23.0, 0.708),
 
   ('00000000-3333-0000-0000-000000000001', '00000000-1111-0000-0000-000000000001',
-   '2026-08-10', 165.0, 61.0, 10.5, 9.0, 12.0, 13.5, 16.0, 7.5, 5.5, 66.0, 96.5,
+   '2026-08-10', 165.0, 61.0, 10.5, 9.0, 12.0, 13.5, 16.0, 7.5, 5.5,
+   66.0, 96.5, 89.0, 28.4, 30.2, 56.5, 34.5,
    68.5, 74.0, 1.06229, 15.9, 9.7, 51.3, 22.4, 0.684);
 
 insert into public.anthropometric_measurements

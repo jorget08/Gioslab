@@ -113,6 +113,11 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Embarazo, hipertensión, hernia, diástasis. Cierra el cruce: sin esto el motor
   sabía qué contraindica cada ejercicio pero no qué tiene cada persona.
 
+- [x] **2.14 Perímetros de extremidades y tronco** (2 h) · *fuera del plan original*
+  Brazo relajado y contraído, tórax, muslo y pantorrilla, con su evolución en la
+  ficha. Petición suya: con cintura y cadera solo se ve el riesgo abdominal, no
+  si alguien ganó músculo.
+
 - [x] **2.13 Registro del ciclo menstrual (FEMTECH)** (4 h) · *fuera del plan original*
   Faltaba la pantalla: la app solo LEÍA los registros. Con consentimiento aparte.
 

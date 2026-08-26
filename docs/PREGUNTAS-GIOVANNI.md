@@ -138,6 +138,17 @@ condiciones, o deberían venir de un parte médico?** Hoy las marca el entrenado
 con lo que le cuenta el atleta. Es lo mismo que ya hace con las lesiones, pero
 la hipertensión es un diagnóstico, no una molestia.
 
+### K. Los perímetros no detectan asimetrías
+
+Justifica pedirlos con dos motivos: seguir la hipertrofia real e **identificar
+asimetrías**. Lo primero ya funciona; lo segundo no puede funcionar con los
+campos que pidió, porque **no son bilaterales**: se mide "el brazo", no el
+izquierdo y el derecho.
+
+Para detectar una asimetría harían falta los dos lados de brazo, muslo y
+pantorrilla — seis campos en vez de tres. No se añadió por cuenta propia porque
+duplica el trabajo de medición en el gimnasio y eso lo decide él.
+
 ### H. Cambió la batería de movilidad, ¿sustituye o suma? 🔴
 
 Su matriz introduce dos tests que no teníamos (**Thomas Test** y **SLRT**) y a la
@@ -190,7 +201,7 @@ del mismo nivel. Encajan bien; solo hace falta que lo confirme, porque él escri
 |---|---|
 | **Matriz completa de condicionales** | ✅ **Es lo que faltaba.** Desbloquea 0.5 y todo el grupo 3 |
 | **Respuestas técnicas v3** | ✅ Cierra las cuatro preguntas, bien razonadas |
-| Requerimiento técnico 1.1 — más perímetros | ✅ Entra: brazo, tórax, muslo y pantorrilla. Hoy solo hay cintura y cadera |
+| Requerimiento técnico 1.1 — más perímetros | ✅ **Hecho.** Brazo relajado y contraído, tórax, muslo y pantorrilla, con su evolución en la ficha. Ver pregunta K |
 | Requerimiento técnico 1.1 — zonas cardio Z1–Z5 | ⏸ Alcance nuevo, ni está en el tablero. Backlog |
 | Flujo autoadaptativo del ciclo | ◐ La mitad ya está (registro por el entrenador). Que la atleta marque su día 1 necesita el portal del cliente → Fase B |
 | Dashboard in-app con gráficas y fotos | ⏸ Fase B. El comparador de fotos necesita antes la 4.2 |
@@ -297,8 +308,17 @@ de que lo programe.
 
 Sobre el resto de documentos:
 
-**Los perímetros los agrego.** Tienes razón en que con cintura y cadera no se
-puede seguir la hipertrofia. Voy a añadir brazo, tórax, muslo y pantorrilla.
+**Los perímetros ya están.** Tenías razón: con cintura y cadera solo se ve el
+riesgo abdominal, no si alguien ganó músculo. Ya se registran brazo relajado,
+brazo contraído, tórax, muslo y pantorrilla, y la ficha muestra cuánto cambió
+cada uno. En María Fernanda se ve justo lo que buscabas: bajó 1.5 kg de peso
+pero el brazo subió 1.2 cm y el muslo 1.5 cm.
+
+**Una cosa de ahí:** dices que sirven para identificar asimetrías, pero con estos
+campos no se puede, porque se mide "el brazo" y no el izquierdo y el derecho por
+separado. Si quieres detectar asimetrías necesito medir los dos lados de brazo,
+muslo y pantorrilla — son seis medidas en vez de tres, así que te duplica el
+trabajo en cada valoración. Dime si te compensa.
 
 **Las zonas de cardio, el dashboard con fotos y todo lo de cadencia, TUT y
 volumen efectivo** son muy buenos, pero son de la siguiente fase. Ese material

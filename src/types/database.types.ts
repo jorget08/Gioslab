@@ -37,12 +37,16 @@ export type Database = {
       anthropometric_measurements: {
         Row: {
           abdominal_mm: number | null
+          arm_flexed_cm: number | null
+          arm_relaxed_cm: number | null
           athlete_id: string
           bmi: number | null
           body_density: number | null
           body_fat_pct: number | null
           body_fat_pct_source: string
+          calf_cm: number | null
           calf_mm: number | null
+          chest_cm: number | null
           chest_mm: number | null
           created_at: string
           created_by: string | null
@@ -60,6 +64,7 @@ export type Database = {
           sum_7_skinfolds_mm: number | null
           suprailiac_mm: number | null
           tenant_id: string
+          thigh_cm: number | null
           thigh_mm: number | null
           triceps_mm: number | null
           voided_at: string | null
@@ -71,12 +76,16 @@ export type Database = {
         }
         Insert: {
           abdominal_mm?: number | null
+          arm_flexed_cm?: number | null
+          arm_relaxed_cm?: number | null
           athlete_id: string
           bmi?: number | null
           body_density?: number | null
           body_fat_pct?: number | null
           body_fat_pct_source?: string
+          calf_cm?: number | null
           calf_mm?: number | null
+          chest_cm?: number | null
           chest_mm?: number | null
           created_at?: string
           created_by?: string | null
@@ -94,6 +103,7 @@ export type Database = {
           sum_7_skinfolds_mm?: number | null
           suprailiac_mm?: number | null
           tenant_id: string
+          thigh_cm?: number | null
           thigh_mm?: number | null
           triceps_mm?: number | null
           voided_at?: string | null
@@ -105,12 +115,16 @@ export type Database = {
         }
         Update: {
           abdominal_mm?: number | null
+          arm_flexed_cm?: number | null
+          arm_relaxed_cm?: number | null
           athlete_id?: string
           bmi?: number | null
           body_density?: number | null
           body_fat_pct?: number | null
           body_fat_pct_source?: string
+          calf_cm?: number | null
           calf_mm?: number | null
+          chest_cm?: number | null
           chest_mm?: number | null
           created_at?: string
           created_by?: string | null
@@ -128,6 +142,7 @@ export type Database = {
           sum_7_skinfolds_mm?: number | null
           suprailiac_mm?: number | null
           tenant_id?: string
+          thigh_cm?: number | null
           thigh_mm?: number | null
           triceps_mm?: number | null
           voided_at?: string | null

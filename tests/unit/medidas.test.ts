@@ -8,6 +8,7 @@ import {
   PLIEGUES,
   revisarCampo,
   validarRango,
+  PERIMETROS,
 } from "@/domain/medidas";
 
 describe("los rangos coinciden con los CHECK de la base", () => {
@@ -152,5 +153,59 @@ describe("faltantesParaCalculo", () => {
   it("también avisa del peso y la estatura", () => {
     const soloPliegues = Object.fromEntries(PLIEGUES.map((c) => [c, 10]));
     expect(faltantesParaCalculo(soloPliegues)).toEqual(["el peso", "la estatura"]);
+  });
+});
+
+describe("perímetros de extremidades y tronco", () => {
+  it("están los cinco que pidió Giovanni, más cintura y cadera", () => {
+    // Su justificación: con cintura y cadera no se puede seguir la hipertrofia,
+    // solo el riesgo abdominal.
+    expect(PERIMETROS).toEqual([
+      "waist_cm", "hip_cm", "chest_cm",
+      "arm_relaxed_cm", "arm_flexed_cm", "thigh_cm", "calf_cm",
+    ]);
+  });
+
+  it("todos van en centímetros y tienen sitio de medición", () => {
+    // Sin el sitio, dos entrenadores miden el brazo en puntos distintos y la
+    // evolución deja de significar nada.
+    for (const campo of PERIMETROS) {
+      expect(CAMPOS[campo].unidad, campo).toBe("cm");
+      expect(CAMPOS[campo].sitio, campo).toBeTruthy();
+    }
+  });
+
+  it("un brazo no cambia como una cintura: el aviso salta antes", () => {
+    // 8% frente al 15% de la cintura. Cuatro centímetros de brazo entre dos
+    // evaluaciones es casi siempre un error de tecleo o de punto de medición.
+    expect(CAMPOS.arm_flexed_cm.saltoRelativo).toBeLessThan(CAMPOS.waist_cm.saltoRelativo!);
+  });
+
+  it("brazo relajado y contraído son campos distintos", () => {
+    // La diferencia entre ambos es la que habla de masa contráctil;
+    // promediarlos la perdería.
+    expect(CAMPOS.arm_relaxed_cm.etiqueta).not.toBe(CAMPOS.arm_flexed_cm.etiqueta);
+  });
+
+  it("rechaza lo imposible y propone la corrección", () => {
+    const aviso = validarRango("arm_flexed_cm", 300);
+    expect(aviso?.nivel).toBe("bloquea");
+    expect(aviso?.sugerencia).toBe(30);
+  });
+
+  it("los rangos coinciden con los CHECK de la tabla", () => {
+    // Si divergen, la app deja escribir algo que la base rechaza al guardar y
+    // el entrenador pierde el trabajo al final en vez de al principio.
+    expect([CAMPOS.arm_relaxed_cm.min, CAMPOS.arm_relaxed_cm.max]).toEqual([15, 70]);
+    expect([CAMPOS.arm_flexed_cm.min, CAMPOS.arm_flexed_cm.max]).toEqual([15, 70]);
+    expect([CAMPOS.chest_cm.min, CAMPOS.chest_cm.max]).toEqual([50, 200]);
+    expect([CAMPOS.thigh_cm.min, CAMPOS.thigh_cm.max]).toEqual([25, 110]);
+    expect([CAMPOS.calf_cm.min, CAMPOS.calf_cm.max]).toEqual([15, 80]);
+  });
+
+  it("el pliegue y el perímetro de pantorrilla no se confunden", () => {
+    // calf_mm es el pliegue del protocolo ISAK; calf_cm es el contorno.
+    expect(CAMPOS.calf_mm.unidad).toBe("mm");
+    expect(CAMPOS.calf_cm.unidad).toBe("cm");
   });
 });

@@ -13,7 +13,8 @@ export type CampoMedida =
   | "height_cm" | "weight_kg"
   | "triceps_mm" | "subscapular_mm" | "suprailiac_mm" | "abdominal_mm"
   | "thigh_mm" | "calf_mm" | "chest_mm"
-  | "waist_cm" | "hip_cm";
+  | "waist_cm" | "hip_cm"
+  | "arm_relaxed_cm" | "arm_flexed_cm" | "chest_cm" | "thigh_cm" | "calf_cm";
 
 export interface MetaCampo {
   etiqueta: string;
@@ -41,7 +42,28 @@ export const CAMPOS: Record<CampoMedida, MetaCampo> = {
 
   waist_cm: { etiqueta: "Cintura", sitio: "a nivel umbilical", unidad: "cm", min: 40, max: 200, saltoRelativo: 0.15 },
   hip_cm:   { etiqueta: "Cadera",  sitio: "máxima prominencia de glúteos", unidad: "cm", min: 40, max: 200, saltoRelativo: 0.15 },
+
+  // Perímetros de extremidades y tronco. Cintura y cadera sirven para el ratio
+  // de riesgo; estos son los que dicen DÓNDE creció alguien.
+  //
+  // El salto que dispara aviso es más estrecho aquí (8%) que en cintura (15%):
+  // un brazo no gana cuatro centímetros entre dos evaluaciones, así que un
+  // cambio así es casi siempre un error de tecleo o de punto de medición.
+  arm_relaxed_cm: { etiqueta: "Brazo relajado",  sitio: "punto medio del brazo, colgando", unidad: "cm", min: 15, max: 70,  saltoRelativo: 0.08 },
+  arm_flexed_cm:  { etiqueta: "Brazo contraído", sitio: "máxima circunferencia en flexión", unidad: "cm", min: 15, max: 70,  saltoRelativo: 0.08 },
+  chest_cm:       { etiqueta: "Tórax",           sitio: "a nivel mesoesternal",             unidad: "cm", min: 50, max: 200, saltoRelativo: 0.10 },
+  thigh_cm:       { etiqueta: "Muslo",           sitio: "punto medio entre ingle y rodilla", unidad: "cm", min: 25, max: 110, saltoRelativo: 0.10 },
+  calf_cm:        { etiqueta: "Pantorrilla",     sitio: "máxima circunferencia",            unidad: "cm", min: 15, max: 80,  saltoRelativo: 0.08 },
 };
+
+/**
+ * Perímetros, en el orden en que se recorre al atleta: tronco primero y luego
+ * las extremidades de arriba abajo. El mismo criterio que la movilidad.
+ */
+export const PERIMETROS: CampoMedida[] = [
+  "waist_cm", "hip_cm", "chest_cm",
+  "arm_relaxed_cm", "arm_flexed_cm", "thigh_cm", "calf_cm",
+];
 
 /** Los 7 pliegues, en el orden del protocolo ISAK de la ficha de Giovanni. */
 export const PLIEGUES: CampoMedida[] = [

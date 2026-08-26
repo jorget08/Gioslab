@@ -18,6 +18,7 @@ import {
   aNumero,
   CAMPOS,
   faltantesParaCalculo,
+  PERIMETROS,
   PLIEGUES,
   validarRango,
   type CampoMedida,
@@ -46,7 +47,6 @@ interface Anterior {
 }
 
 const BASICOS: CampoMedida[] = ["height_cm", "weight_kg"];
-const PERIMETROS: CampoMedida[] = ["waist_cm", "hip_cm"];
 
 function Medicion() {
   const params = useSearchParams();
@@ -186,6 +186,11 @@ function Medicion() {
       chest_mm: numeros.chest_mm,
       waist_cm: numeros.waist_cm,
       hip_cm: numeros.hip_cm,
+      chest_cm: numeros.chest_cm,
+      arm_relaxed_cm: numeros.arm_relaxed_cm,
+      arm_flexed_cm: numeros.arm_flexed_cm,
+      thigh_cm: numeros.thigh_cm,
+      calf_cm: numeros.calf_cm,
 
       ...(composicion && {
         sum_6_skinfolds_mm: composicion.suma6,
