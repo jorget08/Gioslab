@@ -1,10 +1,13 @@
 # Preguntas pendientes para Giovanni
 
 Estado: **actualizado tras sus aclaraciones técnicas (2026-08-22).**
-Respondió las siete originales, y el 2026-08-22 respondió además la de
-contraindicaciones ampliando el modelo con una familia que no habíamos previsto.
-Quedan **seis abiertas** y un bloqueo de fondo: la matriz completa de
-condicionales.
+**Actualizado el 2026-08-25: llegó la matriz completa de condicionales**, que
+era el bloqueo de fondo, y con ella las respuestas a las cuatro preguntas de
+precisión. El grupo 3 deja de estar bloqueado.
+
+A cambio aparecieron **cuatro contradicciones nuevas** —dos de sus documentos
+entre sí y dos con lo ya construido— que hay que resolver antes de programar el
+motor. Son las que están abiertas ahora.
 
 Fuentes: `fuentes-giovanni/aclaracionestecnicasjorgehernan.pdf`,
 `Modulo_Fisiologia_Femenina_GiosLab(1).pdf`,
@@ -45,35 +48,43 @@ en un idioma y mitad en otro.
 
 ## 🟡 Preguntas nuevas
 
-### A. ¿Heath-Carter va o no? *(se contradice a sí mismo)*
+### A. Heath-Carter ✅ RESUELTA
 
 En su **módulo 01** confirma Jackson & Pollock + Siri, que es lo que hace su
 Excel y lo que está programado. Pero en su documento de **recomendaciones**, el
 "perfil avanzado" incluye *"somatotipo Heath-Carter"*.
 
-No son lo mismo ni son intercambiables. **Afecta:** tarea 2.6 y `CLAUDE.md` §3.4.
+**Jackson & Pollock se queda como obligatoria** para % graso, masa magra y
+volumen. **Heath-Carter entra como perfilador morfológico opcional** que no
+bloquea nada: si se capturan los diámetros óseos, dibuja la somatocarta; si no,
+el flujo sigue igual. No miden lo mismo y ahora está claro.
 
-### B. Flexión de hombro: ¿180° exactos?
+**Efecto:** la 2.6 deja de bloquear la Fase A y baja de prioridad.
 
-Su ficha dice *"Flexión de hombro normal (180°)"*. Programado literal: 179° sale
-`Restringido`. ¿Hay tolerancia (175°, 170°) o el criterio es estricto?
+### B. Flexión de hombro ✅ RESUELTA — pero con un número en disputa
 
-**Afecta:** cuánta gente sale restringida en el paso 4.
+Confirmó que 180° estricto genera falsos positivos y dio tres bandas citando a
+la AAOS: **≥170° óptimo · 150–169° limitación leve · <150° restricción severa**.
 
-### C. Duración del ciclo fuera de 21–35 días
+⚠️ **Pero su matriz, del mismo día, dice `< 175° = Restringida`.** Dos números
+distintos para el mismo test. Se toma 170 —es el documento que responde a la
+pregunta y el único que cita fuente— a la espera de que lo confirme.
 
-Su módulo dice "editable de 21 a 35". Pero un ciclo irregular de 38 días existe,
-y bloquearlo dejaría a esa atleta sin el módulo. Implementado en dos niveles:
-la base acepta **21–45** y la interfaz **avisa** fuera de 21–35 sin impedir
-guardar. ¿Le sirve, o prefiere el corte duro en 35?
+### C. Duración del ciclo ✅ RESUELTA — nos da la razón
 
-### D. Dorsiflexión: dos bandas restringidas
+Aprobó **exactamente** lo que habíamos implementado: 21–45 con aviso fuera de
+21–35. Añade que por encima de 35 días (oligomenorrea, SOP, tríada de la atleta)
+el ajuste debe ir por RIR/RPE en vez de por calendario hormonal.
 
-Su ficha define dos grados con acciones distintas (`<10 cm` → calzado de
-elevación; `<5 cm` → Hack Squat y prensa), pero el vocabulario micro que fijó es
-binario `Restringido/Óptimo`. Se conservan **las dos cosas**: el estado binario
-para el motor y la severidad (`Severa`/`Limitada`/`Óptima`) para no perder una de
-sus reglas. ¿Correcto?
+**Pendiente de construir:** ese modo por RIR/RPE, que es prescripción y hoy no
+existe.
+
+### D. Dorsiflexión ✅ RESUELTA — aprueba lo construido
+
+Aprobó el modelo de tres estados tal cual está: **≥10 óptimo · 5–9.9 limitada ·
+<5 severa**, guardando el valor continuo en cm. Confirma además que el test es
+el WBLT (Weight-Bearing Lunge Test), que es el protocolo que ya describimos en
+pantalla.
 
 ### E. Contraindicaciones ✅ RESUELTA — y amplió el modelo
 
@@ -127,6 +138,79 @@ condiciones, o deberían venir de un parte médico?** Hoy las marca el entrenado
 con lo que le cuenta el atleta. Es lo mismo que ya hace con las lesiones, pero
 la hipertensión es un diagnóstico, no una molestia.
 
+### H. Cambió la batería de movilidad, ¿sustituye o suma? 🔴
+
+Su matriz introduce dos tests que no teníamos (**Thomas Test** y **SLRT**) y a la
+vez **deja fuera dos que salieron de su propia ficha**:
+
+| Test | Implementado | En su matriz nueva |
+|---|---|---|
+| Rotación externa de hombro | óptimo ≥ 90° | limitada < **70°** |
+| Flexión de cadera | óptimo ≥ 120° | **no aparece** |
+| Rotación interna de cadera | óptimo ≥ 30° | **no aparece** |
+| Thomas Test | — | nuevo |
+| SLRT (isquiotibiales) | — | nuevo |
+
+No es lo mismo sustituir que sumar: si sustituye, hay que migrar las
+evaluaciones ya hechas y decidir qué pasa con los valores guardados.
+
+### I. Se cayó una regla de seguridad del ciclo 🔴
+
+Su matriz pasa el ciclo de 5 fases a 4: **Ovulatoria desaparece** absorbida por
+Folicular Tardía (días 6–14) y entra **Lútea Temprana** (15–22).
+
+El problema es lo que se va con la Ovulatoria: *"mayor laxitud ligamentosa por
+relaxina → priorizar variantes en máquina o con apoyo guiado"*. Eso lo escribió
+él y **es una regla de protección articular**, no un ajuste de volumen. ¿La
+descarta a conciencia o hay que reubicarla dentro de Folicular Tardía?
+
+Cambian además los multiplicadores: Folicular Tardía pasa de ×1.1 a 110–120 %, y
+Lútea Tardía de ×0.8 a −25/−30 %.
+
+### J. ¿Las dos jerarquías conviven? 🔴
+
+Ahora hay dos, y definen cómo se programa el motor:
+
+- `LEVEL_A > B > C > D` — la que dio antes, para resolver reglas en conflicto.
+- `Nivel 1 → 2 → 3 → 4` — la de la matriz: seguridad, fisiología, vectores,
+  composición.
+
+**Nuestra lectura, que es la que se va a programar salvo que diga lo contrario:**
+no compiten, son ejes distintos. Los Niveles 1–4 son el ORDEN DE EJECUCIÓN
+—primero se filtra por seguridad, después se modula el volumen, después se
+asignan vectores— y los LEVEL_A–D resuelven el empate entre dos reglas *dentro*
+del mismo nivel. Encajan bien; solo hace falta que lo confirme, porque él escribió
+"en caso de conflicto se aplica la de mayor jerarquía", que suena a lo otro.
+
+---
+
+## 📥 Lo que llegó el 2026-08-25 y qué se hace con ello
+
+| Documento | Veredicto |
+|---|---|
+| **Matriz completa de condicionales** | ✅ **Es lo que faltaba.** Desbloquea 0.5 y todo el grupo 3 |
+| **Respuestas técnicas v3** | ✅ Cierra las cuatro preguntas, bien razonadas |
+| Requerimiento técnico 1.1 — más perímetros | ✅ Entra: brazo, tórax, muslo y pantorrilla. Hoy solo hay cintura y cadera |
+| Requerimiento técnico 1.1 — zonas cardio Z1–Z5 | ⏸ Alcance nuevo, ni está en el tablero. Backlog |
+| Flujo autoadaptativo del ciclo | ◐ La mitad ya está (registro por el entrenador). Que la atleta marque su día 1 necesita el portal del cliente → Fase B |
+| Dashboard in-app con gráficas y fotos | ⏸ Fase B. El comparador de fotos necesita antes la 4.2 |
+| Volumen efectivo, cadencia y TUT | ⏸ Fase B: es el generador de rutinas. La tabla MEV/MAV/MRV es buen material de referencia para cuando llegue |
+| respuesta5 contraindicaciones | — Duplicado de lo que ya envió y ya está implementado |
+
+### Descartado, con motivo
+
+- **El endpoint REST** `POST /api/v1/user/menstrual-cycle/update`. No existe esa
+  capa: Supabase **es** el backend (docs/ARQUITECTURA.md). La idea es válida y ya
+  está construida a medias; el diseño técnico no aplica.
+- **Las librerías de gráficas para React Native y Flutter.** No es nuestro stack
+  y se descartó a propósito. De su lista solo sirve la de web.
+
+### ⚠️ Y una que contradice el plan
+
+El documento del dashboard dice que *"el PDF queda como recurso secundario"*.
+Eso choca con el grupo 5 —29 horas de informes— y con lo que él mismo dijo antes:
+"el PDF es lo que vende el producto". **No se cambia sin que lo diga explícitamente.**
+
 ---
 
 ## 💡 Sus cinco recomendaciones — qué hacemos con cada una
@@ -163,65 +247,75 @@ la hipertensión es un diagnóstico, no una molestia.
 
 ---
 
-Giova, gracias los archivos se destrabó casi todo. Ya está programado: los ocho
-patrones de movimiento, los cuatro niveles de evidencia (y el motor ya sabe que
-ante dos reglas que se contradicen manda la de nivel más alto), y la pantalla de
-movilidad con las seis pruebas.
+Giova, la matriz es justo lo que necesitaba. Con eso ya puedo construir el motor,
+que era lo único que quedaba grande. Y las cuatro dudas quedaron resueltas: me
+sirvió especialmente lo del hombro, porque tenías razón, con 180 exactos me
+salían restringidos casi todos.
 
-Lo de Micro y Macro fue la respuesta más útil de todas. Yo tenía mal el diseño:
-estaba guardando "Eficiente / Compensada / De Riesgo" como algo que el entrenador
-escribía a mano. Con tu aclaración quedó donde va — el entrenador mide rangos y el
-motor concluye. Ya lo corregí.
+Dos cosas que aprobaste ya estaban hechas tal cual: el rango de 21 a 45 días del
+ciclo y los tres niveles de dorsiflexión. Perfecto, no toco nada ahí.
 
-Me quedan unas dudas cortas:
+Antes de programar el motor necesito que me aclares cuatro cosas, porque si me
+equivoco en estas hay que rehacerlo entero:
 
-**1. ¿Heath-Carter va o no?** En tus aclaraciones técnicas confirmas Jackson &
-Pollock, que es lo que programé y lo que hace tu Excel. Pero en el documento de
-recomendaciones, el perfil avanzado dice "somatotipo Heath-Carter". No son lo
-mismo. ¿Cuál dejamos?
+**1. El hombro: ¿170 o 175?** En las respuestas me dices que a partir de 170 es
+óptimo. En la matriz dice que por debajo de 175 es restringido. Son dos números
+distintos para el mismo test. Yo voy a usar 170, que es el que viene con la
+explicación de la AAOS, pero confírmame.
 
-**2. Flexión de hombro.** Tu ficha dice "normal (180°)". Lo programé literal,
-así que alguien con 178° sale como restringido. ¿Es así de estricto o hay margen?
+**2. Cambiaste los tests de movilidad, y necesito saber si es a propósito.**
+En la matriz aparecen dos nuevos (Thomas Test y elevación de pierna recta) pero
+desaparecen dos que estaban en tu ficha de movilidad y que ya tengo programados
+y capturando datos: la flexión de cadera y la rotación interna de cadera.
+También bajaste la rotación externa de hombro de 90 a 70 grados.
 
-**3. Duración del ciclo.** Dijiste editable de 21 a 35 días. Lo dejé así, pero
-permitiendo guardar fuera de ese rango con un aviso, porque una atleta con ciclo
-irregular de 38 días existe y no quería dejarla fuera del módulo. ¿Te parece?
+¿Los nuevos reemplazan a los viejos o se suman? Si reemplazan, tengo que decidir
+qué hago con las evaluaciones que ya están guardadas.
 
-**4. Dorsiflexión.** Tu ficha tiene dos niveles de restricción con acciones
-distintas (<10 cm y <5 cm), pero el vocabulario que fijaste es Restringido/Óptimo.
-Dejé los dos: el sistema guarda los centímetros exactos y muestra "Severa" o
-"Limitada", que es lo que dispara cada una de tus reglas. ¿Bien así?
+**3. Se te cayó una regla de seguridad del ciclo.** En la matriz el ciclo pasa de
+cinco fases a cuatro: la Ovulatoria desaparece dentro de la Folicular Tardía. El
+problema es lo que se va con ella: tú habías escrito que en la ovulación hay más
+laxitud ligamentosa por la relaxina y que había que priorizar máquinas para
+proteger la articulación. Eso no es un ajuste de volumen, es una regla de
+seguridad.
 
-Sobre tus recomendaciones: la **matriz de sustitución** me parece la mejor de las
-cinco y ya está medio construida — la estructura existe desde el mes pasado, lo
-que falta es que me digas qué sustituye a qué. Lo del **filtro por equipos
-disponibles** sí es más trabajo del que parece, porque hay que saber qué máquinas
-tiene cada gimnasio; lo dejaría para después.
+¿La quitamos a propósito o la muevo dentro de la Folicular Tardía?
 
-En el **prompt de apreciación visual** te propongo un cambio: en vez de un campo
-de texto libre, usar casillas concretas (dominancia de rodilla o cadera, vector de
-glúteo, vector de espalda). Ya están en el sistema desde tu ficha de patrones. La
-razón es que si el entrenador escribe texto libre y el sistema lo interpreta, deja
-de poder explicar por qué decidió lo que decidió — y esa transparencia es lo que
-hace que un entrenador confíe en la herramienta.
+**4. ¿Cómo conviven las dos jerarquías?** Me diste dos y no sé si son la misma
+cosa o dos cosas distintas. Están los cuatro niveles de evidencia (A, B, C, D) y
+ahora los cuatro niveles de la matriz (seguridad, fisiología, vectores,
+composición).
 
-Aparte de eso, ya está lista la **pantalla de la biblioteca de ejercicios**:
-puedes crear, editar y clasificar cada ejercicio por su patrón, y se ven
-agrupados por los ocho que definiste. Dos cosas de ahí:
+Mi interpretación —y es como lo voy a programar si no me dices lo contrario— es
+que son cosas distintas y se complementan: los niveles 1 a 4 son el ORDEN en que
+el motor va decidiendo (primero descarta por seguridad, después ajusta el
+volumen, después reparte los vectores), y los niveles A a D son para desempatar
+cuando dos reglas del mismo nivel se contradicen. Si lo entendí mal, dímelo antes
+de que lo programe.
 
-**5. Contraindicaciones.** Las puse como una lista de zonas del cuerpo —hombro,
-lumbar, rodilla, tobillo…— usando exactamente las mismas que se registran en las
-lesiones del atleta. Lo hice así para que el sistema pueda cruzarlas: si un
-atleta tiene la rodilla marcada y un ejercicio está contraindicado para rodilla,
-el motor lo detecta solo. Si escribiéramos texto libre no habría forma de
-cruzarlo con certeza. ¿Te sirve así, o hay contraindicaciones que no son una
-zona del cuerpo, tipo hipertensión o embarazo?
+---
 
-**6. "Tipo biomecánico".** En tus fichas viejas había un campo con valores como
-"rodilla dominante" o "cadera dominante". Ahora que definiste los ocho patrones,
-eso quedó casi repetido. Lo dejé por si acaso, pero está vacío de criterio: ¿lo
-quitamos, o guarda algo que el patrón no cubre?
+Sobre el resto de documentos:
 
-Y lo que más me sirve ahora mismo: **la matriz completa de condicionales.** Con la
-forma que me diste ya puedo construir el motor, pero necesito tus reglas para
-llenarlo.
+**Los perímetros los agrego.** Tienes razón en que con cintura y cadera no se
+puede seguir la hipertrofia. Voy a añadir brazo, tórax, muslo y pantorrilla.
+
+**Las zonas de cardio, el dashboard con fotos y todo lo de cadencia, TUT y
+volumen efectivo** son muy buenos, pero son de la siguiente fase. Ese material
+va al backlog para cuando construyamos el generador de rutinas — la tabla de
+series por grupo muscular sobre todo, esa está muy bien hecha.
+
+**Lo del ciclo en la app de la atleta** también es de la siguiente fase, porque
+la atleta todavía no tiene app propia. Pero la primera mitad —que tú registres la
+fecha del periodo en la valoración— ya está funcionando; entra a cualquier atleta
+mujer y verás el bloque.
+
+**Una cosa que quiero confirmarte:** en el documento del dashboard dice que el
+PDF pasa a ser algo secundario. Eso choca con lo que me dijiste antes, que el PDF
+era lo que vendía el producto, y con el plan, donde el PDF es una parte grande.
+No lo cambio a menos que me digas que sí, que ahora prefieres la pantalla.
+
+Y sigo esperando dos cosas tuyas para poder avanzar en los informes: **el logo en
+archivo** (idealmente en PNG con fondo transparente o SVG) y **la plantilla de
+cómo quieres que se vea el reporte**. Los colores ya los saqué de tu logo y del
+PDF de entrenamiento, y la app ya está en rojo, dorado y negro.
