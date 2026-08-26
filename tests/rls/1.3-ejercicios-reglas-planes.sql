@@ -126,11 +126,20 @@ begin;
   update public.rules set is_active = true  where id = '40000000-0000-0000-0000-000000000002';
 commit;
 
+-- Acotado a las DOS reglas que toca este bloque. Un `count(*)` sobre la tabla
+-- entera contaba también lo que hubieran escrito otras suites —`test:reglas`
+-- activa y desactiva reglas propias— y el test fallaba por contaminación ajena
+-- en vez de por un fallo del trigger, que es lo que aquí se comprueba.
 select case when count(*) = 2 then 'OK  el trigger registró 2 cambios sin que nadie los insertara'
             else 'FALLO  registró ' || count(*) end as resultado
-from public.rule_activations;
+from public.rule_activations
+where rule_id in ('40000000-0000-0000-0000-000000000001',
+                  '40000000-0000-0000-0000-000000000002');
 
-select action, count(*) from public.rule_activations group by action order by action;
+select action, count(*) from public.rule_activations
+ where rule_id in ('40000000-0000-0000-0000-000000000001',
+                   '40000000-0000-0000-0000-000000000002')
+ group by action order by action;
 
 \echo ''
 \echo '=== G. Una regla sin justificación es rechazada ==='
@@ -221,3 +230,36 @@ begin;
   select case when status = 'activo' then 'OK  el copiloto no manda: el plan es editable'
               else 'FALLO' end as resultado from public.workout_plans limit 1;
 commit;
+
+\echo ''
+\echo '=== K. La inmutabilidad por columna existe de verdad ==='
+-- Supabase concede `all` sobre cada tabla nueva a `authenticated`, así que un
+-- `grant update (columna)` SUMA en vez de restringir. Durante meses estas seis
+-- tablas parecían inmutables y no lo eran. Esto compara lo concedido con lo
+-- declarado, para que una tabla nueva que se olvide del `revoke` se caiga aquí
+-- y no en producción seis meses después.
+with esperado(tabla, cols) as (
+  values
+    ('rules',                       array['is_active']),
+    ('invitations',                 array['revoked_at']),
+    ('athlete_conditions',          array['is_active','notes']),
+    ('anthropometric_measurements', array['voided_at','voided_by','voided_reason']),
+    ('biomech_evaluations',         array['voided_at','voided_by','voided_reason']),
+    ('menstrual_cycle_logs',        array['voided_at','voided_by','voided_reason']),
+    ('engine_runs',                 array[]::text[]),
+    ('users',                       array['full_name'])
+),
+real as (
+  select table_name::text as tabla, array_agg(column_name::text order by column_name) as cols
+    from information_schema.column_privileges
+   where table_schema = 'public' and grantee = 'authenticated' and privilege_type = 'UPDATE'
+   group by table_name
+)
+select case
+         when coalesce(r.cols, array[]::text[]) = (select array_agg(c order by c) from unnest(e.cols) c)
+           or (e.cols = array[]::text[] and r.cols is null)
+         then 'OK  ' || e.tabla || ' solo deja tocar lo declarado'
+         else 'FALLO  ' || e.tabla || ' deja actualizar: ' || array_to_string(coalesce(r.cols, '{}'), ', ')
+       end as resultado
+  from esperado e left join real r on r.tabla = e.tabla
+ order by e.tabla;

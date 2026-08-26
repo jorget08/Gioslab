@@ -83,7 +83,12 @@ describe("la gramática expresa la matriz de Giovanni", () => {
       },
     });
     expect(validarRegla(r)).toEqual([]);
-    expect(describirRegla(r)).toContain("60% hip_hinge_dominante_cadera / 40% squat_dominante_rodilla");
+    // Con el nombre del patrón, no con su clave: esta frase la lee Giovanni en
+    // el editor y el entrenador en la ficha del atleta. Y separado con "y",
+    // porque los nombres llevan barra y con "/" no se sabía dónde acaba cada uno.
+    expect(describirRegla(r)).toContain(
+      "60% en Dominante / Bisagra de Cadera y 40% en Dominante de Rodilla",
+    );
   });
 
   it("composición corporal: volumen base por sexo y porcentaje graso", () => {

@@ -150,9 +150,14 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Batería de casos de Giovanni: entrada conocida → salida esperada.
   Protege contra regresiones al editar reglas.
 
-- [ ] **3.5 Editor de reglas para Giovanni** (12 h)
-  Listar, crear, editar, activar/desactivar sin tocar código.
-  El usuario es Giovanni, no un programador: interfaz simple.
+- [x] **3.5 Editor de reglas para Giovanni** (12 h)
+  `/admin/reglas` y `/admin/reglas/regla`. Nada se escribe a mano: el hecho sale
+  de un desplegable por nivel, el operador se filtra por el tipo del hecho, el
+  valor se adapta y los ejercicios salen de la biblioteca. Mientras escribe, la
+  regla se lee **en español** — la misma frase que verá el entrenador en la ficha.
+  Solo se ofrecen las acciones que ese nivel ejecuta de verdad (`ACCIONES_POR_NIVEL`).
+  **Editar es publicar una versión nueva**, nunca pisar: lo exige el GRANT por
+  columna y lo exige la trazabilidad.
 
 - [ ] **3.6 Versionado de reglas y registro de cambios** (5 h)
   Quién cambió qué y cuándo; poder volver a una versión anterior.

@@ -45,7 +45,7 @@ import {
   type Contraindicacion,
 } from "@/domain/contraindicaciones";
 import { esNivelEvidencia, type NivelEvidencia } from "@/domain/evidencia";
-import { esPatron, PATRONES, type Patron } from "@/domain/patrones";
+import { esPatron, nombrePatron, PATRONES, type Patron } from "@/domain/patrones";
 
 /** El orden del tubo. 1 se evalúa primero y puede vetar lo que venga después. */
 export const NIVELES_MOTOR = [1, 2, 3, 4] as const;
@@ -230,6 +230,19 @@ const OPERADORES_POR_TIPO: Record<TipoHecho, readonly Operador[]> = {
   booleano: ["="],
 };
 
+/**
+ * Los operadores que puede elegir quien edita una regla para un hecho dado.
+ *
+ * El editor ofrece SOLO estos en vez de los nueve y avisar después: un
+ * desplegable que no deja equivocarse enseña la gramática mientras se usa, y
+ * quien edita la matriz no es programador.
+ */
+export function operadoresDe(hecho: string): readonly Operador[] {
+  if (!esHecho(hecho)) return [];
+  return OPERADORES_POR_TIPO[HECHOS[hecho].tipo];
+}
+
+
 export interface Predicado {
   hecho: string;
   op: Operador;
@@ -277,6 +290,40 @@ export interface Acciones {
   /** Nivel 4. Series efectivas por grupo muscular y semana. */
   volumen_series?: { min: number; max: number };
 }
+
+export type ClaveAccion = keyof Acciones;
+
+/**
+ * Qué acciones EJECUTA cada nivel del motor.
+ *
+ * No es una preferencia de estilo: es lo que `motor.ts` lee de verdad en cada
+ * pasada. Una `volumen_factor` dentro de una regla de nivel 1 no falla — el
+ * motor sencillamente nunca la mira, porque el volumen se resuelve en el 2. La
+ * regla se queda en la matriz pareciendo viva y sin efecto ninguno, que es la
+ * peor forma de estar rota.
+ *
+ * Está aquí y no en el motor porque es gramática: define qué se puede escribir,
+ * no qué se hace con ello. El editor lo usa para ofrecer solo lo que aplica, y
+ * `validarRegla` para rechazar lo que no.
+ */
+export const ACCIONES_POR_NIVEL: Record<NivelMotor, readonly ClaveAccion[]> = {
+  1: [
+    "excluir_ejercicios",
+    "excluir_patrones",
+    "sustituir_por",
+    "priorizar",
+    "modificador",
+    "prohibir_maniobra",
+    // El RIR entra ya en seguridad porque un suelo es una restricción, no una
+    // dosis: la hipertensión prohíbe Valsalva Y prohíbe llegar al fallo, y las
+    // dos cosas son el mismo criterio. Los suelos se acumulan quedándose con el
+    // más alto, así que sumar el nivel 1 solo puede ser más conservador.
+    "rir",
+  ],
+  2: ["volumen_factor", "rir"],
+  3: ["ratio_patron", "priorizar"],
+  4: ["volumen_series"],
+};
 
 export interface Regla {
   rule_key: string;
@@ -427,6 +474,31 @@ export function validarRegla(r: Regla): string[] {
 
   for (const e of validarAcciones(r.actions ?? {})) errores.push(e);
 
+  // Una acción que su nivel no ejecuta NO falla en el motor: no hace nada. La
+  // regla se queda en la matriz pareciendo viva, y eso es peor que un error.
+  if ((NIVELES_MOTOR as readonly number[]).includes(r.nivel)) {
+    const permitidas = ACCIONES_POR_NIVEL[r.nivel as NivelMotor];
+
+    // El RIR es la excepción fina: `piso` y `delta` se leen en el 1 y en el 2,
+    // pero `fijo` solo en el 2, porque clavar el RIR es dosificar y no proteger.
+    if (r.nivel === 1 && r.actions?.rir?.fijo !== undefined) {
+      errores.push('El RIR fijo solo se ejecuta en el nivel 2; en seguridad usa "piso".');
+    }
+
+    for (const clave of Object.keys(r.actions ?? {}) as ClaveAccion[]) {
+      if (r.actions[clave] === undefined) continue;
+      if (!permitidas.includes(clave)) {
+        const donde = NIVELES_MOTOR.filter((n) => ACCIONES_POR_NIVEL[n].includes(clave));
+        errores.push(
+          `"${clave}" no se ejecuta en el nivel ${r.nivel}; ` +
+            (donde.length > 0
+              ? `va en ${donde.length === 1 ? "el nivel" : "los niveles"} ${donde.join(" o ")}.`
+              : "no la ejecuta ningún nivel."),
+        );
+      }
+    }
+  }
+
   return errores;
 }
 
@@ -438,7 +510,7 @@ export function validarRegla(r: Regla): string[] {
 // tiene que poder releer lo que escribió en su editor (3.5). Las dos cosas
 // salen de aquí, así que la regla se lee igual en los dos sitios.
 
-const TEXTO_OPERADOR: Record<Operador, string> = {
+export const TEXTO_OPERADOR: Record<Operador, string> = {
   "<": "es menor que", "<=": "es como mucho", "=": "es", "!=": "no es",
   ">=": "es al menos", ">": "es mayor que", entre: "está entre",
   incluye: "incluye", no_incluye: "no incluye",
@@ -469,7 +541,9 @@ export function describirAcciones(a: Acciones): string[] {
   const frases: string[] = [];
 
   if (a.excluir_ejercicios?.length) frases.push(`excluye ${a.excluir_ejercicios.join(", ")}`);
-  if (a.excluir_patrones?.length) frases.push(`excluye los patrones ${a.excluir_patrones.join(", ")}`);
+  if (a.excluir_patrones?.length) {
+    frases.push(`excluye los patrones ${a.excluir_patrones.map(nombrePatron).join(", ")}`);
+  }
   if (a.sustituir_por?.length) frases.push(`sustituye por ${a.sustituir_por.join(" o ")}`);
   if (a.priorizar?.length) frases.push(`prioriza ${a.priorizar.join(", ")}`);
   if (a.modificador) frases.push(a.modificador.toLowerCase());
@@ -489,9 +563,18 @@ export function describirAcciones(a: Acciones): string[] {
     frases.push(`${a.rir.delta >= 0 ? "sube" : "baja"} el RIR en ${Math.abs(a.rir.delta)}`);
   }
   if (a.ratio_patron) {
-    const reparto = Object.entries(a.ratio_patron)
-      .map(([p, v]) => `${Math.round(v * 100)}% ${p}`)
-      .join(" / ");
+    // Con el nombre y no con la clave: `squat_dominante_rodilla` es identidad
+    // interna, y esta frase la lee Giovanni en su editor y el entrenador en la
+    // ficha del atleta.
+    //
+    // Separa con "y", no con "/", porque los nombres de patrón LLEVAN barra
+    // ("Dominante / Bisagra de Cadera") y la frase quedaba imposible de leer:
+    // no se sabía dónde acababa un patrón y empezaba el siguiente.
+    const partes = Object.entries(a.ratio_patron).map(
+      ([p, v]) => `${Math.round(v * 100)}% en ${nombrePatron(p)}`,
+    );
+    const reparto =
+      partes.length > 1 ? `${partes.slice(0, -1).join(", ")} y ${partes.at(-1)}` : partes[0];
     frases.push(`reparte ${reparto}`);
   }
   if (a.volumen_series) {

@@ -18,7 +18,8 @@
     "test:invitaciones": "node tests/rls/invitaciones-e2e.mjs",
     "captura": "node scripts/captura.mjs",
     "test:seed": "node tests/rls/seed-e2e.mjs",
-    "test:atletas": "node tests/rls/atletas-e2e.mjs"
+    "test:atletas": "node tests/rls/atletas-e2e.mjs",
+    "test:reglas": "node tests/rls/reglas-e2e.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
