@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Activity, Ruler } from "lucide-react";
+import { AlertTriangle, Activity, Ruler, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -281,6 +281,15 @@ function Ficha() {
           </Link>
         </Button>
       </div>
+
+      {/* Medir y evaluar son la entrada; esto es la salida, y por eso va aparte
+          y en el botón principal: es para lo que se hizo todo lo anterior. */}
+      <Button asChild className="min-h-11 w-full">
+        <Link href={`/atletas/prescripcion?id=${atleta.id}`}>
+          <Sparkles className="size-4" aria-hidden="true" />
+          Qué dice el motor
+        </Link>
+      </Button>
 
       {/* ---------------------------------------------------------------- */}
       <Bloque rotulo={ultima ? `Composición · ${fechaCorta(ultima.measured_at)}` : "Composición"}>

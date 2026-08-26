@@ -129,6 +129,15 @@ export const HECHOS = {
     tipo: "opcion", nivel: 1, dominio: ["Normal", "Cifótica"],
     origen: "biomech_evaluations.thoracic_extension",
   },
+  // El nivel de un hecho dice DESDE CUÁNDO está disponible, no quién lo usa.
+  // El sexo se conoce al crear el atleta, antes de medir nada, así que cualquier
+  // nivel puede mirarlo. Estuvo en el 4 por estar escrito al lado del porcentaje
+  // graso, y eso dejaba las reglas de ciclo (nivel 2) sin poder filtrar por sexo.
+  sexo: {
+    etiqueta: "Sexo biológico",
+    tipo: "opcion", nivel: 1, dominio: ["masculino", "femenino"],
+    origen: "athletes.sex",
+  },
   lesiones: {
     etiqueta: "Zonas lesionadas",
     tipo: "conjunto", nivel: 1, dominio: ZONAS_ANATOMICAS,
@@ -197,11 +206,6 @@ export const HECHOS = {
     etiqueta: "Porcentaje graso",
     tipo: "numero", unidad: "%", nivel: 4,
     origen: "anthropometric_measurements.body_fat_pct (la más reciente)",
-  },
-  sexo: {
-    etiqueta: "Sexo biológico",
-    tipo: "opcion", nivel: 4, dominio: ["masculino", "femenino"],
-    origen: "athletes.sex",
   },
 } as const satisfies Record<string, Hecho>;
 

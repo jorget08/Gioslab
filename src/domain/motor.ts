@@ -104,6 +104,13 @@ export interface DecisionEjercicio {
 
 export interface Resultado {
   ejercicios: DecisionEjercicio[];
+  /**
+   * Modificadores que la regla no dirigió a ningún ejercicio: son ajustes de la
+   * sesión entera ("elevar talones"), no de un movimiento. Van aparte porque
+   * repetirlos bajo cada ejercicio los volvía ilegibles y, peor, absurdos —
+   * "elevar talones" bajo un Press Militar.
+   */
+  modificadoresGenerales: string[];
   /** Multiplicador del volumen semanal. 1 si nada lo tocó. */
   volumenFactor: number;
   /** Series efectivas por grupo muscular y semana, del nivel 4. */
@@ -437,7 +444,10 @@ export function evaluar({ hechos, reglas, ejercicios }: EntradaMotor): Resultado
         nivel: 1,
         evidence_level: "LEVEL_A_SCIENCE",
         justification: `El atleta tiene ${choque.join(", ")} y este ejercicio está contraindicado para ${choque.length === 1 ? "esa zona o condición" : "esas zonas o condiciones"}.`,
-        descripcion: `Contraindicado por ${choque.join(", ")}.`,
+        // La descripción dice de dónde SALE la decisión, no la repite. En las
+        // demás explicaciones es el "si… entonces…" de la regla; aquí no hay
+        // regla, así que es el mecanismo.
+        descripcion: "Cruce directo con las contraindicaciones de la biblioteca.",
       });
     }
 
@@ -452,15 +462,17 @@ export function evaluar({ hechos, reglas, ejercicios }: EntradaMotor): Resultado
         : [...new Set(sustitutosPropuestos.get(ej.name) ?? [])].filter(
             (s) => !excluidos.has(s) && !chocaPor.has(s),
           ),
-      modificadores: [
-        ...new Set([...(modificadores.get(ej.name) ?? []), ...(modificadores.get("*") ?? [])]),
-      ],
+      // Solo los suyos. Los generales van aparte: pegarlos también aquí hacía
+      // que "elevar talones 2.5 cm" apareciera bajo el Press Militar, y una
+      // indicación absurda repetida ocho veces desacredita a las ocho.
+      modificadores: [...new Set(modificadores.get(ej.name) ?? [])],
       prioritario: incluido && (prioritarios.get(ej.name) ?? []).length > 0,
     };
   });
 
   return {
     ejercicios: decisiones,
+    modificadoresGenerales: [...new Set(modificadores.get("*") ?? [])],
     volumenFactor,
     volumenSeries,
     rir,

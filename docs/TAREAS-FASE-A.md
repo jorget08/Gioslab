@@ -157,8 +157,14 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 - [ ] **3.6 Versionado de reglas y registro de cambios** (5 h)
   Quién cambió qué y cuándo; poder volver a una versión anterior.
 
-- [ ] **3.7 Salida del motor: ejercicios con justificación visible** (8 h)
-  Mostrar **qué regla aplicó y por qué**. La transparencia genera confianza.
+- [x] **3.7 Salida del motor: ejercicios con justificación visible** (8 h)
+  `/atletas/prescripcion`, desde el botón «Qué dice el motor» de la ficha.
+  Lo descartado va primero y con TODOS sus motivos; después lo prescribible con
+  sus modificadores, los ajustes de sesión y de carga, y el reparto por patrón.
+  Si falta un dato, lo dice arriba y enlaza a medir o evaluar: una prescripción
+  incompleta no es una prescripción segura. Los empates y las reglas que el
+  motor no entiende también se enseñan — son defectos de la matriz, no
+  decisiones, y hay que poder verlos para arreglarlos.
 
 ---
 

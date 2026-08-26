@@ -252,4 +252,16 @@ describe("catálogo de hechos", () => {
   it("todos los niveles tienen hechos que mirar", () => {
     for (const n of NIVELES_MOTOR) expect(hechosDeNivel(n).length).toBeGreaterThan(0);
   });
+
+  it("lo que sale de la ficha del atleta es de nivel 1", () => {
+    // El nivel dice DESDE CUÁNDO existe el dato, no quién lo consume. Todo lo
+    // que vive en `athletes` se conoce al crear el atleta, antes de medir nada,
+    // así que ponerlo en un nivel alto lo vuelve invisible para las reglas de
+    // los niveles anteriores. Pasó con `sexo`: estaba en el 4 y dejaba las
+    // reglas de ciclo (nivel 2) sin poder filtrar por sexo, así que no se
+    // aplicaban y nadie se enteraba.
+    for (const [clave, h] of Object.entries(HECHOS)) {
+      if (h.origen.startsWith("athletes.")) expect(h.nivel, clave).toBe(1);
+    }
+  });
 });

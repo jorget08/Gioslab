@@ -200,7 +200,45 @@ describe("nivel 1: filtra", () => {
       ],
     });
     expect(excluidos(r)).toHaveLength(0);
-    expect(r.ejercicios[0].modificadores).toEqual(["Elevar talones 2.5 cm"]);
+    expect(r.modificadoresGenerales).toEqual(["Elevar talones 2.5 cm"]);
+  });
+
+  it("un modificador sin destino NO se pega a cada ejercicio", () => {
+    // Se pegaba, y en pantalla salía "elevar talones 2.5 cm" bajo el Press
+    // Militar. Una indicación absurda repetida bajo ocho ejercicios desacredita
+    // a los ocho, así que un ajuste de sesión se dice una vez y aparte.
+    const r = evaluar({
+      hechos: { dorsiflexion_cm: 7 },
+      ejercicios: BIBLIOTECA,
+      reglas: [
+        regla({
+          rule_key: "dorsi-limitada",
+          condition: { todas: [{ hecho: "dorsiflexion_cm", op: "entre", valor: [5, 10] }] },
+          actions: { modificador: "Elevar talones 2.5 cm" },
+        }),
+      ],
+    });
+    for (const e of r.ejercicios) expect(e.modificadores, e.ejercicio).toEqual([]);
+  });
+
+  it("un modificador con destino sí viaja con su ejercicio", () => {
+    const r = evaluar({
+      hechos: { dorsiflexion_cm: 7 },
+      ejercicios: BIBLIOTECA,
+      reglas: [
+        regla({
+          rule_key: "dorsi-limitada",
+          condition: { todas: [{ hecho: "dorsiflexion_cm", op: "entre", valor: [5, 10] }] },
+          actions: { priorizar: ["Sentadilla Trasera"], modificador: "Elevar talones 2.5 cm" },
+        }),
+      ],
+    });
+    const sent = r.ejercicios.find((e) => e.ejercicio === "Sentadilla Trasera")!;
+    expect(sent.modificadores).toEqual(["Elevar talones 2.5 cm"]);
+    expect(r.modificadoresGenerales).toEqual([]);
+    for (const e of r.ejercicios.filter((x) => x.ejercicio !== "Sentadilla Trasera")) {
+      expect(e.modificadores, e.ejercicio).toEqual([]);
+    }
   });
 });
 
