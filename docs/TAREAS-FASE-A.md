@@ -159,8 +159,14 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   **Editar es publicar una versión nueva**, nunca pisar: lo exige el GRANT por
   columna y lo exige la trazabilidad.
 
-- [ ] **3.6 Versionado de reglas y registro de cambios** (5 h)
-  Quién cambió qué y cuándo; poder volver a una versión anterior.
+- [x] **3.6 Versionado de reglas y registro de cambios** (5 h)
+  `/admin/reglas/historial`. Una sola línea de tiempo con las publicaciones y las
+  activaciones entremezcladas: separarlas haría imposible entender por qué la
+  regla vigente es una versión antigua. El **qué** no lo guarda nadie, se deduce
+  comparando versiones (`historial-reglas.ts`) y se compara lo LEGIBLE, no el
+  JSON. Volver atrás **repone** la versión vieja, no la copia en una nueva.
+  El trigger de `rule_activations` solo cubría `update`, así que una versión que
+  nacía activa entraba en vigor sin dejar rastro: corregido.
 
 - [x] **3.7 Salida del motor: ejercicios con justificación visible** (8 h)
   `/atletas/prescripcion`, desde el botón «Qué dice el motor» de la ficha.

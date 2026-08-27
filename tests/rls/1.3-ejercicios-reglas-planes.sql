@@ -130,16 +130,20 @@ commit;
 -- entera contaba también lo que hubieran escrito otras suites —`test:reglas`
 -- activa y desactiva reglas propias— y el test fallaba por contaminación ajena
 -- en vez de por un fallo del trigger, que es lo que aquí se comprueba.
-select case when count(*) = 2 then 'OK  el trigger registró 2 cambios sin que nadie los insertara'
-            else 'FALLO  registró ' || count(*) end as resultado
-from public.rule_activations
-where rule_id in ('40000000-0000-0000-0000-000000000001',
-                  '40000000-0000-0000-0000-000000000002');
-
-select action, count(*) from public.rule_activations
- where rule_id in ('40000000-0000-0000-0000-000000000001',
-                   '40000000-0000-0000-0000-000000000002')
- group by action order by action;
+--
+-- Se comprueba la SECUENCIA y no el número. Son tres sucesos y cada uno prueba
+-- una cosa distinta: la v1 nació activa (trigger de insert, tarea 3.6), luego se
+-- retiró y luego entró la v2 (trigger de update). Un total suelto daría igual de
+-- verde si el orden fuera imposible.
+select case when string_agg(a.action, ' → ' order by a.created_at, r.version)
+              = 'activada → desactivada → activada'
+            then 'OK  el trigger registró el alta, la retirada y el relevo'
+            else 'FALLO  registró ' || coalesce(string_agg(a.action, ' → ' order by a.created_at, r.version), 'nada')
+       end as resultado
+  from public.rule_activations a
+  join public.rules r on r.id = a.rule_id
+ where a.rule_id in ('40000000-0000-0000-0000-000000000001',
+                     '40000000-0000-0000-0000-000000000002');
 
 \echo ''
 \echo '=== G. Una regla sin justificación es rechazada ==='

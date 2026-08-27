@@ -537,31 +537,59 @@ export function describirCondicion(c: Condicion): string {
   return `${partes.slice(0, -1).join(", ")} y ${partes.at(-1)}`;
 }
 
-export function describirAcciones(a: Acciones): string[] {
-  const frases: string[] = [];
+/** Cómo se llama cada acción en pantalla. Una sola fuente para editor e historial. */
+export const ETIQUETA_ACCION: Record<ClaveAccion, string> = {
+  excluir_ejercicios: "Excluir estos ejercicios",
+  excluir_patrones: "Excluir patrones enteros",
+  sustituir_por: "Sustituir por",
+  priorizar: "Priorizar",
+  modificador: "Modificar la ejecución",
+  prohibir_maniobra: "Prohibir maniobras",
+  volumen_factor: "Ajustar el volumen semanal",
+  rir: "RIR",
+  ratio_patron: "Reparto entre patrones",
+  volumen_series: "Series por grupo y semana",
+};
 
-  if (a.excluir_ejercicios?.length) frases.push(`excluye ${a.excluir_ejercicios.join(", ")}`);
+/**
+ * Las frases INDEXADAS por acción.
+ *
+ * `describirAcciones` sale de aquí, y también el historial (3.6): comparar dos
+ * versiones exige saber QUÉ acción cambió, no solo que la frase entera es
+ * distinta. Sin la clave, cambiar el volumen de 0.75 a 0.9 se leería como una
+ * acción retirada y otra añadida.
+ */
+export function describirAccionesPorClave(a: Acciones): Partial<Record<ClaveAccion, string>> {
+  const f: Partial<Record<ClaveAccion, string>> = {};
+
+  if (a.excluir_ejercicios?.length) f.excluir_ejercicios = `excluye ${a.excluir_ejercicios.join(", ")}`;
   if (a.excluir_patrones?.length) {
-    frases.push(`excluye los patrones ${a.excluir_patrones.map(nombrePatron).join(", ")}`);
+    f.excluir_patrones = `excluye los patrones ${a.excluir_patrones.map(nombrePatron).join(", ")}`;
   }
-  if (a.sustituir_por?.length) frases.push(`sustituye por ${a.sustituir_por.join(" o ")}`);
-  if (a.priorizar?.length) frases.push(`prioriza ${a.priorizar.join(", ")}`);
-  if (a.modificador) frases.push(a.modificador.toLowerCase());
-  if (a.prohibir_maniobra?.length) frases.push(`prohíbe ${a.prohibir_maniobra.join(" y ")}`);
+  if (a.sustituir_por?.length) f.sustituir_por = `sustituye por ${a.sustituir_por.join(" o ")}`;
+  if (a.priorizar?.length) f.priorizar = `prioriza ${a.priorizar.join(", ")}`;
+  if (a.modificador) f.modificador = a.modificador.toLowerCase();
+  if (a.prohibir_maniobra?.length) f.prohibir_maniobra = `prohíbe ${a.prohibir_maniobra.join(" y ")}`;
 
   if (a.volumen_factor !== undefined) {
     const pct = Math.round(Math.abs(1 - a.volumen_factor) * 100);
-    frases.push(
+    f.volumen_factor =
       a.volumen_factor < 1 ? `reduce el volumen un ${pct}%`
       : a.volumen_factor > 1 ? `aumenta el volumen un ${pct}%`
-      : "deja el volumen igual",
-    );
+      : "deja el volumen igual";
   }
-  if (a.rir?.fijo !== undefined) frases.push(`fija el RIR en ${a.rir.fijo}`);
-  if (a.rir?.piso !== undefined) frases.push(`no baja del RIR ${a.rir.piso}`);
+
+  // Las tres formas del RIR viven bajo una sola clave porque una sola clave las
+  // guarda: si se separaran, el historial diría "RIR fijo" y "RIR suelo" como si
+  // fueran acciones independientes que se pueden quitar por separado.
+  const rir: string[] = [];
+  if (a.rir?.fijo !== undefined) rir.push(`fija el RIR en ${a.rir.fijo}`);
+  if (a.rir?.piso !== undefined) rir.push(`no baja del RIR ${a.rir.piso}`);
   if (a.rir?.delta !== undefined) {
-    frases.push(`${a.rir.delta >= 0 ? "sube" : "baja"} el RIR en ${Math.abs(a.rir.delta)}`);
+    rir.push(`${a.rir.delta >= 0 ? "sube" : "baja"} el RIR en ${Math.abs(a.rir.delta)}`);
   }
+  if (rir.length > 0) f.rir = rir.join("; ");
+
   if (a.ratio_patron) {
     // Con el nombre y no con la clave: `squat_dominante_rodilla` es identidad
     // interna, y esta frase la lee Giovanni en su editor y el entrenador en la
@@ -575,13 +603,28 @@ export function describirAcciones(a: Acciones): string[] {
     );
     const reparto =
       partes.length > 1 ? `${partes.slice(0, -1).join(", ")} y ${partes.at(-1)}` : partes[0];
-    frases.push(`reparte ${reparto}`);
+    f.ratio_patron = `reparte ${reparto}`;
   }
   if (a.volumen_series) {
-    frases.push(`fija ${a.volumen_series.min}–${a.volumen_series.max} series por grupo y semana`);
+    f.volumen_series = `fija ${a.volumen_series.min}–${a.volumen_series.max} series por grupo y semana`;
   }
 
-  return frases;
+  return f;
+}
+
+/**
+ * Las frases en el orden en que se escriben.
+ *
+ * El orden sale de `ETIQUETA_ACCION`, que sigue el del tubo del motor: primero
+ * lo que quita ejercicios, luego lo que los modula. Depender del orden de las
+ * claves del objeto guardado haría que la misma regla se leyera distinta según
+ * en qué orden la escribió quien la editó.
+ */
+export function describirAcciones(a: Acciones): string[] {
+  const porClave = describirAccionesPorClave(a);
+  return (Object.keys(ETIQUETA_ACCION) as ClaveAccion[])
+    .map((k) => porClave[k])
+    .filter((s): s is string => s !== undefined);
 }
 
 /** Una línea legible: "Si X, entonces Y." Se usa en el editor y en el motor. */

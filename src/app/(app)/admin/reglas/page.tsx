@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Plus } from "lucide-react";
+import { AlertTriangle, History, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -215,6 +215,12 @@ function Fila({
             : regla.evidence_level}
         </span>
         <div className="ml-auto flex gap-2">
+          <Button asChild variant="ghost" size="sm" className="min-h-11">
+            <Link href={`/admin/reglas/historial?key=${encodeURIComponent(regla.rule_key)}`}>
+              <History className="size-4" aria-hidden="true" />
+              Historial
+            </Link>
+          </Button>
           <Button asChild variant="outline" size="sm" className="min-h-11">
             {/* Editar es publicar una versión nueva, no pisar esta: la base solo
                 deja cambiar `is_active`, y con razón — un plan de marzo apunta a

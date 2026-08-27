@@ -141,19 +141,52 @@ async function main() {
   verificar("la v1 sigue existiendo", historial.data?.length ?? 0, 2);
   verificar("y solo la v2 está activa", historial.data?.filter((r) => r.is_active).length ?? 0, 1);
 
+  console.log("\n=== Volver a una versión anterior (3.6) ===");
+
+  // Volver atrás NO crea una versión: repone la vieja, que ya existe y cuyo
+  // contenido es inmutable. Copiarla en una v3 llenaría la lista de gemelas y
+  // haría imposible saber cuál se usó de verdad.
+  await admin.from("rules").update({ is_active: false }).eq("rule_key", CLAVE_REGLA).eq("is_active", true);
+  const vuelta = await admin.from("rules").update({ is_active: true }).eq("id", idV1);
+  verificar("repone la v1", vuelta.error ? `error:${vuelta.error.code}` : "ok", "ok");
+
+  const tras = await admin
+    .from("rules")
+    .select("version, is_active")
+    .eq("rule_key", CLAVE_REGLA)
+    .eq("is_active", true);
+  verificar("la vigente vuelve a ser la v1", tras.data?.[0]?.version ?? 0, 1);
+  verificar("y no se inventó una v3", (await admin.from("rules").select("id").eq("rule_key", CLAVE_REGLA)).data?.length ?? 0, 2);
+
+  // El rastro de quién volvió y cuándo lo escribe un trigger, no la aplicación.
+  // Sin él, la línea de tiempo no podría explicar por qué la regla vigente es
+  // una versión antigua.
+  const idsRegla = (await admin.from("rules").select("id").eq("rule_key", CLAVE_REGLA)).data ?? [];
+  const eventos = await admin
+    .from("rule_activations")
+    .select("action")
+    .in("rule_id", idsRegla.map((r) => r.id));
+  verificar(
+    "el trigger dejó rastro de cada activación y retirada",
+    eventos.data?.length ?? 0,
+    // v1 activada, v1 retirada, v2 activada, v2 retirada, v1 repuesta.
+    5,
+  );
+
   console.log("\n=== El entrenador no toca la matriz ===");
 
   // La pantalla no le aparece, pero eso es navegación. Esto es la barrera.
   const intento = await entrenador.from("rules").insert(regla(99));
   verificar("no puede insertar", intento.error ? "rechazado" : "PASÓ", "rechazado");
 
-  // Contra la v2, que es la que ESTÁ ACTIVA. Probarlo contra la v1 —ya retirada
-  // arriba— daba un falso positivo: "sigue desactivada" habría sido cierto
-  // aunque el entrenador tuviera permiso de sobra.
-  await entrenador.from("rules").update({ is_active: false }).eq("id", v2.data?.id);
+  // Contra la que ESTÉ VIVA en este punto, que tras la vuelta atrás es la v1.
+  // Apuntar a una versión ya retirada daba un falso positivo: "sigue
+  // desactivada" sería cierto aunque el entrenador tuviera permiso de sobra.
+  const viva = (await admin.from("rules").select("id").eq("rule_key", CLAVE_REGLA).eq("is_active", true).single()).data;
+  await entrenador.from("rules").update({ is_active: false }).eq("id", viva?.id);
   // RLS en UPDATE no da error cuando no hay filas escribibles: filtra en
   // silencio. Por eso se mide el EFECTO y no el código de error.
-  const trasIntento = await admin.from("rules").select("is_active").eq("id", v2.data?.id).single();
+  const trasIntento = await admin.from("rules").select("is_active").eq("id", viva?.id).single();
   verificar("no puede desactivar la que está viva", trasIntento.data?.is_active, true);
 
   console.log("\n=== Todos los roles LEEN la matriz ===");

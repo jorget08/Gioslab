@@ -1,7 +1,13 @@
 "use client";
 
 import { PATRONES, nombrePatron } from "@/domain/patrones";
-import { ACCIONES_POR_NIVEL, type Acciones, type ClaveAccion, type NivelMotor } from "@/domain/reglas";
+import {
+  ACCIONES_POR_NIVEL,
+  ETIQUETA_ACCION,
+  type Acciones,
+  type ClaveAccion,
+  type NivelMotor,
+} from "@/domain/reglas";
 
 /**
  * El editor de acciones (tarea 3.5).
@@ -20,19 +26,6 @@ import { ACCIONES_POR_NIVEL, type Acciones, type ClaveAccion, type NivelMotor } 
 const CLASE_CAMPO =
   "min-h-11 w-full rounded-lg border bg-background px-3 text-sm " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-
-const ROTULO: Record<ClaveAccion, string> = {
-  excluir_ejercicios: "Excluir estos ejercicios",
-  excluir_patrones: "Excluir patrones enteros",
-  sustituir_por: "Sustituir por",
-  priorizar: "Priorizar",
-  modificador: "Modificar la ejecución",
-  prohibir_maniobra: "Prohibir maniobras",
-  volumen_factor: "Ajustar el volumen semanal",
-  rir: "RIR",
-  ratio_patron: "Reparto entre patrones",
-  volumen_series: "Series por grupo y semana",
-};
 
 /** Maniobras prohibibles. Cerrado a propósito: es vocabulario, no texto libre. */
 const MANIOBRAS = ["Valsalva", "Apnea prolongada", "Fallo muscular"] as const;
@@ -68,7 +61,7 @@ export function EditorAcciones({
     <div className="space-y-4">
       {disponibles.includes("excluir_ejercicios") && (
         <Multiple
-          rotulo={ROTULO.excluir_ejercicios}
+          rotulo={ETIQUETA_ACCION.excluir_ejercicios}
           ayuda="Desaparecen de la prescripción. No es una preferencia."
           opciones={ejercicios}
           valor={acciones.excluir_ejercicios ?? []}
@@ -78,7 +71,7 @@ export function EditorAcciones({
 
       {disponibles.includes("excluir_patrones") && (
         <Multiple
-          rotulo={ROTULO.excluir_patrones}
+          rotulo={ETIQUETA_ACCION.excluir_patrones}
           ayuda="Excluye todos los ejercicios de ese patrón, incluidos los que se añadan después."
           opciones={[...PATRONES]}
           etiquetaDe={nombrePatron}
@@ -89,7 +82,7 @@ export function EditorAcciones({
 
       {disponibles.includes("sustituir_por") && (
         <Multiple
-          rotulo={ROTULO.sustituir_por}
+          rotulo={ETIQUETA_ACCION.sustituir_por}
           ayuda="Con qué se reemplaza lo excluido. El motor descarta los sustitutos que también estén excluidos."
           opciones={ejercicios}
           valor={acciones.sustituir_por ?? []}
@@ -99,7 +92,7 @@ export function EditorAcciones({
 
       {disponibles.includes("priorizar") && (
         <Multiple
-          rotulo={ROTULO.priorizar}
+          rotulo={ETIQUETA_ACCION.priorizar}
           ayuda="Se marcan como preferentes; no excluyen a los demás."
           opciones={ejercicios}
           valor={acciones.priorizar ?? []}
@@ -109,7 +102,7 @@ export function EditorAcciones({
 
       {disponibles.includes("modificador") && (
         <Campo
-          rotulo={ROTULO.modificador}
+          rotulo={ETIQUETA_ACCION.modificador}
           ayuda="Cambia el CÓMO sin quitar el ejercicio. Si no señalas ejercicios arriba, vale para toda la sesión."
           resumen={acciones.modificador ? "escrito" : "sin poner"}
           abierto={Boolean(acciones.modificador)}
@@ -126,7 +119,7 @@ export function EditorAcciones({
 
       {disponibles.includes("prohibir_maniobra") && (
         <Multiple
-          rotulo={ROTULO.prohibir_maniobra}
+          rotulo={ETIQUETA_ACCION.prohibir_maniobra}
           ayuda="Se acumulan con las de otras reglas: aquí nadie compite."
           opciones={[...MANIOBRAS]}
           valor={acciones.prohibir_maniobra ?? []}
@@ -136,7 +129,7 @@ export function EditorAcciones({
 
       {disponibles.includes("volumen_factor") && (
         <Campo
-          rotulo={ROTULO.volumen_factor}
+          rotulo={ETIQUETA_ACCION.volumen_factor}
           ayuda="1 lo deja igual, 0.75 lo baja un 25%. Dos reglas NO se multiplican: compiten por evidencia."
           resumen={acciones.volumen_factor === undefined ? "sin poner" : `×${acciones.volumen_factor}`}
           abierto={acciones.volumen_factor !== undefined}
@@ -159,7 +152,7 @@ export function EditorAcciones({
 
       {disponibles.includes("rir") && (
         <Campo
-          rotulo={ROTULO.rir}
+          rotulo={ETIQUETA_ACCION.rir}
           ayuda={
             nivel === 1
               ? "En seguridad solo el suelo: impide bajar de ese RIR. Se queda siempre el más alto de todas las reglas."
@@ -194,7 +187,7 @@ export function EditorAcciones({
 
       {disponibles.includes("ratio_patron") && (
         <Campo
-          rotulo={ROTULO.ratio_patron}
+          rotulo={ETIQUETA_ACCION.ratio_patron}
           ayuda="Porcentaje de trabajo por patrón. Deja en blanco los que no repartas."
           resumen={
             acciones.ratio_patron
@@ -235,7 +228,7 @@ export function EditorAcciones({
 
       {disponibles.includes("volumen_series") && (
         <Campo
-          rotulo={ROTULO.volumen_series}
+          rotulo={ETIQUETA_ACCION.volumen_series}
           ayuda="Series efectivas por grupo muscular y semana."
           resumen={
             acciones.volumen_series
