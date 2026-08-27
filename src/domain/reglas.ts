@@ -138,6 +138,18 @@ export const HECHOS = {
     tipo: "opcion", nivel: 1, dominio: ["masculino", "femenino"],
     origen: "athletes.sex",
   },
+  // NIVEL 1 y no 2, aunque salga del registro de ciclo. Es la distinción que
+  // marcó el propio Giovanni al pasar de cinco fases a cuatro: esto no es una
+  // fase, es una BANDERA DE SEGURIDAD dentro de la Folicular Tardía. Durante el
+  // pico sube la laxitud del cruzado anterior y hay que priorizar cadena
+  // cinética cerrada — eso es seguridad, que es el nivel 1, no dosificación de
+  // volumen, que es el 2. Con el hecho en el 2, su regla no podía priorizar
+  // ejercicios porque el nivel 2 no ejecuta esa acción.
+  pico_ovulatorio: {
+    etiqueta: "Pico ovulatorio",
+    tipo: "booleano", nivel: 1,
+    origen: "calculado sobre menstrual_cycle_logs (picoOvulatorio, días 12-14)",
+  },
   lesiones: {
     etiqueta: "Zonas lesionadas",
     tipo: "conjunto", nivel: 1, dominio: ZONAS_ANATOMICAS,
@@ -154,14 +166,6 @@ export const HECHOS = {
     etiqueta: "Fase del ciclo",
     tipo: "opcion", nivel: 2, dominio: FASES_CICLO,
     origen: "calculado sobre menstrual_cycle_logs (ciclo-menstrual.ts)",
-  },
-  // Bandera de SEGURIDAD dentro de Folicular Tardía, no una fase. Giovanni la
-  // conservó al pasar el ciclo de cinco fases a cuatro: durante el pico sube la
-  // laxitud del cruzado anterior y hay que priorizar cadena cinética cerrada.
-  pico_ovulatorio: {
-    etiqueta: "Pico ovulatorio",
-    tipo: "booleano", nivel: 2,
-    origen: "calculado sobre menstrual_cycle_logs (picoOvulatorio, días 12-14)",
   },
   usa_anticonceptivos: {
     etiqueta: "Usa anticonceptivos hormonales",

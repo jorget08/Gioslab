@@ -147,7 +147,7 @@ describe("faltantesParaCalculo", () => {
 
   it("cuenta cuando faltan varios", () => {
     const parcial = { triceps_mm: 12, weight_kg: 62, height_cm: 165 };
-    expect(faltantesParaCalculo(parcial)).toEqual(["6 pliegues"]);
+    expect(faltantesParaCalculo(parcial)).toEqual(["5 pliegues"]);
   });
 
   it("también avisa del peso y la estatura", () => {

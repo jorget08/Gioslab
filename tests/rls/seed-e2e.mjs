@@ -142,9 +142,38 @@ async function main() {
   verificar("y se ve la mejora en la segunda", Number(tomas?.[1]?.body_fat_pct) < 18, true);
 
   console.log("\n=== Metodología cargada ===");
-  // Una por nivel del motor, más las dos bandas de dorsiflexión.
-  verificar("6 reglas activas, cubriendo los 4 niveles", await contar(ana, "rules"), 6);
-  verificar("5 ejercicios en la biblioteca", await contar(ana, "exercise_library"), 5);
+  // Desde la 3.3 la matriz REAL de Giovanni la carga una migración, no el seed.
+  // Se comprueba lo que importa de ella, no un número suelto: que estén los
+  // cuatro niveles del motor y que TODO ejercicio que una regla nombra exista de
+  // verdad en la biblioteca. Un nombre que no case no falla — la regla
+  // simplemente no hace nada, para siempre y en silencio.
+  const reglas = (await ana.from("rules").select("nivel, actions").eq("is_active", true)).data ?? [];
+  verificar("la matriz cargada tiene 25 reglas activas", reglas.length, 25);
+  verificar(
+    "y cubre los cuatro niveles del motor",
+    [...new Set(reglas.map((r) => r.nivel))].sort().join(","),
+    "1,2,3,4",
+  );
+
+  const biblioteca = new Set(
+    ((await ana.from("exercise_library").select("name").eq("is_active", true)).data ?? [])
+      .map((e) => e.name),
+  );
+  const nombrados = [
+    ...new Set(
+      reglas.flatMap((r) => [
+        ...(r.actions.excluir_ejercicios ?? []),
+        ...(r.actions.sustituir_por ?? []),
+        ...(r.actions.priorizar ?? []),
+      ]),
+    ),
+  ];
+  const huerfanos = nombrados.filter((n) => !biblioteca.has(n));
+  verificar(
+    `los ${nombrados.length} ejercicios que nombran las reglas existen`,
+    huerfanos.length === 0 ? "todos" : `faltan: ${huerfanos.join(", ")}`,
+    "todos",
+  );
 
   console.log("\n=== Los datos sensibles siguen protegidos ===");
   const anon = createClient(URL_SB, PUB, { auth: { persistSession: false } });

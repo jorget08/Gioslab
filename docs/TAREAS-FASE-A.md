@@ -90,9 +90,10 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   paso cierra la evaluación biomecánica: inserta la fila con lo del paso 3.
 
 - [?] **2.6 Cálculo de somatotipo Heath-Carter (+ golden tests)** (8 h)
-  **Bloqueada por contradicción.** Su módulo 01 confirma Jackson & Pollock —ya
-  implementado y verificado al decimal contra su Excel— pero su documento de
-  recomendaciones vuelve a pedir Heath-Carter. Pregunta A de PREGUNTAS-GIOVANNI.
+  **Bloqueada por contradicción, y ahora a tres bandas.** Su módulo 01 confirma
+  Jackson & Pollock; su documento de recomendaciones pide Heath-Carter; y sus
+  fichas reales (27-ago) calculan con **Yuhasz**. Se implementó Yuhasz por §3.4
+  —manda el Excel que usa— conservando J&P. Falta que él cierre cuál quiere.
 
 - [?] **2.7 Cálculo de 1RM estimado y relaciones de palanca** (5 h)
   Fórmula confirmada (Epley), pero necesita telemetría por serie —peso levantado
@@ -121,9 +122,12 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 - [x] **2.13 Registro del ciclo menstrual (FEMTECH)** (4 h) · *fuera del plan original*
   Faltaba la pantalla: la app solo LEÍA los registros. Con consentimiento aparte.
 
-- [?] **2.10 Validación: atletas reales vs. Excels de Giovanni** (4 h)
-  Giovanni carga 2–3 atletas reales; los resultados deben coincidir.
-  *Criterio de salida del grupo 2.*
+- [x] **2.10 Validación: atletas reales vs. Excels de Giovanni** (4 h)
+  Llegaron el 27-ago: Diego Mafla y Daniela Méndez, con ficha y plan entregado.
+  Los números coinciden **al decimal** con sus celdas… pero solo tras descubrir
+  que su Excel real calcula con **Yuhasz sobre 6 pliegues**, no con el Jackson &
+  Pollock 7 que documentó. Golden tests en `tests/unit/composicion-corporal` y
+  `casos-reales`. *Criterio de salida del grupo 2: cumplido.*
 
 ---
 
@@ -142,13 +146,20 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   conflictos por evidencia y denuncia empates y datos que faltan. Cada decisión
   arrastra su justificación. `hechos-atleta.ts` es el puente con la base.
 
-- [ ] **3.3 Carga de las reglas de los Excels a la BD** (8 h)
-  Migrar la spec de la tarea 0.5. Al terminar, los Excels quedan oficialmente
-  reemplazados como fuente de verdad.
+- [x] **3.3 Carga de las reglas de los Excels a la BD** (8 h)
+  Migración `20260827200000_matriz_giovanni.sql`: **25 reglas** de su matriz del
+  25-ago cubriendo los 4 niveles, más los **31 ejercicios que nombran**. Cargar
+  las reglas sin sus ejercicios habría sido cargar 25 reglas inertes: el motor
+  cruza por nombre. Las contraindicaciones por ejercicio quedan vacías —siguen
+  pendientes de él (4.5)— y el seed marca unas de ejemplo solo en local.
+  Los Excels dejan de ser la fuente de verdad.
 
-- [ ] **3.4 Tests del motor con casos reales** (8 h)
-  Batería de casos de Giovanni: entrada conocida → salida esperada.
-  Protege contra regresiones al editar reglas.
+- [x] **3.4 Tests del motor con casos reales** (8 h)
+  Diego Mafla y Daniela Méndez, dos atletas suyos reales. Los golden tests leen
+  la matriz DE LA MIGRACIÓN, no reglas inventadas: lo que hay que proteger es
+  que editar la matriz no le rompa un cliente. Descubrió que sus fichas reales
+  usan **Yuhasz sobre 6 pliegues**, no Jackson & Pollock 7 — y que ni siquiera
+  miden el pectoral, así que J&P no se podía calcular sobre un atleta suyo.
 
 - [x] **3.5 Editor de reglas para Giovanni** (12 h)
   `/admin/reglas` y `/admin/reglas/regla`. Nada se escribe a mano: el hecho sale

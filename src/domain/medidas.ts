@@ -71,6 +71,20 @@ export const PLIEGUES: CampoMedida[] = [
   "abdominal_mm", "thigh_mm", "calf_mm", "chest_mm",
 ];
 
+/**
+ * Los SEIS que alimentan el cálculo. El pectoral queda fuera.
+ *
+ * Sus fichas reales (Diego, Daniela) miden seis y calculan con Yuhasz. El
+ * pectoral solo hace falta para Jackson & Pollock, que él especificó pero no
+ * usa. Se sigue pudiendo registrar —está en `PLIEGUES` y la columna existe—
+ * pero ya no bloquea el resultado: exigirlo dejaba el cálculo imposible sobre
+ * un atleta suyo real.
+ */
+export const PLIEGUES_DEL_CALCULO: CampoMedida[] = [
+  "triceps_mm", "subscapular_mm", "suprailiac_mm",
+  "abdominal_mm", "thigh_mm", "calf_mm",
+];
+
 export type NivelAviso = "bloquea" | "advierte";
 
 export interface Aviso {
@@ -186,7 +200,9 @@ export function aNumero(texto: string): number | null {
 export function faltantesParaCalculo(valores: Partial<Record<CampoMedida, number | null>>): string[] {
   const faltan: string[] = [];
 
-  const sinPliegue = PLIEGUES.filter((p) => valores[p] === null || valores[p] === undefined);
+  const sinPliegue = PLIEGUES_DEL_CALCULO.filter(
+    (p) => valores[p] === null || valores[p] === undefined,
+  );
   if (sinPliegue.length > 0) {
     faltan.push(
       sinPliegue.length === 1

@@ -255,11 +255,62 @@ Eso choca con el grupo 5 —29 horas de informes— y con lo que él mismo dijo 
 
 ---
 
+## 🔴 Contradicción del 2026-08-27: ¿Yuhasz o Jackson & Pollock?
+
+Mandó las fichas y los planes de **Diego Mafla** y **Daniela Méndez**, dos atletas
+suyos reales. Al cotejarlas apareció que **no calcula el porcentaje graso como lo
+documentó**.
+
+| | Fórmula | Pliegues |
+|---|---|---|
+| Ficha "para el desarrollador" (19-ago) | Jackson & Pollock 7 + Siri | 7, con pectoral |
+| **Fichas reales de sus clientes** | **Yuhasz** | **6, sin pectoral** |
+
+La fórmula está literal en la celda E11 de la ficha de Daniela:
+
+```excel
+IF(B5="H",(Σ6*0.1051)+2.585, IF(B5="M",(Σ6*0.1548)+3.58,"Defina Género"))
+```
+
+Y cuadra al decimal con los tres casos: Diego 106 → **13.7256%**; Daniela 145 →
+**26.026%**; su plan v2, 155 → **27.57%**. Son los números que sus clientes tienen
+impresos en la mano.
+
+**Se implementó Yuhasz** por `CLAUDE.md` §3.4 —manda el Excel que usa, no el que
+documentó— y por un motivo práctico que decide solo: **sus fichas reales no miden
+el pliegue pectoral**, así que Jackson & Pollock no es que dé otro número, es que
+no se puede calcular sobre un atleta suyo. J&P se conserva y se puede pedir.
+
+**Lo que tiene que confirmar:** si Yuhasz es el método definitivo, o si quiere
+volver a J&P y entonces empezar a medir el séptimo pliegue.
+
+---
+
+### K. Los perímetros — RESPONDIDA por la práctica
+
+Sus fichas reales miden Brazo relajado, Brazo contraído, Cintura, Cadera, Muslo y
+Pantorrilla. **No son bilaterales.** Es exactamente lo que se le preguntó: con eso
+no se pueden detectar asimetrías, que era uno de los dos motivos que dio para
+pedirlos. Sigue en pie si quiere duplicar los seis campos.
+
+---
+
+### Nuevo: el umbral de flexión de hombro
+
+Su matriz (25-ago) dispara la regla a **< 175°**, pero el 26-ago corrigió el
+umbral óptimo del test a **170°** citando a la AAOS. Se cargó 175 —es lo que dice
+la matriz y disparar antes es el lado conservador— pero conviene que lo unifique.
+
+---
+
 ## 🔴 Sigue bloqueado por él (`CLAUDE.md` §7)
 
-- **La matriz completa de condicionales.** Dio la *forma* de la regla (`IF micro
-  THEN macro`) y un ejemplo, más 15 reglas en prosa en los Excels. **No es la
-  matriz.** Sigue bloqueando el cierre del grupo 3.
+- ~~La matriz completa de condicionales~~ ✅ **la había entregado el 25-ago y yo la
+  juzgué corta.** Releída entera tiene 25 reglas con condición, acción y
+  sustitución: 9 de nivel 1, 5 de nivel 2, 6 de nivel 3 y 6 de nivel 4. Cargada
+  en la 3.3. Lo que sí falta de ella son las **contraindicaciones por ejercicio**,
+  que su propia matriz da por hechas ("cruzamiento directo con base de datos de
+  ejercicios") pero no entrega — eso es la 4.5.
 - **Listado y medios de la biblioteca de ejercicios** — bloquea la 4.5. La
   pantalla para cargarlos ya existe (4.1) y agrupa por sus ocho patrones, así
   que puede entregar el listado ya clasificado y entra directo.
@@ -267,7 +318,8 @@ Eso choca con el grupo 5 —29 horas de informes— y con lo que él mismo dijo 
   aplicados —se muestrearon de su logo y de sus informes, no se aproximaron—.
   Siguen faltando el **logo en archivo** (hoy la app usa solo el logotipo
   tipográfico) y la **plantilla de reporte**, que es lo que bloquea el grupo 5.
-- **2–3 atletas reales** para validar — bloquea la 2.10.
+- ~~2–3 atletas reales para validar~~ ✅ **llegaron el 2026-08-27** (Diego Mafla y
+  Daniela Méndez). Desbloquearon la 2.10 y la 3.4.
 
 ---
 

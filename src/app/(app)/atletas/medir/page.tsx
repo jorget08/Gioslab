@@ -135,7 +135,8 @@ function Medicion() {
   const faltan = faltantesParaCalculo(numeros);
 
   // El cálculo espera a tener TODOS sus datos. Con 5 pliegues no se enseña un
-  // número aproximado: se enseña qué falta (docs/WIZARD-UX.md §5.4).
+  // número aproximado: se enseña qué falta (docs/WIZARD-UX.md §5.4). "Todos" son
+  // los SEIS de Yuhasz; el pectoral es opcional desde la 3.4.
   const composicion = useMemo(() => {
     if (!atleta || faltan.length > 0) return null;
     return calcularComposicion({
@@ -146,7 +147,9 @@ function Medicion() {
         abdominal_mm: numeros.abdominal_mm!,
         thigh_mm: numeros.thigh_mm!,
         calf_mm: numeros.calf_mm!,
-        chest_mm: numeros.chest_mm!,
+        // Opcional: solo lo usa Jackson & Pollock, y el método por defecto es
+        // Yuhasz sobre seis pliegues.
+        chest_mm: numeros.chest_mm,
       },
       pesoKg: numeros.weight_kg!,
       estaturaCm: numeros.height_cm!,

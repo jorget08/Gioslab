@@ -24,10 +24,10 @@ delete from public.tenants where id in (
   '00000000-1111-0000-0000-000000000002',
   '00000000-1111-0000-0000-000000000003'
 );
-delete from public.rules where rule_key in ('dorsiflexion-severa','dorsiflexion-limitada',
-  'hipertension-valsalva','ciclo-lutea-tardia','dominancia-rodilla','volumen-base-mujer-magra')
-  or rule_key like 'seed-%';
-delete from public.exercise_library where name like '[demo]%';
+-- Las reglas y los ejercicios YA NO SE SIEMBRAN aquí: desde la 3.3 los carga la
+-- migración 20260827200000 con la matriz real de Giovanni. Lo único que queda
+-- por hacer es lo de abajo, marcar contraindicaciones de ejemplo.
+delete from public.rules where rule_key like 'seed-%';
 
 -- ---------------------------------------------------------------------------
 -- Cuentas
@@ -233,96 +233,38 @@ values
    current_date - 20, 30, true);
 
 -- ---------------------------------------------------------------------------
--- Biblioteca y reglas
+-- Biblioteca
 -- ---------------------------------------------------------------------------
--- Cinco ejercicios y tres reglas sacadas literalmente de las fichas
--- (ESPECIFICACION-FICHAS.md §4). Sirven para que el motor del grupo 3 se
--- construya contra reglas reales en vez de inventadas.
+-- ⚠️ CONTRAINDICACIONES DE EJEMPLO, SOLO PARA LA BASE LOCAL Y LA DEMO.
+--
+-- La migración de la 3.3 carga los ejercicios de su matriz con
+-- `contraindications` VACÍO, porque qué contraindica cada ejercicio es dato
+-- clínico que él todavía no ha entregado (tarea 4.5) y no se inventa en
+-- producción. Pero sin ninguna, el cruce de contraindicaciones —que es medio
+-- motor— no se puede ni enseñar ni probar.
+--
+-- Se marcan aquí, donde no llega producción: `seed.sql` solo corre en local y
+-- en la demo. Cubren las DOS familias que definió Giovanni: zonas anatómicas
+-- (descarta el ejercicio) y condiciones sistémicas (además cambian la
+-- ejecución). La sentadilla libre profunda es el caso de las dos a la vez.
+update public.exercise_library set contraindications = c.valor
+  from (values
+    ('Sentadilla Libre Profunda',
+     '["Lumbar","Rodilla","Hernia discal / Patología axial","Hipertensión / Cardiovascular"]'::jsonb),
+    ('Sentadilla Heels-Elevated', '["Rodilla"]'::jsonb),
+    ('Prensa 45°',                '["Rodilla"]'::jsonb),
+    ('Hip Thrust con Barra',      '["Embarazo"]'::jsonb),
+    ('Press Militar tras Nuca',   '["Hombro","Cervical","Hipertensión / Cardiovascular"]'::jsonb)
+  ) as c(nombre, valor)
+ where public.exercise_library.name = c.nombre;
 
--- Las contraindicaciones cubren las DOS familias que definió Giovanni: zonas
--- anatómicas (el motor descarta el ejercicio) y condiciones sistémicas (además
--- le cambia la ejecución). La sentadilla trasera pesada es el caso claro de las
--- dos a la vez.
-insert into public.exercise_library
-  (id, name, target_muscle, movement_pattern, biomechanical_type, contraindications)
-values
-  ('00000000-4444-0000-0000-000000000001', '[demo] Sentadilla Barra Alta con Tacón',
-   'cuádriceps', 'squat_dominante_rodilla', 'rodilla dominante',
-   '["Rodilla"]'::jsonb),
-  ('00000000-4444-0000-0000-000000000002', '[demo] Prensa 45°',
-   'cuádriceps', 'squat_dominante_rodilla', 'rodilla dominante',
-   '["Rodilla"]'::jsonb),
-  ('00000000-4444-0000-0000-000000000003', '[demo] Sentadilla Trasera con Barra',
-   'cuádriceps', 'squat_dominante_rodilla', 'mixto',
-   '["Lumbar","Rodilla","Hernia discal / Patología axial","Hipertensión / Cardiovascular"]'::jsonb),
-  ('00000000-4444-0000-0000-000000000004', '[demo] Hip Thrust',
-   'glúteo mayor', 'hip_hinge_dominante_cadera', 'cadera dominante',
-   '["Embarazo"]'::jsonb),
-  ('00000000-4444-0000-0000-000000000005', '[demo] Press Militar con Barra',
-   'deltoides', 'vertical_push', 'vertical',
-   '["Hombro","Cervical","Hipertensión / Cardiovascular"]'::jsonb);
-
+-- Sustituciones de su matriz: lo que se ofrece cuando la sentadilla libre se cae.
 insert into public.exercise_variants (exercise_id, variant_exercise_id, relation_type)
-values
-  ('00000000-4444-0000-0000-000000000003', '00000000-4444-0000-0000-000000000002', 'sustitucion'),
-  ('00000000-4444-0000-0000-000000000003', '00000000-4444-0000-0000-000000000001', 'sustitucion');
-
--- Reglas sacadas LITERALMENTE de su matriz de condicionales (2026-08-25), en
--- la gramática de la 3.1. Son las que el motor del grupo 3 usa para probarse:
--- una por nivel, para que ningún nivel se construya sin un caso real.
-insert into public.rules
-  (rule_key, version, nivel, condition, actions, justification, evidence_level, is_active, created_by)
-values
-  -- Nivel 1 · su fila "d < 5 cm / Severa"
-  ('dorsiflexion-severa', 1, 1,
-   '{"todas":[{"hecho":"dorsiflexion_cm","op":"<","valor":5}]}'::jsonb,
-   '{"excluir_ejercicios":["[demo] Sentadilla Trasera con Barra"],
-     "sustituir_por":["[demo] Prensa 45°","[demo] Sentadilla Barra Alta con Tacón"],
-     "modificador":"Prescribir automovilización de tobillo"}'::jsonb,
-   'Por debajo de 5 cm el valgo dinámico de rodilla se dispara por compensación cinemática (WBLT, Konor et al.).',
-   'LEVEL_B_BIOMECHANICS', true, '00000000-2222-0000-0000-00000000000a'),
-
-  -- Nivel 1 · su fila "5 ≤ d < 10 / Limitada": NO excluye, adapta.
-  ('dorsiflexion-limitada', 1, 1,
-   '{"todas":[{"hecho":"dorsiflexion_cm","op":"entre","valor":[5,10]}]}'::jsonb,
-   '{"modificador":"Elevar talones 2.5 cm o usar zapatilla de halterofilia"}'::jsonb,
-   'Entre 5 y 10 cm la sentadilla es viable con adaptación: por debajo de 10 cm se altera la cinemática.',
-   'LEVEL_B_BIOMECHANICS', true, '00000000-2222-0000-0000-00000000000a'),
-
-  -- Nivel 1 · contraindicación sistémica: no quita el ejercicio, cambia el cómo.
-  ('hipertension-valsalva', 1, 1,
-   '{"todas":[{"hecho":"condiciones","op":"incluye","valor":"Hipertensión / Cardiovascular"}]}'::jsonb,
-   '{"prohibir_maniobra":["Valsalva"],"rir":{"piso":2}}'::jsonb,
-   'La maniobra de Valsalva eleva la presión intratorácica de forma aguda. Se mantiene RIR ≥ 2 y respiración continua.',
-   'LEVEL_A_SCIENCE', true, '00000000-2222-0000-0000-00000000000a'),
-
-  -- Nivel 2 · su tabla de ciclo, fila "Lútea Tardía"
-  -- El predicado de sexo NO es decorativo: sin él la regla queda "sin evaluar"
-  -- en un atleta hombre —no hay ciclo que mirar— y el motor le reclamaría al
-  -- entrenador que midiera la fase menstrual de un varón. Con él la regla se
-  -- descarta limpiamente, porque un "no cumple" manda sobre un "sin dato".
-  -- Es además como está escrito en su propio pseudocódigo.
-  ('ciclo-lutea-tardia', 1, 2,
-   '{"todas":[{"hecho":"sexo","op":"=","valor":"femenino"},
-              {"hecho":"fase_ciclo","op":"=","valor":"Lútea Tardía"}]}'::jsonb,
-   '{"volumen_factor":0.75,"rir":{"delta":2}}'::jsonb,
-   'Caída hormonal y fatiga central: se reduce el volumen un 25% y se evita el fallo muscular.',
-   'LEVEL_A_SCIENCE', true, '00000000-2222-0000-0000-00000000000a'),
-
-  -- Nivel 3 · su tabla de dominancias. Compensa, no refuerza lo dominante.
-  ('dominancia-rodilla', 1, 3,
-   '{"todas":[{"hecho":"dominancia_sentadilla","op":"=","valor":"Dominante de Rodilla"}]}'::jsonb,
-   '{"ratio_patron":{"hip_hinge_dominante_cadera":0.6,"squat_dominante_rodilla":0.4}}'::jsonb,
-   'Se compensa la dominancia estructural repartiendo 60/40 en favor de la cadera.',
-   'LEVEL_C_CONSENSUS', true, '00000000-2222-0000-0000-00000000000a'),
-
-  -- Nivel 4 · su tabla de composición corporal, umbrales de mujer.
-  ('volumen-base-mujer-magra', 1, 4,
-   '{"todas":[{"hecho":"sexo","op":"=","valor":"femenino"},
-              {"hecho":"porcentaje_graso","op":"<","valor":20}]}'::jsonb,
-   '{"volumen_series":{"min":16,"max":22}}'::jsonb,
-   'Alta capacidad de recuperación: 16 a 22 series efectivas por grupo muscular y semana.',
-   'LEVEL_C_CONSENSUS', true, '00000000-2222-0000-0000-00000000000a');
+select o.id, s.id, 'sustitucion'
+  from public.exercise_library o
+  join public.exercise_library s on s.name in ('Prensa 45°', 'Sentadilla Heels-Elevated')
+ where o.name = 'Sentadilla Libre Profunda'
+on conflict do nothing;
 
 -- ---------------------------------------------------------------------------
 -- Consentimientos (Ley 1581)

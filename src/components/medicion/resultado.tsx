@@ -38,8 +38,17 @@ export function Resultado({
     );
   }
 
+  // Se enseña la suma que ALIMENTA el cálculo, no las dos. Con Yuhasz es la de
+  // 6 y no hay densidad de por medio; enseñar una densidad vacía o una suma de 7
+  // que no interviene sería decorar el panel con números que no explican el
+  // resultado. Las filas con valor `null` se caen solas.
+  const esYuhasz = composicion.metodo === "yuhasz";
   const filas = [
-    { etiqueta: "Suma 7 pliegues", valor: composicion.suma7, unidad: "mm" },
+    {
+      etiqueta: esYuhasz ? "Suma 6 pliegues" : "Suma 7 pliegues",
+      valor: esYuhasz ? composicion.suma6 : composicion.suma7,
+      unidad: "mm",
+    },
     { etiqueta: "Densidad corporal", valor: composicion.densidad, unidad: "" },
     {
       etiqueta: "Grasa corporal",
@@ -56,12 +65,17 @@ export function Resultado({
       previo: anterior?.lean_mass_kg,
     },
     { etiqueta: "IMC", valor: composicion.imc, unidad: "" },
-  ];
+  ].filter((f): f is typeof f & { valor: number } => f.valor !== null);
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card">
-      <div className="border-b px-4 py-2">
+      <div className="flex items-baseline justify-between gap-2 border-b px-4 py-2">
         <span className="rotulo">Resultado</span>
+        {/* De dónde sale el número. El entrenador tiene que poder cotejarlo con
+            su propia hoja sin preguntarse qué fórmula se usó. */}
+        <span className="text-xs text-muted-foreground">
+          {esYuhasz ? "Yuhasz · 6 pliegues" : "Jackson & Pollock · 7 pliegues"}
+        </span>
       </div>
 
       <dl className="divide-y">
@@ -105,7 +119,9 @@ export function Resultado({
       </dl>
 
       <p className="border-t px-4 py-2 text-xs text-muted-foreground">
-        Jackson &amp; Pollock 7 pliegues · ecuación de Siri
+        {esYuhasz
+          ? "Fórmula de Yuhasz sobre la suma de 6 pliegues, la misma de sus fichas."
+          : "Densidad por Jackson & Pollock de 7 pliegues y porcentaje por la ecuación de Siri."}
       </p>
     </div>
   );
