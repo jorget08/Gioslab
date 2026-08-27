@@ -323,109 +323,78 @@ la matriz y disparar antes es el lado conservador— pero conviene que lo unifiq
 
 ---
 
-## Mensaje para enviarle
+## Mensaje para enviarle — 2026-08-27
 
 > Copiar y pegar. Sin jerga técnica.
+> (El mensaje anterior, del 25-ago, ya fue enviado y respondido.)
 
 ---
 
-Giova, la matriz es justo lo que necesitaba. Con eso ya puedo construir el motor,
-que era lo único que quedaba grande. Y las cuatro dudas quedaron resueltas: me
-sirvió especialmente lo del hombro, porque tenías razón, con 180 exactos me
-salían restringidos casi todos.
+Giova, ya está listo todo lo grande del motor. Entra y míralo:
 
-Dos cosas que aprobaste ya estaban hechas tal cual: el rango de 21 a 45 días del
-ciclo y los tres niveles de dorsiflexión. Perfecto, no toco nada ahí.
+- **Tus 25 reglas están cargadas y funcionando.** En *Administración → Reglas* las
+  ves agrupadas por nivel y escritas en español, no en código. Puedes crear,
+  editar y activar sin pedirme nada.
+- **Editar una regla no borra la anterior**: guarda una versión nueva. En
+  *Historial* ves quién cambió qué y cuándo, y puedes volver atrás con un botón.
+- En la ficha de cualquier atleta, **"Qué dice el motor"** te muestra qué
+  ejercicios se le caen, **con la regla que lo decidió y tu justificación**, y qué
+  le ofrece en su lugar.
 
-Antes de programar el motor necesito que me aclares cuatro cosas, porque si me
-equivoco en estas hay que rehacerlo entero:
+Metí las fichas de Diego y Daniela como casos de prueba permanentes: si algún día
+alguien toca una regla y les cambia el resultado, el sistema avisa solo.
 
-**1. El hombro: ¿170 o 175?** En las respuestas me dices que a partir de 170 es
-óptimo. En la matriz dice que por debajo de 175 es restringido. Son dos números
-distintos para el mismo test. Yo voy a usar 170, que es el que viene con la
-explicación de la AAOS, pero confírmame.
+Necesito cuatro cosas tuyas.
 
-**2. Cambiaste los tests de movilidad, y necesito saber si es a propósito.**
-En la matriz aparecen dos nuevos (Thomas Test y elevación de pierna recta) pero
-desaparecen dos que estaban en tu ficha de movilidad y que ya tengo programados
-y capturando datos: la flexión de cadera y la rotación interna de cadera.
-También bajaste la rotación externa de hombro de 90 a 70 grados.
+**1. Lo más urgente: qué contraindica cada ejercicio.**
 
-¿Los nuevos reemplazan a los viejos o se suman? Si reemplazan, tengo que decidir
-qué hago con las evaluaciones que ya están guardadas.
+Cargué los 31 ejercicios que nombra tu matriz. Pero tu matriz dice "cruzamiento
+directo con base de datos de ejercicios", y esa base todavía no existe: los 31
+están sin contraindicaciones.
 
-**3. Se te cayó una regla de seguridad del ciclo.** En la matriz el ciclo pasa de
-cinco fases a cuatro: la Ovulatoria desaparece dentro de la Folicular Tardía. El
-problema es lo que se va con ella: tú habías escrito que en la ovulación hay más
-laxitud ligamentosa por la relaxina y que había que priorizar máquinas para
-proteger la articulación. Eso no es un ajuste de volumen, es una regla de
-seguridad.
+Eso significa que hoy, si registro un atleta con lesión de rodilla, **el sistema
+no le quita ni un solo ejercicio por esa lesión**. Solo funciona lo que sale de
+tus reglas de movilidad. Es media máquina apagada.
 
-¿La quitamos a propósito o la muevo dentro de la Folicular Tardía?
+Necesito, por cada ejercicio, dos cosas: qué zonas lo contraindican (de tu lista:
+Cervical, Dorsal, Lumbar, Hombro, Codo, Muñeca, Cadera, Rodilla, Tobillo, Pie) y
+qué condiciones (Hipertensión, Embarazo, Hernia discal, Diástasis). Un Excel con
+una fila por ejercicio me sirve perfecto.
 
-**4. ¿Cómo conviven las dos jerarquías?** Me diste dos y no sé si son la misma
-cosa o dos cosas distintas. Están los cuatro niveles de evidencia (A, B, C, D) y
-ahora los cuatro niveles de la matriz (seguridad, fisiología, vectores,
-composición).
+**2. ¿Yuhasz o Jackson & Pollock?**
 
-Mi interpretación —y es como lo voy a programar si no me dices lo contrario— es
-que son cosas distintas y se complementan: los niveles 1 a 4 son el ORDEN en que
-el motor va decidiendo (primero descarta por seguridad, después ajusta el
-volumen, después reparte los vectores), y los niveles A a D son para desempatar
-cuando dos reglas del mismo nivel se contradicen. Si lo entendí mal, dímelo antes
-de que lo programe.
+Aquí encontré algo que no cuadra, y prefiero preguntarte antes que elegir yo.
+
+En la ficha que me pasaste para programar, el porcentaje de grasa sale de Jackson
+& Pollock con 7 pliegues. Pero en las fichas reales de Diego y Daniela la fórmula
+es **Yuhasz con 6 pliegues** — y es la que da los números que ellos tienen
+impresos en la mano: Diego 13.73%, Daniela 27.57%.
+
+Puse Yuhasz, por dos motivos. Uno, porque es lo que usas de verdad. Dos, y este es
+el que decide: **en tus fichas no mides el pliegue pectoral**, así que Jackson &
+Pollock ni siquiera se puede calcular con los datos que tomas.
+
+Si prefieres volver a Jackson & Pollock no hay problema, lo dejé programado, pero
+tendrías que empezar a medir ese séptimo pliegue en cada evaluación.
+
+**3. El hombro quedó a medias: ¿170 o 175?**
+
+Te lo pregunté y no cerramos. Tu matriz dice que por debajo de **175** es
+restringido; tu respuesta decía que desde **170** es óptimo. Cargué 175, porque es
+lo que dice la matriz y porque avisar antes es lo prudente. Dime si lo dejo así o
+lo bajo a 170.
+
+**4. Los perímetros: ¿quieres medir los dos lados?**
+
+Me los pediste por dos motivos: seguir la hipertrofia y detectar asimetrías. Lo
+primero ya funciona. Lo segundo **no puede funcionar** con los campos que me
+diste, porque se mide "el brazo", no el izquierdo y el derecho.
+
+Para ver asimetrías harían falta seis medidas en vez de tres (brazo, muslo y
+pantorrilla, por cada lado). Es más trabajo en cada evaluación, así que lo
+decides tú.
 
 ---
 
-Sobre el resto de documentos:
-
-**Los perímetros ya están.** Tenías razón: con cintura y cadera solo se ve el
-riesgo abdominal, no si alguien ganó músculo. Ya se registran brazo relajado,
-brazo contraído, tórax, muslo y pantorrilla, y la ficha muestra cuánto cambió
-cada uno. En María Fernanda se ve justo lo que buscabas: bajó 1.5 kg de peso
-pero el brazo subió 1.2 cm y el muslo 1.5 cm.
-
-**Una cosa de ahí:** dices que sirven para identificar asimetrías, pero con estos
-campos no se puede, porque se mide "el brazo" y no el izquierdo y el derecho por
-separado. Si quieres detectar asimetrías necesito medir los dos lados de brazo,
-muslo y pantorrilla — son seis medidas en vez de tres, así que te duplica el
-trabajo en cada valoración. Dime si te compensa.
-
-**Las zonas de cardio, el dashboard con fotos y todo lo de cadencia, TUT y
-volumen efectivo** son muy buenos, pero son de la siguiente fase. Ese material
-va al backlog para cuando construyamos el generador de rutinas — la tabla de
-series por grupo muscular sobre todo, esa está muy bien hecha.
-
-**Lo del ciclo en la app de la atleta** también es de la siguiente fase, porque
-la atleta todavía no tiene app propia. Pero la primera mitad —que tú registres la
-fecha del periodo en la valoración— ya está funcionando; entra a cualquier atleta
-mujer y verás el bloque.
-
-**Una cosa que quiero confirmarte:** en el documento del dashboard dice que el
-PDF pasa a ser algo secundario. Eso choca con lo que me dijiste antes, que el PDF
-era lo que vendía el producto, y con el plan, donde el PDF es una parte grande.
-No lo cambio a menos que me digas que sí, que ahora prefieres la pantalla.
-
-Y una cosa que necesito que decidas, porque tus dos últimos documentos dicen lo
-contrario:
-
-En el de **onboarding gradual** dices que el sistema debe restringir los
-ejercicios de riesgo mientras falten datos, y que no llamemos a esto "modo
-rápido". En el de **Modo Express** dices que asuma movilidad "estándar/neutro"
-cuando no se ha medido.
-
-Yo voy con el primero, y te explico por qué: dar por buena una movilidad que
-nadie midió es justo lo que el sistema evita hoy. Si a alguien no le miden el
-tobillo, el sistema NO asume que está bien — lo deja como "sin medir" y no le
-prescribe sentadilla profunda. Asumir "normal" es lo que haría un plan genérico
-cualquiera, y es donde se lesiona la gente.
-
-Lo que sí me llevo de ese documento es lo de **"sin plicómetro"** para clientes a
-distancia: eso está bien pensado y además ya está medio hecho, porque el sistema
-distingue entre un porcentaje graso calculado y uno metido a mano. Falta solo la
-casilla.
-
-Y sigo esperando dos cosas tuyas para poder avanzar en los informes: **el logo en
-archivo** (idealmente en PNG con fondo transparente o SVG) y **la plantilla de
-cómo quieres que se vea el reporte**. Los colores ya los saqué de tu logo y del
-PDF de entrenamiento, y la app ya está en rojo, dorado y negro.
+Y cuando puedas, sigo esperando el **logo en archivo** y una **plantilla de
+reporte** tuya. Son lo único que bloquea los PDF, que es lo siguiente grande.
