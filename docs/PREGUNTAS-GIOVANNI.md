@@ -323,78 +323,93 @@ la matriz y disparar antes es el lado conservador— pero conviene que lo unifiq
 
 ---
 
-## Mensaje para enviarle — 2026-08-27
+## Mensaje para enviarle — 2026-08-28
 
 > Copiar y pegar. Sin jerga técnica.
-> (El mensaje anterior, del 25-ago, ya fue enviado y respondido.)
+> (Los anteriores, del 25 y el 27 de agosto, ya fueron enviados y respondidos.)
 
 ---
 
-Giova, ya está listo todo lo grande del motor. Entra y míralo:
+Giova, perfecto lo del Yuhasz y lo del hombro. Los dos quedan como están, no hay
+que tocar nada. Y el argumento del pliegue pectoral me convenció: tiene sentido
+que un dato que varía según quién mida no alimente al motor.
 
-- **Tus 25 reglas están cargadas y funcionando.** En *Administración → Reglas* las
-  ves agrupadas por nivel y escritas en español, no en código. Puedes crear,
-  editar y activar sin pedirme nada.
-- **Editar una regla no borra la anterior**: guarda una versión nueva. En
-  *Historial* ves quién cambió qué y cuándo, y puedes volver atrás con un botón.
-- En la ficha de cualquier atleta, **"Qué dice el motor"** te muestra qué
-  ejercicios se le caen, **con la regla que lo decidió y tu justificación**, y qué
-  le ofrece en su lugar.
+Lo de los perímetros bilaterales queda anotado, lo programo enseguida.
 
-Metí las fichas de Diego y Daniela como casos de prueba permanentes: si algún día
-alguien toca una regla y les cambia el resultado, el sistema avisa solo.
+**Tu Excel de contraindicaciones ya está cargado y el motor lo está usando.**
+Ahora, si registro un atleta con lesión de rodilla, el sistema le quita solo la
+sentadilla frontal, las extensiones de cuádriceps y el curl femoral, y le explica
+por qué. Antes no le quitaba nada.
 
-Necesito cuatro cosas tuyas.
+Pero me faltan 21 ejercicios, y te explico por qué.
 
-**1. Lo más urgente: qué contraindica cada ejercicio.**
+**Nombraste los ejercicios de dos formas distintas, y las dos son correctas.**
+En la matriz de reglas los nombras por variante, porque las reglas las
+distinguen: toda la regla de dorsiflexión existe para separar la sentadilla libre
+profunda de la que va con talón elevado. En el Excel los nombras por familia:
+"Sentadilla Trasera", "Prensa de Piernas", "Zancadas / Búlgaras".
 
-Cargué los 31 ejercicios que nombra tu matriz. Pero tu matriz dice "cruzamiento
-directo con base de datos de ejercicios", y esa base todavía no existe: los 31
-están sin contraindicaciones.
+De 31 nombres solo coincidían 4. Los demás los emparejé donde era evidente que
+era el mismo ejercicio escrito distinto, y añadí los 16 que no teníamos (press de
+banca, fondos, face pull, curls, planchas). Pero quedan 21 donde **no quiero
+adivinar yo**, y por una razón concreta:
 
-Eso significa que hoy, si registro un atleta con lesión de rodilla, **el sistema
-no le quita ni un solo ejercicio por esa lesión**. Solo funciona lo que sale de
-tus reglas de movilidad. Es media máquina apagada.
+**Varios de esos 21 son justamente los sustitutos seguros.** La sentadilla
+Goblet, la Safety Bar, la de talón elevado, el press en plano escapular, el peso
+muerto rumano desde bloque. Si yo les copio las contraindicaciones del ejercicio
+del que son sustituto, el motor los va a excluir también — y el entrenador se
+queda sin nada que ofrecer. Rompería justo lo que hace útil al sistema.
 
-Necesito, por cada ejercicio, dos cosas: qué zonas lo contraindican (de tu lista:
-Cervical, Dorsal, Lumbar, Hombro, Codo, Muñeca, Cadera, Rodilla, Tobillo, Pie) y
-qué condiciones (Hipertensión, Embarazo, Hernia discal, Diástasis). Un Excel con
-una fila por ejercicio me sirve perfecto.
+Ahora mismo pasa esto, y es un ejemplo real: a una atleta con lesión de rodilla
+el sistema le quita tres ejercicios correctamente, **pero le sigue permitiendo la
+sentadilla libre profunda, la low bar, el hack libre y el sissy squat**, porque
+esos cuatro están sin datos.
 
-**2. ¿Yuhasz o Jackson & Pollock?**
+**Lo que necesito: esta misma tabla, con los 21 que faltan.** Mismo formato que
+usaste, y si alguno no tiene ninguna contraindicación escribe "Ninguna".
 
-Aquí encontré algo que no cuadra, y prefiero preguntarte antes que elegir yo.
+| Ejercicio | Zonas contraindicadas | Condiciones contraindicadas |
+|---|---|---|
+| Sentadilla Libre Profunda |  |  |
+| Sentadilla Low Bar |  |  |
+| Sentadilla Goblet |  |  |
+| Sentadilla con Safety Bar |  |  |
+| Sentadilla Heels-Elevated |  |  |
+| Sentadilla Búlgara con Apoyo |  |  |
+| Hack Libre |  |  |
+| Sissy Squat |  |  |
+| Prensa 45° |  |  |
+| Prensa Inclinada de Piernas |  |  |
+| Zancadas Caminando |  |  |
+| Peso Muerto Convencional |  |  |
+| Peso Muerto Rumano desde Bloque |  |  |
+| Glute Bridge |  |  |
+| Patada de Glúteo en Polea |  |  |
+| Abducciones en Polea |  |  |
+| Press Militar tras Nuca |  |  |
+| Press Overhead con Barra |  |  |
+| Press en Plano Escapular |  |  |
+| Press Inclinado a 60° |  |  |
+| Pullover con Cuerda |  |  |
 
-En la ficha que me pasaste para programar, el porcentaje de grasa sale de Jackson
-& Pollock con 7 pliegues. Pero en las fichas reales de Diego y Daniela la fórmula
-es **Yuhasz con 6 pliegues** — y es la que da los números que ellos tienen
-impresos en la mano: Diego 13.73%, Daniela 27.57%.
+Zonas: Cervical, Dorsal, Lumbar, Hombro, Codo, Muñeca, Cadera, Rodilla, Tobillo,
+Pie. Condiciones: Hipertensión, Embarazo, Hernia discal, Diástasis abdominal.
 
-Puse Yuhasz, por dos motivos. Uno, porque es lo que usas de verdad. Dos, y este es
-el que decide: **en tus fichas no mides el pliegue pectoral**, así que Jackson &
-Pollock ni siquiera se puede calcular con los datos que tomas.
+Dos cosas que noté de paso:
 
-Si prefieres volver a Jackson & Pollock no hay problema, lo dejé programado, pero
-tendrías que empezar a medir ese séptimo pliegue en cada evaluación.
+- **El peso muerto convencional no estaba en tu Excel**, y es el de más riesgo
+  lumbar de toda la lista. Igual se te pasó.
+- **Los fondos en paralelas los dejé sin clasificar de patrón**, porque se pueden
+  contar como empuje horizontal o vertical según el énfasis. Dime cuál prefieres.
 
-**3. El hombro quedó a medias: ¿170 o 175?**
-
-Te lo pregunté y no cerramos. Tu matriz dice que por debajo de **175** es
-restringido; tu respuesta decía que desde **170** es óptimo. Cargué 175, porque es
-lo que dice la matriz y porque avisar antes es lo prudente. Dime si lo dejo así o
-lo bajo a 170.
-
-**4. Los perímetros: ¿quieres medir los dos lados?**
-
-Me los pediste por dos motivos: seguir la hipertrofia y detectar asimetrías. Lo
-primero ya funciona. Lo segundo **no puede funcionar** con los campos que me
-diste, porque se mide "el brazo", no el izquierdo y el derecho.
-
-Para ver asimetrías harían falta seis medidas en vez de tres (brazo, muslo y
-pantorrilla, por cada lado). Es más trabajo en cada evaluación, así que lo
-decides tú.
+**Y una pregunta nueva, de lo de las asimetrías.** Dijiste que el motor debería
+prescribir unilaterales empezando por la pierna débil y ajustar el volumen en esa
+zona. Para programarlo necesito el umbral: pusiste 2 cm como ejemplo, pero ¿a
+partir de cuántos centímetros de diferencia se considera asimetría que hay que
+corregir? ¿Es el mismo número para brazo, muslo y pantorrilla, o cada uno tiene
+el suyo?
 
 ---
 
-Y cuando puedas, sigo esperando el **logo en archivo** y una **plantilla de
-reporte** tuya. Son lo único que bloquea los PDF, que es lo siguiente grande.
+Sigo esperando el **logo en archivo** y una **plantilla de reporte** tuya. Son lo
+único que bloquea los PDF, que es lo siguiente grande.

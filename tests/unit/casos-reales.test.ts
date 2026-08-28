@@ -39,28 +39,65 @@ function matriz(): Regla[] {
   }));
 }
 
+/**
+ * Las contraindicaciones que entregó Giovanni el 27-ago, leídas de su migración.
+ * Sin esto la biblioteca del test tendría la lista vacía y el cruce —que es
+ * medio motor— quedaría sin probar.
+ */
+const SQL_CONTRA = readFileSync(
+  new URL("../../supabase/migrations/20260828100000_contraindicaciones.sql", import.meta.url),
+  "utf8",
+);
+
+function contraindicacionesCargadas(): Map<string, string[]> {
+  const sql = SQL_CONTRA;
+  const m = new Map<string, string[]>();
+  for (const f of sql.matchAll(/\('([^']+)',\s*'(\[[^']*\])'::jsonb\)/g)) {
+    m.set(f[1], JSON.parse(f[2]));
+  }
+  for (const f of sql.matchAll(/\('([^']+)',\s*'[^']*',\s*(?:'[a-z_]+'|null),\s*'(\[[^']*\])'::jsonb\)/g)) {
+    m.set(f[1], JSON.parse(f[2]));
+  }
+  return m;
+}
+
+/**
+ * La biblioteca sale de DOS migraciones: los 31 que nombra su matriz (3.3) y los
+ * 16 que trajo su Excel de contraindicaciones (4.5). Leer solo la primera dejaba
+ * al test probando el cruce sobre una biblioteca que no es la real.
+ */
 function biblioteca(): Ejercicio[] {
-  const bloque = SQL.slice(
+  const nombres: { name: string; musculo: string; patron: string | null }[] = [];
+
+  const deLaMatriz = SQL.slice(
     SQL.indexOf("insert into public.exercise_library"),
     SQL.indexOf("on conflict (name) do nothing"),
   );
-  return [...bloque.matchAll(/\('([^']+)',\s*'([^']*)',\s*'([a-z_]+)',\s*'([^']*)'\)/g)].map(
-    (m, i) => ({
-      id: String(i),
-      name: m[1],
-      description: null,
-      target_muscle: m[2],
-      movement_pattern: m[3],
-      biomechanical_type: null,
-      equipment: m[4],
-      // Vacías, como las carga la migración: qué contraindica cada ejercicio
-      // sigue pendiente de él (tarea 4.5).
-      contraindications: [],
-      is_active: true,
-    }),
-  );
+  for (const m of deLaMatriz.matchAll(/\('([^']+)',\s*'([^']*)',\s*'([a-z_]+)',\s*'[^']*'\)/g)) {
+    nombres.push({ name: m[1], musculo: m[2], patron: m[3] });
+  }
+
+  const delExcel = SQL_CONTRA.slice(SQL_CONTRA.indexOf("insert into public.exercise_library"));
+  for (const m of delExcel.matchAll(
+    /\('([^']+)',\s*'([^']*)',\s*(?:'([a-z_]+)'|null),\s*'\[[^']*\]'::jsonb\)/g,
+  )) {
+    nombres.push({ name: m[1], musculo: m[2], patron: m[3] ?? null });
+  }
+
+  return nombres.map((n, i) => ({
+    id: String(i),
+    name: n.name,
+    description: null,
+    target_muscle: n.musculo,
+    movement_pattern: n.patron,
+    biomechanical_type: null,
+    equipment: null,
+    contraindications: CONTRA.get(n.name) ?? [],
+    is_active: true,
+  }));
 }
 
+const CONTRA = contraindicacionesCargadas();
 const REGLAS = matriz();
 const EJERCICIOS = biblioteca();
 
@@ -71,7 +108,7 @@ describe("la matriz y la biblioteca se leyeron de la migración", () => {
     // Sin esto, un cambio de formato en el SQL dejaría las listas vacías y todo
     // lo de abajo pasaría sobre la nada.
     expect(REGLAS.length).toBe(25);
-    expect(EJERCICIOS.length).toBeGreaterThan(25);
+    expect(EJERCICIOS.length).toBe(47);
     for (const n of NIVELES_MOTOR) {
       expect(REGLAS.some((r) => r.nivel === n), `nivel ${n}`).toBe(true);
     }
@@ -286,9 +323,86 @@ describe("golden · hipertensión, la contraindicación sistémica", () => {
     condiciones: ["Hipertensión / Cardiovascular"],
   });
 
-  it("prohíbe Valsalva y pone suelo al RIR, sin quitar ejercicios", () => {
+  it("prohíbe Valsalva y pone suelo al RIR", () => {
     expect(r.maniobrasProhibidas).toContain("Valsalva");
     expect(r.rir.piso).toBe(2);
-    expect(excluidos(r)).toHaveLength(0);
+  });
+
+  it("la regla NO es la que quita ejercicios: eso lo hace el cruce", () => {
+    // Distinción de su matriz: la contraindicación sistémica cambia el CÓMO
+    // (Valsalva, RIR) y por separado el cruce descarta los ejercicios que él
+    // marcó. Antes de que entregara la tabla solo funcionaba la primera mitad.
+    for (const e of excluidos(r)) {
+      expect(e.porQue.map((p) => p.rule_key), e.ejercicio).toContain("cruce-contraindicaciones");
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+describe("golden · el cruce de contraindicaciones, con los datos que él entregó", () => {
+  it("se cargaron contraindicaciones de verdad", () => {
+    // Si la expresión regular dejara de encontrarlas, todo lo de abajo pasaría
+    // sobre listas vacías y el cruce quedaría sin probar sin que nadie lo note.
+    expect(CONTRA.size).toBeGreaterThanOrEqual(26);
+    expect(CONTRA.get("Sentadilla Frontal")).toContain("Rodilla");
+  });
+
+  it("una lesión de rodilla descarta la sentadilla frontal, y lo explica", () => {
+    const r = correr({
+      sexo: "masculino",
+      porcentaje_graso: 15,
+      lesiones: ["Rodilla"],
+      condiciones: [],
+    });
+    const fuera = excluidos(r).find((e) => e.ejercicio === "Sentadilla Frontal");
+    expect(fuera, "la sentadilla frontal debería caerse").toBeDefined();
+    expect(fuera!.porQue.map((p) => p.rule_key)).toContain("cruce-contraindicaciones");
+  });
+
+  it("y deja vivo lo que no toca la rodilla", () => {
+    const r = correr({
+      sexo: "masculino",
+      porcentaje_graso: 15,
+      lesiones: ["Rodilla"],
+      condiciones: [],
+    });
+    const vivos = incluidos(r).map((e) => e.ejercicio);
+    expect(vivos).toContain("Jalón al Pecho en Polea");
+    expect(vivos).toContain("Curl de Biceps con Barra");
+  });
+
+  it("el embarazo descarta lo que él marcó, no lo que yo supondría", () => {
+    // Rueda abdominal y plancha salen de SU tabla. Un atleta sin condiciones
+    // las conserva; es la comprobación de que el cruce mira el dato y no un
+    // criterio escrito a mano en el código.
+    const con = correr({ sexo: "femenino", porcentaje_graso: 25, lesiones: [], condiciones: ["Embarazo"] });
+    const sin = correr({ sexo: "femenino", porcentaje_graso: 25, lesiones: [], condiciones: [] });
+
+    const fuera = excluidos(con).map((e) => e.ejercicio);
+    expect(fuera).toContain("Rueda Abdominal (Ab Wheel)");
+    expect(fuera).toContain("Plancha Abdominal (Plank)");
+    expect(excluidos(sin).map((e) => e.ejercicio)).not.toContain("Plancha Abdominal (Plank)");
+  });
+
+  it("la hipertensión descarta ejercicios Y prohíbe la Valsalva", () => {
+    // Las dos mitades del nivel 1: el cruce quita ejercicios y la regla cambia
+    // el cómo. Antes de que él entregara la tabla solo funcionaba la segunda.
+    const r = correr({
+      sexo: "masculino",
+      porcentaje_graso: 22,
+      lesiones: [],
+      condiciones: ["Hipertensión / Cardiovascular"],
+    });
+    expect(excluidos(r).map((e) => e.ejercicio)).toContain("Press de Banca Plano (Bench Press)");
+    expect(r.maniobrasProhibidas).toContain("Valsalva");
+    expect(r.rir.piso).toBe(2);
+  });
+
+  it("quedan 21 ejercicios sin contraindicaciones: son los que faltan por pedirle", () => {
+    // Su Excel nombra familias y nuestras reglas nombran variantes. Este número
+    // baja cuando entregue las que faltan; que esté aquí evita que se olvide.
+    const sinDatos = EJERCICIOS.filter((e) => (e.contraindications as string[]).length === 0);
+    expect(sinDatos.length).toBe(21);
   });
 });

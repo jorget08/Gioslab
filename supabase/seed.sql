@@ -235,28 +235,10 @@ values
 -- ---------------------------------------------------------------------------
 -- Biblioteca
 -- ---------------------------------------------------------------------------
--- ⚠️ CONTRAINDICACIONES DE EJEMPLO, SOLO PARA LA BASE LOCAL Y LA DEMO.
---
--- La migración de la 3.3 carga los ejercicios de su matriz con
--- `contraindications` VACÍO, porque qué contraindica cada ejercicio es dato
--- clínico que él todavía no ha entregado (tarea 4.5) y no se inventa en
--- producción. Pero sin ninguna, el cruce de contraindicaciones —que es medio
--- motor— no se puede ni enseñar ni probar.
---
--- Se marcan aquí, donde no llega producción: `seed.sql` solo corre en local y
--- en la demo. Cubren las DOS familias que definió Giovanni: zonas anatómicas
--- (descarta el ejercicio) y condiciones sistémicas (además cambian la
--- ejecución). La sentadilla libre profunda es el caso de las dos a la vez.
-update public.exercise_library set contraindications = c.valor
-  from (values
-    ('Sentadilla Libre Profunda',
-     '["Lumbar","Rodilla","Hernia discal / Patología axial","Hipertensión / Cardiovascular"]'::jsonb),
-    ('Sentadilla Heels-Elevated', '["Rodilla"]'::jsonb),
-    ('Prensa 45°',                '["Rodilla"]'::jsonb),
-    ('Hip Thrust con Barra',      '["Embarazo"]'::jsonb),
-    ('Press Militar tras Nuca',   '["Hombro","Cervical","Hipertensión / Cardiovascular"]'::jsonb)
-  ) as c(nombre, valor)
- where public.exercise_library.name = c.nombre;
+-- Las contraindicaciones YA NO SE INVENTAN AQUÍ. Hasta la 4.5 había cinco de
+-- ejemplo para poder probar el cruce; desde que Giovanni entregó su matriz
+-- (migración 20260828100000) hay 30 reales, así que el código se queda sin una
+-- sola contraindicación escrita por mí.
 
 -- Sustituciones de su matriz: lo que se ofrece cuando la sentadilla libre se cae.
 insert into public.exercise_variants (exercise_id, variant_exercise_id, relation_type)

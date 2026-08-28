@@ -114,6 +114,12 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Embarazo, hipertensión, hernia, diástasis. Cierra el cruce: sin esto el motor
   sabía qué contraindica cada ejercicio pero no qué tiene cada persona.
 
+- [ ] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
+  Giovanni aprobó medir los dos lados de brazo, muslo y pantorrilla. Pero pide
+  más que capturar: que el motor **prescriba unilaterales empezando por el lado
+  débil y ajuste el volumen en esa zona**. Eso es una regla nueva y falta el
+  umbral — puso "2 cm" como ejemplo, no como criterio. Preguntado.
+
 - [x] **2.14 Perímetros de extremidades y tronco** (2 h) · *fuera del plan original*
   Brazo relajado y contraído, tórax, muslo y pantorrilla, con su evolución en la
   ficha. Petición suya: con cintura y cadera solo se ve el riesgo abdominal, no
@@ -210,8 +216,15 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Rojo, dorado y negro muestreados de su logo y sus informes. Media entrega de
   los assets: faltan el logo en archivo y la plantilla de reporte.
 
-- [?] **4.5 Importación masiva del contenido de Giovanni** (5 h)
-  CSV. *Requiere:* listado v1 y medios de Giovanni.
+- [~] **4.5 Importación del contenido de Giovanni** (5 h)
+  **Media hecha.** Su `Matriz_Contraindicaciones_Ejercicios.xlsx` (27-ago) cargó
+  contraindicaciones reales en 26 ejercicios y añadió 16 nuevos: la biblioteca
+  pasa de 31 a 47 y **el cruce de contraindicaciones empieza a funcionar**.
+  Faltan **21**, y no por descuido: su Excel nombra familias y su matriz nombra
+  variantes, así que de 31 nombres solo coincidían 4. Los ambiguos no se
+  heredan porque varios son los SUSTITUTOS seguros — heredar los excluiría y
+  rompería la sustitución. Pedidos uno a uno en PREGUNTAS-GIOVANNI.
+  *Sigue requiriendo:* esos 21, y los medios (4.2).
 
 ---
 
