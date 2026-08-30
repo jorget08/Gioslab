@@ -27,6 +27,21 @@ ENTONCES priorizar('Sentadilla Barra Alta con Tacón', 'Prensa 45°')
 **Formato del producto:** aplicación móvil (App Store y Google Play) + panel web para
 entrenadores, gimnasios y administración. Ver sección 2 para la decisión técnica.
 
+**El producto termina en la app del atleta, no en un PDF.** El entrenador evalúa,
+el motor decide y se genera un plan; pero el destinatario final es el atleta, que
+entra con su usuario, ve su rutina del día, registra lo que levantó, controla su
+cuerpo, registra lo que comió y recibe informes que puede repreguntar. El PDF es
+una exportación para quien todavía no está en la app. Fase A construye la mitad
+del entrenador; Fase B construye la del atleta.
+
+**App de referencia:** `/Users/antpack/Documents/personal/gymapp` es una app de
+Expo que Jorge usa a diario para su propio entrenamiento. **Tiene el mismo estatus
+que los Excels de Giovanni: es especificación funcional, no inspiración.** Su
+dominio (`data/nutrition.ts`, `ai/report.ts`, `ai/chat.ts`, `data/glossary.ts`,
+`data/program.ts`) es TypeScript puro y se porta casi tal cual; sus pantallas son
+React Native y se reescriben en React + Tailwind. Que sea Expo **no reabre la
+decisión de stack de la sección 2**.
+
 **Origen del método:** Giovanni Quiroz (socio metodológico, profesional en ciencias
 del deporte) ya presta este servicio manualmente con hojas de Excel a 10–30
 entrenadores que le pagan. **Esos Excels son la especificación funcional del motor.**
@@ -163,15 +178,29 @@ principios de la sección 3.
 
 ## 5. Plan de trabajo
 
-Las tareas están en **`docs/TAREAS-FASE-A.md`**, numeradas en orden de ejecución
-(0.1, 0.2, 1.1, 1.2...). Espejo del tablero de monday.com del proyecto.
+Las tareas están en **`docs/TAREAS-FASE-A.md`** y **`docs/TAREAS-FASE-B.md`**,
+numeradas en orden de ejecución (0.1, 0.2, 1.1, 1.2...). Espejo del tablero de
+monday.com del proyecto.
 
-**Fase A = herramienta interna** (≈290 h): evaluación + motor + biblioteca + PDF.
-Al terminarla, Giovanni abandona los Excels y opera con la plataforma. Es un hito de
-vesting, así que **la Fase A debe quedar completa y usable antes de tocar Fase B**.
+**Fase A = herramienta interna** (≈325 h): evaluación + motor + biblioteca +
+**generador de rutinas** + PDF. Al terminarla, Giovanni abandona los Excels y opera
+con la plataforma. Es un hito de vesting, así que **la Fase A debe quedar completa y
+usable antes de tocar Fase B**.
 
-**Fase B = SaaS completo**: generador de rutinas, portal del cliente, dietas, pagos,
-super admin, publicación en tiendas. Se desglosa cuando lleguemos.
+**Fase B = el producto** (≈285 h): la app del atleta y todo lo que cuelga de ella
+—entreno con registro de series, control corporal, nutrición con IA, informes con
+chat, panel de adherencia, pagos y tiendas—. Desglosada en su propio documento.
+
+Tres decisiones de arquitectura de Fase B que condicionan Fase A y por eso se
+escriben aquí, no allí:
+
+- **Lo que el atleta registra es offline primero.** Series anotadas en el piso del
+  gimnasio con mala señal no se escriben directo a Supabase. Lo del entrenador
+  (evaluación, editor de reglas) sigue en línea.
+- **Toda llamada a un modelo pasa por una ruta de servidor**, con la clave del lado
+  servidor y un tope por plan desde el primer día: es coste variable por atleta.
+- **Nutrición y fotos de comida son datos sensibles** igual que las lesiones
+  (§3.7). Consentimiento aparte, y la foto se borra en cuanto se procesa.
 
 **Ritmo real:** trabajo nocturno y de fin de semana, 12–15 h por semana. Optimiza
 para sesiones cortas: prefiero cerrar una tarea completa y funcionando que dejar tres
@@ -231,6 +260,12 @@ avísame y pasamos a la siguiente tarea desbloqueada.
 - Assets de marca: logo, colores, plantilla de reporte (bloquea grupo 5)
 - Listado y medios de la biblioteca de ejercicios (bloquea 4.5)
 - Casos reales de atletas para validar cálculos (bloquea 2.10)
+- **Su método de programación**: periodizaciones, reparto de patrones por semana,
+  volumen, rangos de repeticiones, progresión y descarga (bloquea 5.2 y con ella
+  todo el generador). `periodization_type` lleva marcado "PENDIENTE DE GIOVANNI"
+  desde la primera migración.
+- **Su método de nutrición**: calorías objetivo, proteína por kilo y cómo cambian
+  según el objetivo (bloquea 11.1 y con ella el grupo de nutrición)
 
 ---
 
@@ -238,8 +273,13 @@ avísame y pasamos a la siguiente tarea desbloqueada.
 
 No proponer ni construir, salvo que yo lo pida explícitamente:
 análisis de video con IA o visión artificial, integración con wearables,
-base de alimentos con macros automáticos, multi-idioma, apps nativas separadas,
-microservicios, Kubernetes, o cualquier cosa que no esté en `docs/TAREAS-FASE-A.md`.
+base de alimentos propia con macros precargados, multi-idioma, apps nativas
+separadas, microservicios, Kubernetes, o cualquier cosa que no esté en
+`docs/TAREAS-FASE-A.md` ni en `docs/TAREAS-FASE-B.md`.
+
+Y sobre todo: **nada de Fase B mientras Fase A no esté firmada.** Que el plan de
+Fase B ya exista escrito no lo pone en juego; existe para no volver a construir
+Fase A de espaldas a dónde va esto.
 
 Las ideas nuevas se anotan en el backlog de monday.com, no se implementan sobre la
 marcha.

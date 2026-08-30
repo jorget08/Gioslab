@@ -413,3 +413,48 @@ el suyo?
 
 Sigo esperando el **logo en archivo** y una **plantilla de reporte** tuya. Son lo
 único que bloquea los PDF, que es lo siguiente grande.
+
+---
+
+## 29 de agosto — lo que sigue después de la matriz
+
+Cerramos el motor: ya decide qué ejercicios sí y cuáles no para cada atleta, con
+la justificación a la vista. Pero al ir a armar la rutina me di cuenta de que
+**el motor te dice qué ejercicios, y no te dice el entrenamiento.** No dice
+cuántos días, ni cómo repartes los patrones en la semana, ni cuántas series, ni
+en qué rango de repeticiones, ni cómo subes de una semana a la siguiente.
+
+Eso lo tienes tú en la cabeza y en los planes que ya entregas. Necesito bajarlo
+igual que bajamos la matriz: escrito una vez, y de ahí en adelante lo hace el
+sistema.
+
+Te mandé los planes de Diego y Daniela de vuelta como referencia, porque los voy
+a usar de prueba: si el generador no se parece a lo que tú les diste, el que está
+mal es el generador.
+
+**Lo que necesito de ti, en el orden en que me sirve:**
+
+1. **¿Cuántos tipos de programación manejas y cómo se llaman?** En el sistema hay
+   un campo esperándolos desde el primer día y sigue vacío.
+2. **¿Cómo repartes la semana?** Si un atleta entrena 3, 4 o 5 días, ¿qué va cada
+   día? ¿Empuje/jalón/pierna, torso/pierna, cuerpo completo?
+3. **¿Cuántas series por grupo muscular a la semana?** Un mínimo y un máximo me
+   sirven; no necesito el número exacto.
+4. **¿Qué rango de repeticiones usas para cada objetivo?** Fuerza, hipertrofia,
+   pérdida de grasa.
+5. **¿Cómo progresas de una semana a la otra?** ¿Subes peso, subes repeticiones,
+   subes series? ¿Y cada cuántas semanas metes una descarga?
+
+Con eso el sistema arma la rutina completa y tú la corriges donde quieras — nunca
+te la voy a imponer, la puedes editar entera.
+
+**Y una segunda cosa, que ya es de a dónde va esto.** Después de esta fase, tus
+atletas van a tener su propia app: entran, ven la rutina del día, registran lo
+que levantaron, se pesan, se toman las medidas y reciben un informe. Varios de
+tus planes incluyen nutrición, así que ahí también van a poder registrar lo que
+comen. Para eso, cuando lleguemos, voy a necesitar **cómo calculas tú las
+calorías y la proteína**, y cómo cambian según el objetivo del atleta. Eso no
+corre prisa todavía, pero ve pensándolo.
+
+Sigo esperando también las 21 filas de contraindicaciones, el logo en archivo y
+la plantilla de reporte.

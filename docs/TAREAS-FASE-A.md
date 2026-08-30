@@ -3,8 +3,14 @@
 Espejo del tablero de monday.com. **Se ejecutan en orden numérico.**
 Estados: `[ ]` por hacer · `[~]` en progreso · `[?]` esperando a Giovanni · `[x]` hecho
 
-Estimado total Fase A: ≈290 h de programación enfocada (≈5–7 meses a 12–15 h/semana).
+Estimado total Fase A: ≈325 h de programación enfocada. Van ≈195 h hechas;
+quedan ≈130 h, que a 12–15 h/semana son ≈9–11 semanas.
 Cada tarea está dimensionada para 1–2 sesiones nocturnas.
+
+> **Reconfigurado el 29-ago.** Se añadió el grupo 5 (generador de rutinas), el
+> grupo de PDF se redujo y pasó a 6, y el cierre a 7. El motivo está escrito en
+> la cabecera del grupo 5. Fase B dejó de ser una nota al pie: vive en
+> `docs/TAREAS-FASE-B.md`.
 
 ---
 
@@ -97,7 +103,9 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 - [?] **2.7 Cálculo de 1RM estimado y relaciones de palanca** (5 h)
   Fórmula confirmada (Epley), pero necesita telemetría por serie —peso levantado
-  y repeticiones— que solo existe con el registro de sesiones, en Fase B.
+  y repeticiones— que solo existe con el registro de sesiones. **La desbloquea el
+  grupo 9 de Fase B**, que es justo eso: el atleta registrando sus series. No
+  cuenta contra el hito 7.4.
 
 - [x] **2.8 Guardado de borradores del wizard** (5 h)
   Retomar una evaluación a medias sin perder datos. La realidad del gimnasio son
@@ -228,48 +236,105 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 ---
 
-## 📄 Grupo 5 — Reportes PDF (29 h)
+## 🏗️ Grupo 5 — Generador de rutinas (45 h)
 
-- [ ] **5.1 Elegir e integrar el motor PDF** (4 h)
-  React-PDF vs. Gotenberg/WeasyPrint según calidad tipográfica requerida.
+**Grupo nuevo, y no es un capricho de alcance: era un hueco.** El motor dice qué
+ejercicios sí y cuáles no, con su justificación. No dice semanas, días, series,
+repeticiones, RPE, descansos ni progresión. Sin eso, la tarea "Plantilla PDF:
+rutina prescrita" no tenía rutina que imprimir y la app del atleta no tendría
+nada que mostrar. Fase A no se podía cerrar tal como estaba escrita.
 
-- [?] **5.2 Plantilla PDF: ficha del atleta (marca GQ)** (8 h)
-  *Requiere:* assets de marca.
+- [ ] **5.1 Esquema del plan de entrenamiento** (4 h)
+  Darle forma a `plan_data`, que hoy es un jsonb libre. Mesociclo → semanas →
+  días → ejercicios, y por ejercicio: series de calentamiento, series efectivas,
+  rango de repeticiones, RPE de las primeras y de la última, descanso, técnica de
+  intensidad y sustituciones. La forma objetivo está resuelta en `gymapp`
+  (`src/data/program.ts`): esos tipos son el destino, no una inspiración.
 
-- [ ] **5.3 Plantilla PDF: rutina prescrita** (8 h)
-  Mesociclo, ejercicios, series, RIR y notas, en formato imprimible.
+- [?] **5.2 Método de programación de Giovanni (spec)** (6 h)
+  **Bloqueada.** `periodization_type` lleva desde la primera migración marcado
+  "PENDIENTE DE GIOVANNI" y ya no se puede seguir aplazando. Hace falta: sus tipos
+  de periodización, cuántos días por semana y cómo reparte los patrones, volumen
+  por grupo muscular, rangos de repeticiones por objetivo, cómo progresa de una
+  semana a la siguiente y cuándo mete descarga. Mismo tratamiento que la matriz:
+  se documenta primero, se programa después.
 
-- [ ] **5.4 Generar, descargar y guardar PDFs** (5 h)
-  Botón en ficha y en plan; PDF guardado y asociado al atleta.
+- [ ] **5.3 Generador: de la salida del motor a un programa** (12 h)
+  La tarea 3.7 ya calcula el reparto por patrón y los ejercicios prescribibles con
+  sus modificadores. Esto lo reparte en días y semanas aplicando 5.2. Función pura
+  sobre (salida del motor + método + objetivo del atleta), con sus tests.
 
-- [?] **5.5 Ronda de ajustes de diseño con Giovanni** (4 h)
-  Iterar hasta que él diga: "esto lo muestro orgulloso a un cliente".
-  **El PDF es lo que vende el producto.**
+- [ ] **5.4 Editor del plan para el entrenador** (10 h)
+  §3.6: el sistema es un copiloto. Giovanni tiene que poder cambiar un ejercicio,
+  mover un día, tocar series y repeticiones. Lo que él sobreescriba queda marcado
+  como decisión suya, distinto de lo que propuso el motor: sin esa distinción no
+  se puede aprender de sus correcciones más adelante.
+
+- [ ] **5.5 Sustituciones dentro del plan** (5 h)
+  Cada ejercicio del plan viaja con dos alternativas, que salen de 4.3. En el
+  gimnasio la máquina está ocupada y el atleta necesita un plan B **que el motor
+  ya haya aprobado para él**. Sin esto, sustituye por su cuenta y se salta las
+  contraindicaciones.
+
+- [ ] **5.6 Golden tests del generador contra planes reales** (8 h)
+  Diego Mafla y Daniela Méndez llegaron el 27-ago **con su plan entregado**, no
+  solo con la ficha. Es el mismo trato que con los cálculos (§3.4): si el
+  generador no se parece a lo que Giovanni les dio, manda él.
 
 ---
 
-## ✅ Grupo 6 — Cierre de Fase A (29 h)
+## 📄 Grupo 6 — Reportes PDF (20 h)
 
-- [ ] **6.1 Pruebas integrales del flujo completo** (8 h)
-  Evaluación → motor → ejercicios → PDF, sin errores, en celular y computador.
+**Reducido de 29 h a 20 h, y cambió de papel.** El PDF ya no es el producto ni el
+canal de entrega: es una exportación para el cliente que todavía no está en la
+app, y para que Giovanni tenga algo que enseñar en una reunión. Sigue importando
+—es lo que vende— pero deja de justificar dos rondas largas de diseño.
 
-- [ ] **6.2 Corrección de bugs del piloto interno** (8 h)
+- [ ] **6.1 Elegir e integrar el motor PDF** (4 h)
+  React-PDF vs. Gotenberg/WeasyPrint. **No está bloqueada por los assets:** la
+  decisión técnica se puede tomar y probar con una plantilla provisional.
+
+- [?] **6.2 Plantilla PDF: ficha del atleta (marca GQ)** (6 h)
+  *Requiere:* logo en archivo y plantilla de reporte. Incluye la ronda de ajustes
+  con Giovanni, que antes era una tarea aparte.
+
+- [ ] **6.3 Plantilla PDF: rutina prescrita** (6 h)
+  Ahora sí tiene de dónde salir: consume el plan del grupo 5.
+
+- [ ] **6.4 Generar, descargar y guardar PDFs** (4 h)
+  Botón en ficha y en plan; PDF guardado y asociado al atleta. Ojo §3.3: dentro de
+  Capacitor no hay descarga de navegador, así que la ruta nativa se prevé desde ya.
+
+---
+
+## ✅ Grupo 7 — Cierre de Fase A (29 h)
+
+- [ ] **7.1 Pruebas integrales del flujo completo** (8 h)
+  Evaluación → motor → **plan generado** → PDF, sin errores, en celular y
+  computador. El flujo creció: ahora pasa por el generador.
+
+- [ ] **7.2 Corrección de bugs del piloto interno** (8 h)
   Bolsa de tiempo. Siempre aparece algo.
 
-- [?] **6.3 Migrar clientes de Giovanni + piloto con 2–3 entrenadores** (12 h)
+- [?] **7.3 Migrar clientes de Giovanni + piloto con 2–3 entrenadores** (12 h)
   Adiós Excels. Operación real + feedback estructurado.
 
-- [ ] **6.4 🏁 HITO: Fase A entregada — consolidar vesting** (1 h)
+- [ ] **7.4 🏁 HITO: Fase A entregada — consolidar vesting** (1 h)
   Acta de entrega con Giovanni.
 
 ---
 
-## 📦 Fase B (se desglosa al cerrar Fase A)
+## 📦 Fase B
 
-Generador y editor de rutinas · Portal/app del cliente · Dietas versión simple ·
-Pasarela de pagos · Super admin · Empaquetado móvil y tiendas · QA final y lanzamiento.
+Ya no es una lista de siete palabras: está desglosada en
+**`docs/TAREAS-FASE-B.md`**. Es la app del atleta y todo lo que cuelga de ella
+—entreno, control corporal, nutrición, informes con IA, pagos y tiendas— y es
+donde GiosLab deja de ser la herramienta interna de Giovanni y pasa a ser el
+producto.
+
+No se abre hasta que 7.4 esté firmado.
 
 ## 💡 Backlog de ideas
 
-Módulo completo de dietas · Video con evaluación humana · Autorregulación por RPE ·
-Certificación GQ · Visión artificial · Wearables · Multi-idioma · Modo offline.
+Video con evaluación humana · Autorregulación por RPE · Certificación GQ ·
+Visión artificial · Wearables · Multi-idioma.
