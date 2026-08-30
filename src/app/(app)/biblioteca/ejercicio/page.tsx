@@ -10,6 +10,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Campo } from "@/components/shared/campo";
 import { CampoSelect } from "@/components/shared/campo-select";
 import { Guarda } from "@/components/shared/guarda";
+import { MediosEjercicio } from "@/components/biblioteca/medios";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,7 @@ import {
   sugerencias,
   type Ejercicio,
 } from "@/domain/ejercicios";
+import { leerMedios, type Medio } from "@/domain/medios";
 import { FICHA_PATRON, PATRONES } from "@/domain/patrones";
 import { createClient } from "@/lib/supabase/client";
 import { ejercicioSchema, type EjercicioForm, type EjercicioValidado } from "@/lib/validation/ejercicio";
@@ -44,7 +46,7 @@ import { ejercicioSchema, type EjercicioForm, type EjercicioValidado } from "@/l
  */
 
 const COLUMNAS =
-  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, is_active";
+  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, is_active";
 
 function Formulario() {
   const params = useSearchParams();
@@ -57,6 +59,7 @@ function Formulario() {
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [archivando, setArchivando] = useState(false);
   const [activo, setActivo] = useState(true);
+  const [medios, setMedios] = useState<Medio[]>([]);
 
   const {
     register,
@@ -84,6 +87,7 @@ function Formulario() {
         const actual = todos.find((e) => e.id === id);
         if (actual) {
           setActivo(actual.is_active);
+          setMedios(leerMedios(actual.media_urls));
           reset({
             nombre: actual.name,
             descripcion: actual.description ?? "",
@@ -357,6 +361,19 @@ function Formulario() {
           );
         }}
       />
+
+      {/* Fotos y video (4.2). Solo al editar: la galería escribe en la fila
+          según se sube cada archivo, y para eso la fila tiene que existir. */}
+      <Bloque rotulo="Fotos y video">
+        {esNuevo ? (
+          <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+            Guarda el ejercicio y vuelve a entrar para añadirle material. Se guarda por
+            separado del formulario, así que no se pierde si algo sale mal aquí.
+          </p>
+        ) : (
+          <MediosEjercicio ejercicioId={id} iniciales={medios} />
+        )}
+      </Bloque>
 
       {errorGeneral && (
         <p role="alert" className="text-sm font-medium text-destructive">

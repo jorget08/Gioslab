@@ -83,6 +83,14 @@ export interface Ejercicio {
   biomechanical_type: string | null;
   equipment: string | null;
   contraindications: unknown;
+  /**
+   * Fotos y video (4.2). jsonb libre: se lee con `leerMedios`.
+   *
+   * Opcional porque el motor y sus pruebas no lo piden: a la hora de decidir si
+   * un ejercicio es apto, que tenga foto o no da igual. Solo lo seleccionan las
+   * pantallas de la biblioteca.
+   */
+  media_urls?: unknown;
   is_active: boolean;
 }
 

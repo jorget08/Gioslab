@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Plus, Search } from "lucide-react";
+import { ChevronRight, Dumbbell, Play, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -20,7 +20,9 @@ import {
   type Ejercicio,
   type FiltrosEjercicio,
 } from "@/domain/ejercicios";
+import { leerMedios, portada, tieneVideo } from "@/domain/medios";
 import { FICHA_PATRON, PATRONES } from "@/domain/patrones";
+import { urlPublica } from "@/lib/medios/almacenamiento";
 import { useSesion } from "@/lib/auth/contexto";
 import { createClient } from "@/lib/supabase/client";
 
@@ -43,7 +45,7 @@ import { createClient } from "@/lib/supabase/client";
  */
 
 const COLUMNAS =
-  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, is_active";
+  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, is_active";
 
 function Biblioteca() {
   const { sesion } = useSesion();
@@ -168,8 +170,43 @@ function Biblioteca() {
               <ul className="divide-y rounded-lg border">
                 {g.ejercicios.map((e) => {
                   const resumen = resumenEjercicio(e);
+                  const medios = leerMedios(e.media_urls);
+                  const cubierta = portada(medios);
+
                   const fila = (
                     <>
+                      {/* Miniatura. El hueco se reserva aunque no haya foto: si
+                          apareciera y desapareciera por filas, el nombre de cada
+                          ejercicio empezaría en una sangría distinta y la lista
+                          se volvería ilegible de un vistazo. */}
+                      <span className="relative size-11 shrink-0 overflow-hidden rounded-md border bg-muted">
+                        {/* El icono va SIEMPRE debajo, no en el `else`: si el
+                            archivo ya no está en el bucket, la foto se oculta
+                            sola y queda el icono en vez de un cuadro vacío. Un
+                            hueco negro se lee como un fallo de la aplicación. */}
+                        <Dumbbell
+                          className="absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-muted-foreground/50"
+                          aria-hidden="true"
+                        />
+                        {cubierta && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={urlPublica(cubierta.path)}
+                            alt=""
+                            className="relative size-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        )}
+                        {tieneVideo(medios) && (
+                          <span className="absolute bottom-0 right-0 rounded-tl-md bg-black/70 p-0.5">
+                            <Play className="size-2.5 text-white" aria-hidden="true" />
+                          </span>
+                        )}
+                      </span>
+
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2">
                           <span className="truncate text-sm font-medium">{e.name}</span>

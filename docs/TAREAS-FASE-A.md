@@ -209,8 +209,23 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 - [x] **4.1 CRUD de ejercicios** (6 h)
   Nombre, músculo objetivo, patrón, tipo biomecánico, contraindicaciones.
 
-- [ ] **4.2 Carga de fotos/videos** (6 h)
-  Supabase Storage, compresión de imágenes, límite de tamaño para video.
+- [x] **4.2 Carga de fotos/videos** (6 h)
+  Bucket `ejercicios` en Storage, galería en la ficha del ejercicio, y en el
+  listado la portada. Las fotos se reducen a 1600px y JPEG 0.82 en el navegador
+  antes de subirse —una foto de teléfono son 3–8 MB y la descargan todos los
+  atletas cada vez—, respetando el EXIF para que las verticales no suban
+  acostadas. El video no se transcodifica: tope de 50 MB, que es un clip de
+  técnica de 20–30 segundos.
+  **El bucket es público a propósito**, no por descuido: en Fase B el atleta abre
+  la demostración en mitad de la serie y una URL firmada caducada ahí es una
+  pantalla en blanco, además de impedir que el archivo se cachee. Se compensa
+  nombrando los archivos con uuid, y aquí no vive ningún dato de un atleta.
+  **La galería se guarda sola, fuera del botón Guardar**: subir un archivo ya
+  ocurrió, y dejar el registro pendiente de un clic deja huérfano el archivo.
+  RLS verificada de punta a punta con `npm run test:medios` — el entrenador ve
+  pero no sube ni borra. De ahí salió que `exercise_library` no tiene GRANT de
+  DELETE: los ejercicios se archivan, nunca se borran, y ahora hay una prueba
+  que lo protege.
 
 - [ ] **4.3 Variantes y sustituciones entre ejercicios** (5 h)
   Relaciones que el motor usa para proponer alternativas.
@@ -224,6 +239,12 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Rojo, dorado y negro muestreados de su logo y sus informes. Media entrega de
   los assets: faltan el logo en archivo y la plantilla de reporte.
 
+- [ ] **4.7 Ver un ejercicio sin poder editarlo** (4 h) · *nuevo, 29-ago*
+  Salió al terminar 4.2 y es un hueco real: `/biblioteca/ejercicio` está guardada
+  a `super_admin`, así que el entrenador ve la miniatura en el listado pero no
+  puede abrir la foto ni el video. El material existe para que se vea la técnica;
+  hoy solo lo ve Giovanni. Hace falta una vista de solo lectura.
+
 - [~] **4.5 Importación del contenido de Giovanni** (5 h)
   **Media hecha.** Su `Matriz_Contraindicaciones_Ejercicios.xlsx` (27-ago) cargó
   contraindicaciones reales en 26 ejercicios y añadió 16 nuevos: la biblioteca
@@ -232,7 +253,8 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   variantes, así que de 31 nombres solo coincidían 4. Los ambiguos no se
   heredan porque varios son los SUSTITUTOS seguros — heredar los excluiría y
   rompería la sustitución. Pedidos uno a uno en PREGUNTAS-GIOVANNI.
-  *Sigue requiriendo:* esos 21, y los medios (4.2).
+  *Sigue requiriendo:* esos 21. Los medios ya tienen dónde entrar (4.2 hecha);
+  falta que él los mande.
 
 ---
 

@@ -2,7 +2,7 @@
  * Captura pantallas de la app a un ancho concreto, emulando un móvil de verdad.
  *
  *   node scripts/captura.mjs /login 360
- *   node scripts/captura.mjs /atletas 360 --sesion correo@ejemplo.com
+ *   SESION=correo@ejemplo.com CLAVE=lacontrasena node scripts/captura.mjs /atletas 360
  *
  * POR QUÉ NO BASTA CON `--window-size`: macOS impone un ancho mínimo de ventana
  * (unos 500 px), así que Chrome ignora anchos menores y calcula el layout a 500
