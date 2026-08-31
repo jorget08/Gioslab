@@ -597,3 +597,65 @@ separo.
   los PDF.
 
 Lo de la nutrición lo dejo para cuando lleguemos, sin prisa.
+
+---
+
+## 1 de septiembre — aplicadas tus tres respuestas
+
+Todo entró y está funcionando. Te cuento qué cambió y la única cosa que me quedó
+sin resolver.
+
+### La rodilla: de 0 ejercicios a 6
+
+Quité "Rodilla" de todas las sentadillas menos la libre profunda, como dijiste.
+Un atleta con la rodilla lesionada pasa de no tener **nada** de pierna a poder
+hacer seis: Goblet, Safety Bar, talón elevado, frontal, búlgara y low bar.
+
+**Y tu "con cuidado" no lo tiré.** Una contraindicación es sí o no, así que
+quitarla sin más habría dejado al atleta con una sentadilla y ninguna
+advertencia. Lo metí como un aviso que ahora sale en su prescripción: *"Lesión de
+rodilla: las sentadillas se permiten CON PRECAUCIÓN. La sentadilla libre profunda
+queda excluida."* Está en `/admin/reglas` por si quieres afinar el texto —
+concretar rango, carga o tempo.
+
+**Lo que me falta, y es la única pregunta que te dejo hoy.** Dijiste "las
+sentadillas", así que solo toqué las que se llaman sentadilla. Estos siete siguen
+descartados porque no los nombraste:
+
+| Ejercicio | ¿Se puede con rodilla lesionada? |
+|---|---|
+| Prensa 45° |  |
+| Prensa Inclinada de Piernas |  |
+| Hack Libre |  |
+| Sissy Squat |  |
+| Zancadas Caminando |  |
+| Extensiones de Cuádriceps |  |
+| Curl Femoral Acostado |  |
+
+Preferí quedarme corto antes que pasarme: equivocarme de menos le deja opciones
+sin usar, equivocarme de más le pone un sissy squat encima de una rodilla mala.
+
+**Pero la prensa me chirría.** Es el ejercicio de pierna más amable con la
+rodilla que hay, y es el que TÚ mandas como sustituto cuando alguien tiene mala
+dorsiflexión. Ahora mismo el sistema permite la sentadilla goblet y prohíbe la
+prensa, que es justo al revés de lo que haría cualquiera. Si me dices que sí, la
+habilito.
+
+### Asimetrías: cerrado
+
+Me quedo con 1 cm o 5% para el brazo. Con eso ya puedo programarlo:
+
+- Brazo: protocolo por encima de **1 cm o 5 %**
+- Muslo: por encima de **2 cm**
+- Pantorrilla: por encima de **1 cm o 5 %**
+
+### Fondos: ya son dos
+
+*Fondos en Paralelas (énfasis pectoral)* como empuje horizontal, y *Fondos en
+Paralelas (énfasis tríceps)* como empuje vertical. El antiguo quedó archivado,
+no borrado, para no romper nada que lo nombrara.
+
+---
+
+Sigo esperando **las fotos y los videos** de los ejercicios, y **el logo con una
+plantilla de reporte**, que es lo único que bloquea los PDF.

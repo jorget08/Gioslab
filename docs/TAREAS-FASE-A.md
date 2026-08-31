@@ -122,14 +122,19 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Embarazo, hipertensión, hernia, diástasis. Cierra el cruce: sin esto el motor
   sabía qué contraindica cada ejercicio pero no qué tiene cada persona.
 
-- [?] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
-  Giovanni aprobó medir los dos lados de brazo, muslo y pantorrilla, y que el
-  motor **prescriba unilaterales empezando por el lado débil**.
-  Mandó los umbrales el 31-ago, **pero se contradicen entre sus dos documentos**:
-  el formulario dice que en brazo el protocolo se activa por encima de **1 cm**,
-  y `Principios_Entrenamiento_GIOSLAB.pdf` dice **≥1,5 cm**. En pierna sí
-  coinciden en 2 cm. Un umbral mal puesto activa un protocolo correctivo a quien
-  no lo necesita, así que no se elige por nosotros. Preguntado.
+- [ ] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
+  **Desbloqueada el 1-sep.** Giovanni cerró la contradicción del brazo: manda el
+  formulario, no `Principios_Entrenamiento`. Umbrales para activar el protocolo:
+
+  | Segmento | Activa el protocolo |
+  |---|---|
+  | Brazo | > 1 cm **o** > 5 % |
+  | Muslo | > 2 cm |
+  | Pantorrilla | > 1 cm **o** > 5 % |
+
+  Falta capturar los dos lados (hoy solo se mide uno), derivar la diferencia y
+  la regla que prescribe unilaterales empezando por el lado débil. El muslo se
+  queda solo en cm: el porcentaje que escribió es ilegible y con el cm basta.
 
 - [x] **2.14 Perímetros de extremidades y tronco** (2 h) · *fuera del plan original*
   Brazo relajado y contraído, tórax, muslo y pantorrilla, con su evolución en la
@@ -272,11 +277,13 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   la tabla con NUESTROS nombres en vez de pedirle una lista suya. Ese fue el
   motivo de pedirlo en ese formato y funcionó.
   **La biblioteca queda 47 de 47, cero sin datos.**
-  ⚠️ Y destapó lo que estaba avisado: marcó "Rodilla" en las cinco sentadillas,
-  las dos prensas, el hack y el sissy squat, así que **un atleta con lesión de
-  rodilla se queda con 0 de 12 dominantes de rodilla**. Puede ser correcto
-  clínicamente, pero contradice lo que él mismo dijo sobre los sustitutos
-  seguros. Cargado tal cual —manda él— y preguntado con el número delante.
+  ⚠️ Destapó que marcó "Rodilla" en todo lo dominante de rodilla, y **un atleta
+  con lesión de rodilla se quedaba con 0 de 12**. Preguntado con el número
+  delante, y **corregido el 1-sep** (migración `20260901100000`): solo la
+  sentadilla libre profunda se retira; el resto se permiten con precaución.
+  **Ahora son 6 de 12.** Siguen fuera 7 que su frase no nombra —las dos prensas,
+  el hack, el sissy, las zancadas, las extensiones y el curl femoral—;
+  repreguntado.
   *Faltan los medios*, que ya tienen dónde entrar desde 4.2.
 
 ## 📄 Grupo 6 — Reportes PDF (20 h)
