@@ -230,8 +230,26 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   DELETE: los ejercicios se archivan, nunca se borran, y ahora hay una prueba
   que lo protege.
 
-- [ ] **4.3 Variantes y sustituciones entre ejercicios** (5 h)
-  Relaciones que el motor usa para proponer alternativas.
+- [x] **4.3 Variantes y sustituciones entre ejercicios** (5 h)
+  El motor tenía una sola fuente de sustitutos: la acción `sustituir_por` de una
+  regla. Pero **la mayoría de las exclusiones no vienen de una regla**, vienen
+  del cruce de contraindicaciones, que es un mecanismo y no una fila de `rules`.
+  Ahí devolvía la lista vacía. Con la carga del 31-ago dejó de ser teórico.
+  Ahora `exercise_variants` es la segunda fuente, independiente de las reglas.
+  Tres tipos con semántica que el motor sabe leer, y **la dirección es la mitad
+  del significado**: que la Goblet sustituya a la Profunda no autoriza lo
+  contrario. Una progresión no se ofrece nunca: si algo se cayó porque duele,
+  algo más duro no es la respuesta.
+  **La matriz no arranca vacía**: 20 parejas derivadas EN SQL de la acción
+  `sustituir_por` de sus propias reglas, para que no puedan divergir de su
+  fuente. Dentro de la regla esa sustitución solo vale bajo su condición; en la
+  matriz vale siempre, y por eso cubre el caso que ninguna regla cubría.
+  Verificado de punta a punta: con lesión de hombro, el Press Militar tras Nuca
+  cae por contraindicación y la pantalla ofrece Press en Plano Escapular.
+  ⚠️ **En rodilla no ayuda**, y es un dato, no un fallo: sus sustituciones se
+  escribieron para restricciones de MOVILIDAD, y todos los sustitutos de los
+  dominantes de rodilla están a su vez contraindicados para rodilla. Refuerza la
+  pregunta del 31-ago.
 
 - [x] **4.4 Buscador y filtros** (4 h)
   Búsqueda por texto y filtros plegables por patrón, músculo, equipo y

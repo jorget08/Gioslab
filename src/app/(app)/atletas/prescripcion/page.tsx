@@ -17,6 +17,7 @@ import {
   incluidos as disponibles,
   type Resultado,
 } from "@/domain/motor";
+import { esTipoRelacion, type Relacion } from "@/domain/relaciones";
 import { FICHA_PATRON, esPatron } from "@/domain/patrones";
 import { ETIQUETA_NIVEL, HECHOS, validarRegla, type Regla } from "@/domain/reglas";
 import { createClient } from "@/lib/supabase/client";
@@ -82,12 +83,33 @@ function Prescripcion() {
       supabase.from("exercise_library")
         .select("id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, is_active")
         .eq("is_active", true),
-    ]).then(([a, bio, med, cic, les, con, reg, ejs]) => {
+      // 4.3 — la matriz de equivalencia. Se traen los pares de ids y se
+      // resuelven a nombres abajo: el motor trabaja con nombres porque es como
+      // los nombran las reglas, y hacer el join en PostgREST sobre dos claves
+      // ajenas a la misma tabla obliga a desambiguar cada una a mano.
+      supabase.from("exercise_variants").select("exercise_id, variant_exercise_id, relation_type"),
+    ]).then(([a, bio, med, cic, les, con, reg, ejs, rel]) => {
       if (!vivo) return;
       setAtleta(a.data as Atleta | null);
 
       const ejercicios = (ejs.data ?? []) as Ejercicio[];
       setPatronDe(Object.fromEntries(ejercicios.map((e) => [e.name, e.movement_pattern])));
+
+      // Solo se resuelven las relaciones entre ejercicios ACTIVOS: si uno se
+      // archivó, ofrecerlo como alternativa mandaría al entrenador a un
+      // ejercicio que ya no está en la biblioteca.
+      const nombrePorId = new Map(ejercicios.map((e) => [e.id, e.name]));
+      const relaciones: Relacion[] = [];
+      for (const v of rel.data ?? []) {
+        const ejercicio = nombrePorId.get(v.exercise_id);
+        const variante = nombrePorId.get(v.variant_exercise_id);
+        // Un tipo que el motor no conoce se descarta aquí, no se cuela: el
+        // CHECK de la migración lo impide en la base, pero esta pantalla lee
+        // filas que pudieron entrar antes de existir ese CHECK.
+        if (ejercicio && variante && esTipoRelacion(v.relation_type)) {
+          relaciones.push({ ejercicio, variante, tipo: v.relation_type });
+        }
+      }
 
       const hechos = resolverHechos({
         atleta: a.data ?? undefined,
@@ -117,7 +139,7 @@ function Prescripcion() {
       });
       setIlegibles(rotas);
 
-      setResultado(evaluar({ hechos, reglas, ejercicios }));
+      setResultado(evaluar({ hechos, reglas, ejercicios, relaciones }));
       setCargando(false);
     });
 

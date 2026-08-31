@@ -45,6 +45,7 @@
 import { leerContraindicaciones, type Contraindicacion } from "@/domain/contraindicaciones";
 import { esNivelEvidencia, mandaSobre, type NivelEvidencia } from "@/domain/evidencia";
 import type { Ejercicio } from "@/domain/ejercicios";
+import { sustitutosDe, type Relacion } from "@/domain/relaciones";
 import {
   describirRegla,
   esHecho,
@@ -269,9 +270,17 @@ export interface EntradaMotor {
   /** Solo las activas. Filtrarlas es responsabilidad de quien consulta. */
   reglas: readonly Regla[];
   ejercicios: readonly Ejercicio[];
+  /**
+   * Matriz de equivalencia biomecánica (4.3). Segunda fuente de sustitutos,
+   * independiente de las reglas.
+   *
+   * Opcional a propósito: sin ella el motor se comporta como antes. Es lo que
+   * permite que las pruebas que no van de sustitución no tengan que conocerla.
+   */
+  relaciones?: readonly Relacion[];
 }
 
-export function evaluar({ hechos, reglas, ejercicios }: EntradaMotor): Resultado {
+export function evaluar({ hechos, reglas, ejercicios, relaciones = [] }: EntradaMotor): Resultado {
   const aplicadas: ReglaAplicada[] = [];
   const conflictos: Conflicto[] = [];
   const sinEvaluar: ReglaSinEvaluar[] = [];
@@ -455,13 +464,25 @@ export function evaluar({ hechos, reglas, ejercicios }: EntradaMotor): Resultado
       ejercicio: ej.name,
       incluido,
       porQue,
+      // DOS FUENTES, EN ESTE ORDEN. Primero lo que dijo la regla que lo
+      // excluyó: es la instrucción de Giovanni para ESE caso concreto. Después
+      // la matriz de equivalencia, que es general.
+      //
+      // Sin la segunda, una exclusión por CRUCE DE CONTRAINDICACIONES —que no
+      // pasa por `rules`— no ofrecía nada: con la carga del 31-ago, un atleta
+      // con la rodilla lesionada perdía los 12 dominantes de rodilla y el
+      // entrenador se quedaba con la pantalla vacía.
+      //
       // Un sustituto que también está excluido no es un sustituto: ofrecerlo
       // mandaría al entrenador a otro ejercicio prohibido.
       sustitutos: incluido
         ? []
-        : [...new Set(sustitutosPropuestos.get(ej.name) ?? [])].filter(
-            (s) => !excluidos.has(s) && !chocaPor.has(s),
-          ),
+        : [
+            ...new Set([
+              ...(sustitutosPropuestos.get(ej.name) ?? []),
+              ...sustitutosDe(relaciones, ej.name),
+            ]),
+          ].filter((s) => !excluidos.has(s) && !chocaPor.has(s)),
       // Solo los suyos. Los generales van aparte: pegarlos también aquí hacía
       // que "elevar talones 2.5 cm" apareciera bajo el Press Militar, y una
       // indicación absurda repetida ocho veces desacredita a las ocho.

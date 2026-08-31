@@ -240,13 +240,10 @@ values
 -- (migración 20260828100000) hay 30 reales, así que el código se queda sin una
 -- sola contraindicación escrita por mí.
 
--- Sustituciones de su matriz: lo que se ofrece cuando la sentadilla libre se cae.
-insert into public.exercise_variants (exercise_id, variant_exercise_id, relation_type)
-select o.id, s.id, 'sustitucion'
-  from public.exercise_library o
-  join public.exercise_library s on s.name in ('Prensa 45°', 'Sentadilla Heels-Elevated')
- where o.name = 'Sentadilla Libre Profunda'
-on conflict do nothing;
+-- Las sustituciones YA NO SE SIEMBRAN AQUÍ. Desde la 4.3 se derivan de la
+-- acción `sustituir_por` de sus propias reglas, en la migración
+-- 20260831200000_relaciones_ejercicios. Repetirlas aquí las convertiría en dos
+-- fuentes de verdad para el mismo dato.
 
 -- ---------------------------------------------------------------------------
 -- Consentimientos (Ley 1581)

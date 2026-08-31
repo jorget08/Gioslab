@@ -554,3 +554,101 @@ describe("caso real: atleta con rodilla mala en lútea tardía", () => {
     expect(nombres(incluidos(r))).toEqual(["Hip Thrust", "Prensa 45°", "Press Militar"]);
   });
 });
+
+// --- Matriz de equivalencia (4.3) ------------------------------------------
+
+describe("sustitutos desde la matriz de equivalencia", () => {
+  /**
+   * Es el caso que motivó la tarea. Con la carga del 31-ago, Giovanni marcó
+   * "Rodilla" en los 12 dominantes de rodilla, así que una lesión de rodilla se
+   * los lleva todos. Esas exclusiones vienen del CRUCE de contraindicaciones,
+   * que no pasa por `rules`, así que hasta 4.3 el entrenador se quedaba con la
+   * pantalla vacía y sin una sola alternativa.
+   */
+  const conRodillaMal: Hechos = { lesiones: ["Rodilla"] };
+
+  it("sin matriz, una exclusión por contraindicación no ofrece nada", () => {
+    const r = evaluar({ hechos: conRodillaMal, reglas: [], ejercicios: BIBLIOTECA });
+    const sentadilla = r.ejercicios.find((e) => e.ejercicio === "Sentadilla Trasera")!;
+    expect(sentadilla.incluido).toBe(false);
+    expect(sentadilla.sustitutos).toEqual([]);
+  });
+
+  it("con matriz, ofrece la alternativa que sí puede hacer", () => {
+    const r = evaluar({
+      hechos: conRodillaMal,
+      reglas: [],
+      ejercicios: BIBLIOTECA,
+      relaciones: [
+        { ejercicio: "Sentadilla Trasera", variante: "Prensa 45°", tipo: "sustitucion" },
+      ],
+    });
+    const sentadilla = r.ejercicios.find((e) => e.ejercicio === "Sentadilla Trasera")!;
+    expect(sentadilla.sustitutos).toEqual(["Prensa 45°"]);
+  });
+
+  it("no ofrece un sustituto que también está contraindicado", () => {
+    // El filtro ya existía para los sustitutos de las reglas; esto comprueba
+    // que también cubre los que llegan por la matriz. Mandar al entrenador a
+    // otro ejercicio prohibido es peor que no ofrecerle nada.
+    const biblioteca = [
+      ...BIBLIOTECA,
+      ej("Sissy Squat", { movement_pattern: "squat_dominante_rodilla", contraindications: ["Rodilla"] }),
+    ];
+    const r = evaluar({
+      hechos: conRodillaMal,
+      reglas: [],
+      ejercicios: biblioteca,
+      relaciones: [
+        { ejercicio: "Sentadilla Trasera", variante: "Sissy Squat", tipo: "sustitucion" },
+        { ejercicio: "Sentadilla Trasera", variante: "Prensa 45°", tipo: "sustitucion" },
+      ],
+    });
+    const sentadilla = r.ejercicios.find((e) => e.ejercicio === "Sentadilla Trasera")!;
+    expect(sentadilla.sustitutos).toEqual(["Prensa 45°"]);
+  });
+
+  it("lo que dijo la regla va antes que la matriz", () => {
+    // La regla habla de ESE caso concreto; la matriz es general. Si Giovanni
+    // escribió a mano qué dar cuando falla el tobillo, eso manda.
+    const biblioteca = [
+      ...BIBLIOTECA,
+      ej("Sentadilla Heels-Elevated", { movement_pattern: "squat_dominante_rodilla" }),
+    ];
+    const r = evaluar({
+      hechos: { dorsiflexion_cm: 4 },
+      reglas: [
+        regla({
+          rule_key: "dorsiflexion",
+          condition: { todas: [{ hecho: "dorsiflexion_cm", op: "<", valor: 5 }] },
+          actions: {
+            excluir_ejercicios: ["Sentadilla Trasera"],
+            sustituir_por: ["Sentadilla Heels-Elevated"],
+          },
+        }),
+      ],
+      ejercicios: biblioteca,
+      relaciones: [
+        { ejercicio: "Sentadilla Trasera", variante: "Prensa 45°", tipo: "equivalente" },
+      ],
+    });
+    const sentadilla = r.ejercicios.find((e) => e.ejercicio === "Sentadilla Trasera")!;
+    expect(sentadilla.sustitutos).toEqual(["Sentadilla Heels-Elevated", "Prensa 45°"]);
+  });
+
+  it("un ejercicio que NO se excluyó no arrastra sustitutos", () => {
+    // La matriz existe para cuando algo se cae. Enseñar alternativas de algo
+    // que sí se puede hacer solo añade ruido a la prescripción.
+    const r = evaluar({
+      hechos: {},
+      reglas: [],
+      ejercicios: BIBLIOTECA,
+      relaciones: [
+        { ejercicio: "Sentadilla Trasera", variante: "Prensa 45°", tipo: "sustitucion" },
+      ],
+    });
+    const sentadilla = r.ejercicios.find((e) => e.ejercicio === "Sentadilla Trasera")!;
+    expect(sentadilla.incluido).toBe(true);
+    expect(sentadilla.sustitutos).toEqual([]);
+  });
+});

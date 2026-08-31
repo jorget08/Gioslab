@@ -542,6 +542,21 @@ lo de rodilla puede ser un descuido y no una decisión.
   Mi sospecha es Goblet, Safety Bar y talón elevado, pero **no lo voy a decidir
   yo**.
 
+**Un dato más que salió al construir la matriz de sustitución.** Ya cargué las 20
+sustituciones que tus propias reglas declaran, así que ahora, cuando el sistema
+descarta un ejercicio, ofrece con qué reemplazarlo. Funciona: a alguien con el
+hombro mal le quita el press tras nuca y le ofrece el press en plano escapular.
+
+**Pero en rodilla no ofrece nada, y no es un fallo del sistema.** Es que todos
+los sustitutos posibles de los ejercicios de rodilla están, según tu tabla,
+también contraindicados para rodilla. Tus sustituciones las escribiste pensando
+en restricciones de movilidad (dorsiflexión, hombro), no en lesiones.
+
+Así que si la respuesta a lo de arriba es **(a) es correcto**, entonces necesito
+una tercera cosa: **dime qué le doy a esa persona en lugar de pierna.** ¿Trabajo
+de cadera —hip thrust, glute bridge—? ¿Nada de tren inferior? El sistema puede
+decir "no hay opción segura", pero es mejor que diga qué sí.
+
 ### 2. El umbral de asimetría del brazo no cuadra entre tus dos documentos
 
 En el formulario pusiste que en **brazo** el protocolo se activa por encima de

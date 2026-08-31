@@ -11,6 +11,7 @@ import { Campo } from "@/components/shared/campo";
 import { CampoSelect } from "@/components/shared/campo-select";
 import { Guarda } from "@/components/shared/guarda";
 import { MediosEjercicio } from "@/components/biblioteca/medios";
+import { RelacionesEjercicio } from "@/components/biblioteca/relaciones";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ import {
   type Ejercicio,
 } from "@/domain/ejercicios";
 import { leerMedios, type Medio } from "@/domain/medios";
+import { esTipoRelacion, type Relacion } from "@/domain/relaciones";
 import { FICHA_PATRON, PATRONES } from "@/domain/patrones";
 import { createClient } from "@/lib/supabase/client";
 import { ejercicioSchema, type EjercicioForm, type EjercicioValidado } from "@/lib/validation/ejercicio";
@@ -60,6 +62,7 @@ function Formulario() {
   const [archivando, setArchivando] = useState(false);
   const [activo, setActivo] = useState(true);
   const [medios, setMedios] = useState<Medio[]>([]);
+  const [relaciones, setRelaciones] = useState<Relacion[]>([]);
 
   const {
     register,
@@ -75,13 +78,28 @@ function Formulario() {
 
   useEffect(() => {
     let vivo = true;
-    createClient()
-      .from("exercise_library")
-      .select(COLUMNAS)
-      .then(({ data }) => {
+    const supabase = createClient();
+    Promise.all([
+      supabase.from("exercise_library").select(COLUMNAS),
+      // 4.3 — se traen TODAS las relaciones, no solo las que salen de este
+      // ejercicio: la ficha también tiene que enseñar las que otros crearon
+      // hacia él, o Giovanni las duplicaría desde el otro lado.
+      supabase.from("exercise_variants").select("exercise_id, variant_exercise_id, relation_type"),
+    ]).then(([{ data }, rel]) => {
         if (!vivo) return;
         const todos = (data ?? []) as Ejercicio[];
         setOtros(todos);
+
+        const nombrePorId = new Map(todos.map((e) => [e.id, e.name]));
+        setRelaciones(
+          (rel.data ?? []).flatMap((v) => {
+            const ejercicio = nombrePorId.get(v.exercise_id);
+            const variante = nombrePorId.get(v.variant_exercise_id);
+            return ejercicio && variante && esTipoRelacion(v.relation_type)
+              ? [{ ejercicio, variante, tipo: v.relation_type }]
+              : [];
+          }),
+        );
 
         if (esNuevo) return;
         const actual = todos.find((e) => e.id === id);
@@ -361,6 +379,23 @@ function Formulario() {
           );
         }}
       />
+
+      {/* Sustituciones (4.3). Igual que la galería, solo al editar: las
+          relaciones son filas de otra tabla y necesitan un id al que colgarse. */}
+      <Bloque rotulo="Sustituciones">
+        {esNuevo ? (
+          <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+            Guarda el ejercicio y vuelve a entrar para decir por cuál se puede reemplazar.
+          </p>
+        ) : (
+          <RelacionesEjercicio
+            ejercicioId={id}
+            nombre={watch("nombre") ?? ""}
+            biblioteca={otros.filter((e) => e.is_active)}
+            iniciales={relaciones}
+          />
+        )}
+      </Bloque>
 
       {/* Fotos y video (4.2). Solo al editar: la galería escribe en la fila
           según se sube cada archivo, y para eso la fila tiene que existir. */}
