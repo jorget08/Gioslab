@@ -122,11 +122,14 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Embarazo, hipertensión, hernia, diástasis. Cierra el cruce: sin esto el motor
   sabía qué contraindica cada ejercicio pero no qué tiene cada persona.
 
-- [ ] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
-  Giovanni aprobó medir los dos lados de brazo, muslo y pantorrilla. Pero pide
-  más que capturar: que el motor **prescriba unilaterales empezando por el lado
-  débil y ajuste el volumen en esa zona**. Eso es una regla nueva y falta el
-  umbral — puso "2 cm" como ejemplo, no como criterio. Preguntado.
+- [?] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
+  Giovanni aprobó medir los dos lados de brazo, muslo y pantorrilla, y que el
+  motor **prescriba unilaterales empezando por el lado débil**.
+  Mandó los umbrales el 31-ago, **pero se contradicen entre sus dos documentos**:
+  el formulario dice que en brazo el protocolo se activa por encima de **1 cm**,
+  y `Principios_Entrenamiento_GIOSLAB.pdf` dice **≥1,5 cm**. En pierna sí
+  coinciden en 2 cm. Un umbral mal puesto activa un protocolo correctivo a quien
+  no lo necesita, así que no se elige por nosotros. Preguntado.
 
 - [x] **2.14 Perímetros de extremidades y tronco** (2 h) · *fuera del plan original*
   Brazo relajado y contraído, tórax, muslo y pantorrilla, con su evolución en la
@@ -245,65 +248,18 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   puede abrir la foto ni el video. El material existe para que se vea la técnica;
   hoy solo lo ve Giovanni. Hace falta una vista de solo lectura.
 
-- [~] **4.5 Importación del contenido de Giovanni** (5 h)
-  **Media hecha.** Su `Matriz_Contraindicaciones_Ejercicios.xlsx` (27-ago) cargó
-  contraindicaciones reales en 26 ejercicios y añadió 16 nuevos: la biblioteca
-  pasa de 31 a 47 y **el cruce de contraindicaciones empieza a funcionar**.
-  Faltan **21**, y no por descuido: su Excel nombra familias y su matriz nombra
-  variantes, así que de 31 nombres solo coincidían 4. Los ambiguos no se
-  heredan porque varios son los SUSTITUTOS seguros — heredar los excluiría y
-  rompería la sustitución. Pedidos uno a uno en PREGUNTAS-GIOVANNI.
-  *Sigue requiriendo:* esos 21. Los medios ya tienen dónde entrar (4.2 hecha);
-  falta que él los mande.
-
----
-
-## 🏗️ Grupo 5 — Generador de rutinas (45 h)
-
-**Grupo nuevo, y no es un capricho de alcance: era un hueco.** El motor dice qué
-ejercicios sí y cuáles no, con su justificación. No dice semanas, días, series,
-repeticiones, RPE, descansos ni progresión. Sin eso, la tarea "Plantilla PDF:
-rutina prescrita" no tenía rutina que imprimir y la app del atleta no tendría
-nada que mostrar. Fase A no se podía cerrar tal como estaba escrita.
-
-- [ ] **5.1 Esquema del plan de entrenamiento** (4 h)
-  Darle forma a `plan_data`, que hoy es un jsonb libre. Mesociclo → semanas →
-  días → ejercicios, y por ejercicio: series de calentamiento, series efectivas,
-  rango de repeticiones, RPE de las primeras y de la última, descanso, técnica de
-  intensidad y sustituciones. La forma objetivo está resuelta en `gymapp`
-  (`src/data/program.ts`): esos tipos son el destino, no una inspiración.
-
-- [?] **5.2 Método de programación de Giovanni (spec)** (6 h)
-  **Bloqueada.** `periodization_type` lleva desde la primera migración marcado
-  "PENDIENTE DE GIOVANNI" y ya no se puede seguir aplazando. Hace falta: sus tipos
-  de periodización, cuántos días por semana y cómo reparte los patrones, volumen
-  por grupo muscular, rangos de repeticiones por objetivo, cómo progresa de una
-  semana a la siguiente y cuándo mete descarga. Mismo tratamiento que la matriz:
-  se documenta primero, se programa después.
-
-- [ ] **5.3 Generador: de la salida del motor a un programa** (12 h)
-  La tarea 3.7 ya calcula el reparto por patrón y los ejercicios prescribibles con
-  sus modificadores. Esto lo reparte en días y semanas aplicando 5.2. Función pura
-  sobre (salida del motor + método + objetivo del atleta), con sus tests.
-
-- [ ] **5.4 Editor del plan para el entrenador** (10 h)
-  §3.6: el sistema es un copiloto. Giovanni tiene que poder cambiar un ejercicio,
-  mover un día, tocar series y repeticiones. Lo que él sobreescriba queda marcado
-  como decisión suya, distinto de lo que propuso el motor: sin esa distinción no
-  se puede aprender de sus correcciones más adelante.
-
-- [ ] **5.5 Sustituciones dentro del plan** (5 h)
-  Cada ejercicio del plan viaja con dos alternativas, que salen de 4.3. En el
-  gimnasio la máquina está ocupada y el atleta necesita un plan B **que el motor
-  ya haya aprobado para él**. Sin esto, sustituye por su cuenta y se salta las
-  contraindicaciones.
-
-- [ ] **5.6 Golden tests del generador contra planes reales** (8 h)
-  Diego Mafla y Daniela Méndez llegaron el 27-ago **con su plan entregado**, no
-  solo con la ficha. Es el mismo trato que con los cálculos (§3.4): si el
-  generador no se parece a lo que Giovanni les dio, manda él.
-
----
+- [x] **4.5 Importación del contenido de Giovanni** (5 h)
+  **Cerrada el 31-ago.** Su `Formulario_Ajustes_Motor_Giova.docx` trajo los 21
+  que faltaban, y esta vez los 21 nombres coincidieron literalmente: se le mandó
+  la tabla con NUESTROS nombres en vez de pedirle una lista suya. Ese fue el
+  motivo de pedirlo en ese formato y funcionó.
+  **La biblioteca queda 47 de 47, cero sin datos.**
+  ⚠️ Y destapó lo que estaba avisado: marcó "Rodilla" en las cinco sentadillas,
+  las dos prensas, el hack y el sissy squat, así que **un atleta con lesión de
+  rodilla se queda con 0 de 12 dominantes de rodilla**. Puede ser correcto
+  clínicamente, pero contradice lo que él mismo dijo sobre los sustitutos
+  seguros. Cargado tal cual —manda él— y preguntado con el número delante.
+  *Faltan los medios*, que ya tienen dónde entrar desde 4.2.
 
 ## 📄 Grupo 6 — Reportes PDF (20 h)
 

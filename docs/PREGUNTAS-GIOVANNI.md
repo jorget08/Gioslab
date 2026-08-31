@@ -504,3 +504,81 @@ Sigo esperando también, de lo anterior:
 - **El logo en archivo y una plantilla de reporte tuya.** Es lo único que bloquea
   los PDF.
 - **Las fotos y los videos de los ejercicios**, que ya tienen dónde ir.
+
+---
+
+## 31 de agosto — cargado todo, y tres cosas que chocan
+
+Giovanni, llegó todo y está cargado. **La biblioteca queda completa: 47 de 47
+ejercicios con contraindicaciones, ninguno sin datos.** Los 21 nombres
+coincidieron uno a uno, así que esta vez no tuve que interpretar nada.
+
+Lo del método de programación es exactamente lo que necesitaba. Con eso ya puedo
+construir el generador de rutinas, que es lo siguiente grande.
+
+Pero al cargarlo salieron tres cosas que no quiero decidir yo.
+
+### 1. Un atleta con la rodilla mal se queda sin nada de pierna
+
+Te aviso con el número exacto porque es el que me preocupaba cuando te pedí
+estos 21.
+
+Marcaste "Rodilla" en las cinco sentadillas, en las dos prensas, en el hack y en
+el sissy squat. Contando los 12 ejercicios dominantes de rodilla que hay en la
+biblioteca, **a un atleta con lesión de rodilla el motor le deja 0.** Cero. No le
+puede ofrecer ni la Goblet, ni la Safety Bar, ni la de talón elevado.
+
+En hombro no pasa: dejaste el Press en Plano Escapular sin "Hombro", así que ahí
+la sustitución sigue funcionando y el motor tiene qué ofrecer. Por eso creo que
+lo de rodilla puede ser un descuido y no una decisión.
+
+**Dime cuál de las dos es:**
+
+- **(a) Es correcto:** con la rodilla lesionada no se hace nada dominante de
+  rodilla, punto. Entonces lo dejo así, y el motor le dirá al entrenador "no hay
+  ejercicio de rodilla disponible" en vez de inventarse uno.
+- **(b) Hay excepciones:** algunas de esas variantes sí se pueden dar con
+  molestia de rodilla, con cuidado. Entonces dime cuáles quitar de la lista.
+  Mi sospecha es Goblet, Safety Bar y talón elevado, pero **no lo voy a decidir
+  yo**.
+
+### 2. El umbral de asimetría del brazo no cuadra entre tus dos documentos
+
+En el formulario pusiste que en **brazo** el protocolo se activa por encima de
+**1 cm o 5%**. En `Principios_Entrenamiento_GIOSLAB` pusiste **≥1,5 cm en
+brazos**.
+
+En pierna sí coinciden los dos en 2 cm, así que esa parte la doy por buena.
+
+¿Cuál vale para brazo, 1 cm o 1,5 cm? Lo pregunto porque un umbral demasiado
+bajo le activa un protocolo correctivo a gente que no lo necesita — un
+centímetro de diferencia entre brazos lo tiene casi todo el mundo.
+
+Y para pantorrilla escribiste "1.cm": entiendo 1,0 cm. Confírmame.
+
+### 3. Los fondos: me pediste los dos patrones y solo cabe uno
+
+Dijiste que quieres fondos como empuje horizontal *y* vertical, porque el
+horizontal carga más pectoral y el vertical más tríceps. Tiene todo el sentido
+metodológico, pero el patrón es la llave con la que el motor sustituye un
+ejercicio por otro, y hoy cada ejercicio tiene uno solo.
+
+La forma limpia de resolverlo es la que tú ya usas en la matriz: **partirlo en
+dos ejercicios**, como hiciste con las sentadillas. Algo así:
+
+- *Fondos en Paralelas (énfasis pectoral)* → empuje horizontal, torso inclinado
+- *Fondos en Paralelas (énfasis tríceps)* → empuje vertical, torso vertical
+
+¿Te sirven esos dos nombres, o los llamas de otra forma? En cuanto me digas, los
+separo.
+
+---
+
+### Lo que sigue de tu lado
+
+- **Las fotos y los videos de los ejercicios.** Ya tienen dónde ir: se suben
+  desde la ficha del ejercicio y se ven en la biblioteca.
+- **El logo en archivo y una plantilla de reporte.** Es lo único que bloquea
+  los PDF.
+
+Lo de la nutrición lo dejo para cuando lleguemos, sin prisa.
