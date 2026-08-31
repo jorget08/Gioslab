@@ -659,3 +659,81 @@ no borrado, para no romper nada que lo nombrara.
 
 Sigo esperando **las fotos y los videos** de los ejercicios, y **el logo con una
 plantilla de reporte**, que es lo único que bloquea los PDF.
+
+---
+
+## 1 de septiembre (tarde) — la tabla del tobillo
+
+Giovanni, dos cosas.
+
+**Lo de la asimetría, hecho.** Me quedo con **1,5 cm en brazo, sin porcentaje**.
+De paso eso simplifica el sistema: sin el criterio de porcentaje no hace falta
+arrastrar el perímetro de referencia, la asimetría sale de la resta directa.
+
+Solo confírmame una cosa: **¿el 1,5 cm es solo del brazo, o vale para los tres?**
+Lo pregunto porque el muslo lo tenías en 2 cm y la pantorrilla en 1 cm, y no sé
+si los repensaste también.
+
+---
+
+**Y ahora la tabla que mandaste. No la he cargado todavía, y te explico por qué.**
+
+Primero, para que estemos alineados: Jorge me la pasó pensando que te habías
+equivocado y que era de rodilla. Yo creo que **no te equivocaste: es de tobillo**,
+y está bien así. Lo digo porque las nueve notas justifican por tobillo —"reducir
+el ángulo en el tobillo", "cero exigencia de tobillo", "nula tensión en el
+tobillo"— y elevar talones o subir los pies en la prensa son exactamente las
+compensaciones de una dorsiflexión corta. Donde mencionas la rodilla es la
+consecuencia, no la causa. Corrígeme si me equivoco.
+
+**Dicho eso, la tabla es un salto de calidad.** Hoy el sistema, ante un tobillo
+malo, solo sabe *quitar* ejercicios. Tu tabla no quita ninguno de los nueve:
+modifica, reposiciona o mantiene. Eso es mucho mejor para el entrenador. Pero
+tengo tres dudas y prefiero preguntarlas a inventármelas.
+
+### 1. ¿A cuántos centímetros equivale "Deficiente"?
+
+Es la que me bloquea de verdad. El motor no entiende "Deficiente": decide con los
+centímetros de dorsiflexión, y hoy tiene dos tramos que definiste tú:
+
+- **Menos de 5 cm** → severa: bloquea la sentadilla libre profunda y el hack.
+- **Entre 5 y 10 cm** → limitada: la permite con cuña de talón.
+
+Tu tabla nueva no bloquea nada. Entonces:
+
+- Si **"Deficiente" es menos de 5 cm**, tu tabla *reemplaza* esas exclusiones y
+  el sistema pasa a permitir la sentadilla libre con talones elevados.
+- Si **"Deficiente" es el tramo de 5 a 10**, conviven y no hay que tocar nada de
+  lo que bloquea.
+
+No lo puedo adivinar: si me equivoco, le dejo una sentadilla profunda a alguien
+con 3 cm de dorsiflexión.
+
+### 2. Seis de las variantes que nombras no existen todavía
+
+| Variante que nombras | ¿Es un ejercicio nuevo, o es otro nombre de uno que ya tengo? |
+|---|---|
+| Sentadilla Goblet con Talones Elevados |  |
+| Sentadilla Hack (Pies en Apoyo Alto) |  |
+| Prensa de Piernas (Posición Alta de Pies) |  |
+| Step-up Bajo |  |
+| Hip Thrust en Banco / Máquina |  *(¿es el Hip Thrust con Barra que ya tengo?)* |
+| Sillón de Extensión de Cuádriceps |  *(¿son las Extensiones de Cuádriceps?)* |
+| Curl Femoral en Máquina |  *(¿es el Curl Femoral Acostado?)* |
+
+Te lo pregunto porque es la tercera vez que nos pasa lo de los nombres, y las dos
+anteriores me costaron trabajo repetido. Si son el mismo ejercicio con una
+indicación de ejecución distinta, mejor no duplicarlos: el sistema puede decir
+"Extensiones de Cuádriceps, siéntate más atrás" sin crear un ejercicio nuevo.
+
+### 3. "Hack en Máquina" no es el que tengo bloqueado
+
+Tu tabla habla de la **Sentadilla Hack en Máquina**. La regla que tienes vigente
+bloquea el **Hack Libre**, que es otro ejercicio. ¿Los dos se comportan igual con
+un tobillo malo, o solo el de máquina se salva subiendo los pies?
+
+---
+
+Sigo esperando **las fotos y videos** de los ejercicios y **el logo con una
+plantilla de reporte**. Y la tabla de los siete de rodilla que te mandé esta
+mañana — la prensa sobre todo.

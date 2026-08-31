@@ -123,18 +123,26 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   sabía qué contraindica cada ejercicio pero no qué tiene cada persona.
 
 - [ ] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
-  **Desbloqueada el 1-sep.** Giovanni cerró la contradicción del brazo: manda el
-  formulario, no `Principios_Entrenamiento`. Umbrales para activar el protocolo:
+  **Desbloqueada el 1-sep, y rectificada el mismo día.** Primero dijo 1 cm o 5 %
+  para el brazo; lo repensó y lo dejó en **1,5 cm, sin porcentaje** — que es
+  justo lo que decía `Principios_Entrenamiento`, o sea que la contradicción se
+  resolvió a favor de ese documento.
 
   | Segmento | Activa el protocolo |
   |---|---|
-  | Brazo | > 1 cm **o** > 5 % |
+  | Brazo | > 1,5 cm |
   | Muslo | > 2 cm |
-  | Pantorrilla | > 1 cm **o** > 5 % |
+  | Pantorrilla | *(por confirmar)* |
+
+  Se cae el criterio porcentual entero: era el que obligaba a arrastrar el
+  perímetro de referencia para poder calcularlo. En centímetros, la asimetría se
+  lee de la resta directa.
+
+  Pantorrilla queda abierta: su formulario decía 1 cm y `Principios` habla de
+  "2,0 cm en piernas". Preguntado si el 1,5 es solo del brazo o vale para todo.
 
   Falta capturar los dos lados (hoy solo se mide uno), derivar la diferencia y
-  la regla que prescribe unilaterales empezando por el lado débil. El muslo se
-  queda solo en cm: el porcentaje que escribió es ilegible y con el cm basta.
+  la regla que prescribe unilaterales empezando por el lado débil.
 
 - [x] **2.14 Perímetros de extremidades y tronco** (2 h) · *fuera del plan original*
   Brazo relajado y contraído, tórax, muslo y pantorrilla, con su evolución en la
@@ -167,6 +175,29 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Ejecuta el tubo de cuatro niveles, cruza contraindicaciones, resuelve
   conflictos por evidencia y denuncia empates y datos que faltan. Cada decisión
   arrastra su justificación. `hechos-atleta.ts` es el puente con la base.
+
+- [?] **3.8 Tabla de acciones por tobillo deficiente** (6 h) · *nuevo, 1-sep*
+  **Bloqueada, y no por poco.** Mandó una matriz de 9 filas para "Evaluación
+  Tobillo = Deficiente" que es mucho más rica que las dos reglas de dorsiflexión
+  que hay: en vez de excluir, **modifica** (cuña de talón, pies altos en la
+  prensa, apoyo alto en el hack) y marca cuatro ejercicios como "mantener al
+  100 %" porque no exigen tobillo. Ninguna de las 9 filas excluye nada.
+  Tres cosas la frenan:
+  1. **"Deficiente" no está en centímetros.** El motor decide con
+     `dorsiflexion_cm` en dos tramos: menos de 5 (severa, excluye) y de 5 a 10
+     (limitada, adapta). Si "Deficiente" es el tramo severo, la tabla **anula**
+     las exclusiones actuales; si es el otro, convive con ellas. Adivinarlo
+     puede dejar prescrita una sentadilla profunda a alguien con 3 cm.
+  2. **Seis de las variantes que nombra no existen en la biblioteca**, y tres de
+     ellas huelen a renombre de una que sí (Hip Thrust en Banco, Sillón de
+     Extensión, Curl Femoral en Máquina). Es la tercera vez que choca la
+     granularidad de nombres; esta vez se pregunta antes de emparejar.
+  3. **Su tabla dice "Hack en Máquina" y la regla vigente excluye "Hack Libre"**,
+     que son ejercicios distintos.
+  Además destapa un límite de la gramática (§3.1): `modificador` solo se puede
+  colgar de un ejercicio EXCLUIDO o PRIORIZADO, así que hoy no se puede decir
+  "este se hace, pero con los talones elevados" sin excluirlo antes. Eso es
+  trabajo de 3.1, no de esta tarjeta.
 
 - [x] **3.3 Carga de las reglas de los Excels a la BD** (8 h)
   Migración `20260827200000_matriz_giovanni.sql`: **25 reglas** de su matriz del
