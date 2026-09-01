@@ -69,7 +69,12 @@ function Prescripcion() {
       supabase.from("athletes").select("id, full_name, sex").eq("id", atletaId).single(),
       supabase.from("biomech_evaluations").select("*").eq("athlete_id", atletaId)
         .is("voided_at", null).order("evaluated_at", { ascending: false }).limit(1),
-      supabase.from("anthropometric_measurements").select("body_fat_pct").eq("athlete_id", atletaId)
+      // Los perímetros bilaterales viajan con la medición porque de ellos sale
+      // el hecho `asimetrias` (2.15). Sin ellos el motor los ve vacíos y
+      // concluye que no hay asimetría, que es peor que no saberlo.
+      supabase.from("anthropometric_measurements")
+        .select("body_fat_pct, arm_flexed_cm, arm_flexed_left_cm, thigh_cm, thigh_left_cm, calf_cm, calf_left_cm")
+        .eq("athlete_id", atletaId)
         .is("voided_at", null).order("measured_at", { ascending: false }).limit(1),
       supabase.from("menstrual_cycle_logs")
         .select("last_period_start, cycle_length_days, uses_hormonal_contraception")

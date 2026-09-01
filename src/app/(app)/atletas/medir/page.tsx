@@ -18,7 +18,8 @@ import {
   aNumero,
   CAMPOS,
   faltantesParaCalculo,
-  PERIMETROS,
+  PARES_BILATERALES,
+  PERIMETROS_SIMPLES,
   PLIEGUES,
   validarRango,
   type CampoMedida,
@@ -333,7 +334,7 @@ function Medicion() {
         </Bloque>
 
         <Bloque rotulo="Perímetros">
-          {PERIMETROS.map((campo) => (
+          {PERIMETROS_SIMPLES.map((campo) => (
             <CampoMedidaInput
               key={campo}
               campo={campo}
@@ -343,6 +344,37 @@ function Medicion() {
               fechaAnterior={cuando}
             />
           ))}
+
+          {/* Los tres bilaterales (2.15), derecho e izquierdo en la MISMA fila.
+              Ponerlos seguidos en la lista es como se acaban cruzando los lados
+              —mides un brazo y anotas el otro tres campos más abajo— y un lado
+              cruzado invierte la asimetría: el sistema mandaría reforzar el
+              lado que ya era el fuerte. */}
+          <div className="space-y-3 rounded-lg border border-dashed p-3">
+            <p className="rotulo">Los dos lados</p>
+            {PARES_BILATERALES.map(({ derecho, izquierdo }) => (
+              <div key={derecho} className="grid grid-cols-2 gap-2">
+                <CampoMedidaInput
+                  campo={derecho}
+                  valor={valores[derecho] ?? ""}
+                  onChange={(v) => poner(derecho, v)}
+                  anterior={anterioresNum?.[derecho]}
+                  fechaAnterior={cuando}
+                />
+                <CampoMedidaInput
+                  campo={izquierdo}
+                  valor={valores[izquierdo] ?? ""}
+                  onChange={(v) => poner(izquierdo, v)}
+                  anterior={anterioresNum?.[izquierdo]}
+                  fechaAnterior={cuando}
+                />
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground">
+              Medir un solo lado no es un problema: sin los dos, el sistema no calcula
+              asimetría en vez de darla por buena.
+            </p>
+          </div>
         </Bloque>
 
         <Resultado composicion={composicion} anterior={anterior} faltan={faltan} />

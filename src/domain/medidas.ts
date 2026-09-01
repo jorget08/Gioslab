@@ -14,7 +14,8 @@ export type CampoMedida =
   | "triceps_mm" | "subscapular_mm" | "suprailiac_mm" | "abdominal_mm"
   | "thigh_mm" | "calf_mm" | "chest_mm"
   | "waist_cm" | "hip_cm"
-  | "arm_relaxed_cm" | "arm_flexed_cm" | "chest_cm" | "thigh_cm" | "calf_cm";
+  | "arm_relaxed_cm" | "arm_flexed_cm" | "chest_cm" | "thigh_cm" | "calf_cm"
+  | "arm_flexed_left_cm" | "thigh_left_cm" | "calf_left_cm";
 
 export interface MetaCampo {
   etiqueta: string;
@@ -54,6 +55,17 @@ export const CAMPOS: Record<CampoMedida, MetaCampo> = {
   chest_cm:       { etiqueta: "Tórax",           sitio: "a nivel mesoesternal",             unidad: "cm", min: 50, max: 200, saltoRelativo: 0.10 },
   thigh_cm:       { etiqueta: "Muslo",           sitio: "punto medio entre ingle y rodilla", unidad: "cm", min: 25, max: 110, saltoRelativo: 0.10 },
   calf_cm:        { etiqueta: "Pantorrilla",     sitio: "máxima circunferencia",            unidad: "cm", min: 15, max: 80,  saltoRelativo: 0.08 },
+
+  // Lado izquierdo de los tres segmentos que Giovanni pidió medir por duplicado
+  // (2.15). Los de arriba pasan a ser el DERECHO; ver la migración
+  // 20260901200000, que explica por qué no se renombraron.
+  //
+  // Sin `sitio`: se toman en el mismo punto que su pareja, y repetir la
+  // referencia bajo cada uno duplicaría el texto en la pantalla justo donde el
+  // entrenador quiere ir rápido.
+  arm_flexed_left_cm: { etiqueta: "Brazo contraído izq.", unidad: "cm", min: 15, max: 70,  saltoRelativo: 0.08 },
+  thigh_left_cm:      { etiqueta: "Muslo izq.",           unidad: "cm", min: 25, max: 110, saltoRelativo: 0.10 },
+  calf_left_cm:       { etiqueta: "Pantorrilla izq.",     unidad: "cm", min: 15, max: 80,  saltoRelativo: 0.08 },
 };
 
 /**
@@ -64,6 +76,28 @@ export const PERIMETROS: CampoMedida[] = [
   "waist_cm", "hip_cm", "chest_cm",
   "arm_relaxed_cm", "arm_flexed_cm", "thigh_cm", "calf_cm",
 ];
+
+/**
+ * Los que se miden de los dos lados, emparejados (2.15).
+ *
+ * La pantalla los pinta juntos —derecho e izquierdo en la misma fila— en vez de
+ * seguidos en la lista: medir un brazo y anotar el otro tres campos más abajo es
+ * como se acaban cruzando los lados, y un lado cruzado invierte la asimetría y
+ * manda reforzar la pierna que ya era la fuerte.
+ */
+export const PARES_BILATERALES: { derecho: CampoMedida; izquierdo: CampoMedida }[] = [
+  { derecho: "arm_flexed_cm", izquierdo: "arm_flexed_left_cm" },
+  { derecho: "thigh_cm",      izquierdo: "thigh_left_cm" },
+  { derecho: "calf_cm",       izquierdo: "calf_left_cm" },
+];
+
+const IZQUIERDOS = new Set<CampoMedida>(PARES_BILATERALES.map((p) => p.izquierdo));
+const DERECHOS = new Set<CampoMedida>(PARES_BILATERALES.map((p) => p.derecho));
+
+/** Los perímetros que se pintan sueltos: los que no tienen pareja. */
+export const PERIMETROS_SIMPLES: CampoMedida[] = PERIMETROS.filter(
+  (c) => !DERECHOS.has(c) && !IZQUIERDOS.has(c),
+);
 
 /** Los 7 pliegues, en el orden del protocolo ISAK de la ficha de Giovanni. */
 export const PLIEGUES: CampoMedida[] = [

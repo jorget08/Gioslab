@@ -17,6 +17,23 @@ import { cn } from "@/lib/utils";
  * sí está escrito en la ficha de Giovanni.
  */
 
+/**
+ * Coma decimal, que es como se lee un número en español.
+ *
+ * Los valores llegan crudos de la base —PostgREST devuelve `numeric` como el
+ * texto "53.2"— y hasta ahora se pintaban tal cual. Se notó al poner el bloque
+ * de asimetrías (2.15) justo debajo del de perímetros: el mismo 53,2 aparecía
+ * dos veces en la misma pantalla escrito de dos formas.
+ *
+ * Solo toca lo que ES un número. Un valor de texto —"Largo", "Óptimo"— pasa
+ * intacto, que es la mitad de lo que enseña la ficha.
+ */
+function conComa(valor: number | string): string {
+  const n = typeof valor === "number" ? valor : Number(valor);
+  if (typeof valor === "string" && valor.trim() === "") return valor;
+  return Number.isFinite(n) ? String(n).replace(".", ",") : String(valor);
+}
+
 export function Delta({ v, className }: { v: Variacion | null; className?: string }) {
   if (!v) return null;
 
@@ -66,7 +83,7 @@ export function Dato({
           <>
             {variacion && <Delta v={variacion} />}
             <span className="text-sm font-medium tabular-nums">
-              {valor}
+              {conComa(valor)}
               {unidad ? <span className="text-muted-foreground"> {unidad}</span> : null}
             </span>
           </>
@@ -100,7 +117,7 @@ export function DatoDestacado({
     <div className="space-y-0.5">
       <p className="rotulo">{rotulo}</p>
       <p className="text-3xl font-semibold tabular-nums tracking-tight">
-        {vacio ? <span className="text-muted-foreground">—</span> : valor}
+        {vacio ? <span className="text-muted-foreground">—</span> : conComa(valor)}
         {!vacio && unidad ? (
           <span className="ml-1 text-lg font-normal text-muted-foreground">{unidad}</span>
         ) : null}

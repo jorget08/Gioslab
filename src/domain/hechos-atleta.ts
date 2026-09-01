@@ -15,6 +15,7 @@
  * distinguir "no cumple" de "no lo sé" y aquí se le da esa materia prima.
  */
 
+import { segmentosConAsimetria, type MedicionBilateral } from "@/domain/asimetrias";
 import { adaptacionPorCiclo, picoOvulatorio } from "@/domain/calculations/ciclo-menstrual";
 import type { Hechos } from "@/domain/motor";
 
@@ -38,7 +39,7 @@ export interface FilaBiomecanica {
   femur_torso_ratio?: string | null;
 }
 
-export interface FilaMedicion {
+export interface FilaMedicion extends MedicionBilateral {
   body_fat_pct?: number | null;
 }
 
@@ -89,6 +90,12 @@ export function resolverHechos(datos: DatosAtleta, hoy: Date = new Date()): Hech
   poner(h, "proporcion_femur_torso", b?.femur_torso_ratio);
 
   poner(h, "porcentaje_graso", datos.medicion?.body_fat_pct);
+
+  // Solo se pone si HAY medición. Sin ella, una lista vacía diría "no tiene
+  // ninguna asimetría", que es afirmar algo que nadie ha comprobado; sin la
+  // clave, el motor lo trata como dato ausente y lo denuncia (§ "lo que falta,
+  // falta"). Con medición, la lista vacía sí es un dato: se midió y no hay.
+  if (datos.medicion) h.asimetrias = segmentosConAsimetria(datos.medicion);
 
   // Lesiones y condiciones SÍ se ponen aunque vengan vacías: "no tiene ninguna"
   // es un dato, y sin él una regla de "no_incluye" quedaría sin evaluar para

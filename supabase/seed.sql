@@ -178,10 +178,25 @@ insert into public.anthropometric_measurements
 values
   ('00000000-3333-0000-0000-000000000002', '00000000-1111-0000-0000-000000000001',
    '2026-07-02', 178.0, 82.4, 8.0, 12.0, 14.0, 18.0, 11.0, 7.0, 6.5, 84.0, 99.0),
-  ('00000000-3333-0000-0000-000000000003', '00000000-1111-0000-0000-000000000001',
-   '2026-08-01', 158.5, 68.2, 18.0, 16.0, 22.0, 26.0, 28.0, 14.0, 9.0, 79.0, 104.0),
   ('00000000-3333-0000-0000-000000000005', '00000000-1111-0000-0000-000000000002',
    '2026-08-05', 170.0, 58.0, 14.0, 11.0, 13.0, 15.0, 20.0, 9.0, 6.0, 67.0, 94.0);
+
+-- Laura lleva los dos lados medidos (2.15) y los tres casos que la ficha
+-- distingue, que es justo lo que hay que poder ver de un vistazo:
+--   brazo       0,5 cm  → por debajo del umbral (1,5): no es hallazgo
+--   muslo       2,8 cm  → lo supera (2): protocolo, y empieza por el izquierdo
+--   pantorrilla 1,3 cm  → sin umbral fijado por Giovanni: no se juzga
+-- No es casualidad que sea ella: es la que tiene la lesión de rodilla, y una
+-- asimetría de muslo del lado afectado es exactamente lo que se espera.
+insert into public.anthropometric_measurements
+  (athlete_id, tenant_id, measured_at, height_cm, weight_kg,
+   triceps_mm, subscapular_mm, suprailiac_mm, abdominal_mm, thigh_mm, calf_mm, chest_mm,
+   waist_cm, hip_cm,
+   arm_flexed_cm, arm_flexed_left_cm, thigh_cm, thigh_left_cm, calf_cm, calf_left_cm)
+values
+  ('00000000-3333-0000-0000-000000000003', '00000000-1111-0000-0000-000000000001',
+   '2026-08-01', 158.5, 68.2, 18.0, 16.0, 22.0, 26.0, 28.0, 14.0, 9.0, 79.0, 104.0,
+   30.5, 30.0, 56.0, 53.2, 36.4, 35.1);
 
 -- ---------------------------------------------------------------------------
 -- Evaluaciones biomecánicas

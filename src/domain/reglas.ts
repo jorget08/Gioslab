@@ -44,6 +44,7 @@ import {
   ZONAS_ANATOMICAS,
   type Contraindicacion,
 } from "@/domain/contraindicaciones";
+import { SEGMENTOS } from "@/domain/asimetrias";
 import { esNivelEvidencia, type NivelEvidencia } from "@/domain/evidencia";
 import { esPatron, nombrePatron, PATRONES, type Patron } from "@/domain/patrones";
 
@@ -159,6 +160,20 @@ export const HECHOS = {
     etiqueta: "Condiciones fisiológicas",
     tipo: "conjunto", nivel: 1, dominio: CONDICIONES_SISTEMICAS,
     origen: "athlete_conditions.condition (solo is_active)",
+  },
+  // Nivel 1 porque el nivel dice DESDE CUÁNDO está disponible, no quién lo usa:
+  // sale de la medición antropométrica, igual que el porcentaje graso. Y hace
+  // falta que sea 1 para que lo puedan mirar las dos cosas que pidió Giovanni —
+  // priorizar unilaterales, que es acción de nivel 1, y ajustar el volumen de la
+  // zona, que es de nivel 4.
+  //
+  // Solo lista los segmentos que SUPERAN su umbral. Un segmento cuyo umbral él
+  // todavía no ha fijado nunca entra: dispararía una regla con un criterio que
+  // no es suyo.
+  asimetrias: {
+    etiqueta: "Segmentos con asimetría",
+    tipo: "conjunto", nivel: 1, dominio: SEGMENTOS,
+    origen: "anthropometric_measurements, comparando lado derecho e izquierdo (asimetrias.ts)",
   },
 
   // --- Nivel 2: fisiología ------------------------------------------------

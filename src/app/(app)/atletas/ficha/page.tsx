@@ -9,6 +9,7 @@ import { Dato, DatoDestacado, SinDatos } from "@/components/ficha/dato";
 import { Guarda } from "@/components/shared/guarda";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
+import { asimetriasDe, FICHA_SEGMENTO, UMBRAL_CM } from "@/domain/asimetrias";
 import { adaptacionPorCiclo } from "@/domain/calculations/ciclo-menstrual";
 import { esCondicionSistemica, REGLA_SISTEMICA } from "@/domain/contraindicaciones";
 import { edadEnAnios, ETIQUETA_ESTADO_LESION, ETIQUETA_SEXO } from "@/domain/catalogos";
@@ -70,6 +71,9 @@ interface Medicion {
   arm_flexed_cm: number | null;
   thigh_cm: number | null;
   calf_cm: number | null;
+  arm_flexed_left_cm: number | null;
+  thigh_left_cm: number | null;
+  calf_left_cm: number | null;
 }
 
 interface Biomecanica {
@@ -106,16 +110,22 @@ interface Lesion {
 }
 
 const COLUMNAS_MEDICION =
-  "id, measured_at, weight_kg, height_cm, body_fat_pct, fat_mass_kg, lean_mass_kg, bmi, waist_hip_ratio, sum_7_skinfolds_mm, chest_cm, arm_relaxed_cm, arm_flexed_cm, thigh_cm, calf_cm";
+  "id, measured_at, weight_kg, height_cm, body_fat_pct, fat_mass_kg, lean_mass_kg, bmi, waist_hip_ratio, sum_7_skinfolds_mm, chest_cm, arm_relaxed_cm, arm_flexed_cm, thigh_cm, calf_cm, arm_flexed_left_cm, thigh_left_cm, calf_left_cm";
 
 /** Los que se enseñan en la ficha, en el orden en que se recorre al atleta. */
 const PERIMETROS_FICHA = [
   { campo: "chest_cm", etiqueta: "Tórax" },
   { campo: "arm_relaxed_cm", etiqueta: "Brazo relajado" },
-  { campo: "arm_flexed_cm", etiqueta: "Brazo contraído" },
-  { campo: "thigh_cm", etiqueta: "Muslo" },
-  { campo: "calf_cm", etiqueta: "Pantorrilla" },
+  { campo: "arm_flexed_cm", etiqueta: "Brazo contraído (der.)" },
+  { campo: "arm_flexed_left_cm", etiqueta: "Brazo contraído (izq.)" },
+  { campo: "thigh_cm", etiqueta: "Muslo (der.)" },
+  { campo: "thigh_left_cm", etiqueta: "Muslo (izq.)" },
+  { campo: "calf_cm", etiqueta: "Pantorrilla (der.)" },
+  { campo: "calf_left_cm", etiqueta: "Pantorrilla (izq.)" },
 ] as const;
+
+/** Un decimal y coma decimal: el resto de la ficha ya se lee así en español. */
+const dec = (n: number) => n.toFixed(1).replace(".", ",");
 
 const COLUMNAS_BIOMEC =
   "evaluated_at, femur_class, torso_class, femur_torso_ratio, ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thomas_test_deg, slr_deg, thoracic_extension, shoulder_flexion_deg, shoulder_external_rotation_deg";
@@ -206,6 +216,11 @@ function Ficha() {
   }
 
   const [ultima, penultima] = mediciones;
+
+  // Se calculan sobre la ÚLTIMA medición, no sobre el histórico: la asimetría es
+  // un estado de hoy, y arrastrar la de hace seis meses haría prescribir trabajo
+  // correctivo por un desequilibrio ya corregido.
+  const asimetrias = ultima ? asimetriasDe(ultima) : [];
   const edad = edadEnAnios(new Date(atleta.birth_date));
 
   // El contexto del delta. Sin él, "−3.4 %" no se puede interpretar: no es lo
@@ -381,6 +396,52 @@ function Ficha() {
               />
             ))}
           </div>
+        </Bloque>
+      )}
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Asimetrías (2.15). Se enseñan SIEMPRE que haya los dos lados, superen
+          o no el umbral: una diferencia por debajo del umbral no es un hallazgo
+          pero sí es el punto de partida contra el que se compara la próxima
+          medición. Y el lado débil va escrito, no deducido, porque de él cuelga
+          por dónde empezar el trabajo unilateral. */}
+      {asimetrias.length > 0 && (
+        <Bloque rotulo="Asimetrías">
+          <ul className="space-y-2">
+            {asimetrias.map((a) => (
+              <li key={a.segmento} className="flex items-start gap-2 text-sm">
+                <span
+                  aria-hidden="true"
+                  className={[
+                    "mt-1.5 size-2 shrink-0 rounded-full",
+                    a.superaUmbral === true
+                      ? "bg-[color:var(--gl-alerta)]"
+                      : a.superaUmbral === false
+                        ? "bg-muted-foreground/40"
+                        : "bg-muted-foreground/20",
+                  ].join(" ")}
+                />
+                <span className="min-w-0">
+                  <span className="block">
+                    {FICHA_SEGMENTO[a.segmento].nombre}:{" "}
+                    <strong className="tabular-nums">{dec(a.diferenciaCm)} cm</strong>{" "}
+                    <span className="text-muted-foreground">
+                      ({dec(a.derecho)} der. · {dec(a.izquierdo)} izq.)
+                    </span>
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {a.superaUmbral === true ? (
+                      <>Supera el umbral. Empezar el trabajo unilateral por el {a.ladoDebil}.</>
+                    ) : a.superaUmbral === false ? (
+                      <>Dentro de lo normal (umbral {dec(UMBRAL_CM[a.segmento]!)} cm).</>
+                    ) : (
+                      <>Sin umbral definido todavía, así que no se juzga.</>
+                    )}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </Bloque>
       )}
 

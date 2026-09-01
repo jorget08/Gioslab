@@ -122,27 +122,23 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Embarazo, hipertensión, hernia, diástasis. Cierra el cruce: sin esto el motor
   sabía qué contraindica cada ejercicio pero no qué tiene cada persona.
 
-- [ ] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
-  **Desbloqueada el 1-sep, y rectificada el mismo día.** Primero dijo 1 cm o 5 %
-  para el brazo; lo repensó y lo dejó en **1,5 cm, sin porcentaje** — que es
-  justo lo que decía `Principios_Entrenamiento`, o sea que la contradicción se
-  resolvió a favor de ese documento.
-
-  | Segmento | Activa el protocolo |
-  |---|---|
-  | Brazo | > 1,5 cm |
-  | Muslo | > 2 cm |
-  | Pantorrilla | *(por confirmar)* |
-
-  Se cae el criterio porcentual entero: era el que obligaba a arrastrar el
-  perímetro de referencia para poder calcularlo. En centímetros, la asimetría se
-  lee de la resta directa.
-
-  Pantorrilla queda abierta: su formulario decía 1 cm y `Principios` habla de
-  "2,0 cm en piernas". Preguntado si el 1,5 es solo del brazo o vale para todo.
-
-  Falta capturar los dos lados (hoy solo se mide uno), derivar la diferencia y
-  la regla que prescribe unilaterales empezando por el lado débil.
+- [x] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
+  Se miden los dos lados de brazo, muslo y pantorrilla, y de la resta sale el
+  hecho `asimetrias` que el motor puede mirar. Umbrales suyos: brazo 1,5 cm,
+  muslo 2 cm. **Pantorrilla no tiene umbral y por eso no se juzga** — la ficha lo
+  dice con esas palabras en vez de fingir que está bien.
+  **La columna vieja pasa a ser el lado derecho y se añade el izquierdo**, en vez
+  de renombrar las dos: las mediciones ya guardadas se tomaron de un lado que
+  nadie anotó, y bautizarlo retroactivamente invertiría la asimetría justo donde
+  más caro sale — el sistema mandaría reforzar el lado que ya era el fuerte.
+  Falta un lado nunca es "simétrico": es "no lo sé", y así viaja hasta el motor.
+  Los dos lados se capturan **en la misma fila** de la pantalla: medir un brazo y
+  anotar el otro tres campos más abajo es como se cruzan los lados.
+  Dos reglas nuevas avisan de por dónde empezar. **No priorizan ejercicios
+  todavía**: la biblioteca no marca cuáles son unilaterales y esa lista es
+  criterio de Giovanni, no nuestro. Y **"ajustar el volumen en esa zona" no cabe
+  en la gramática** — `volumen_factor` y `volumen_series` son globales. Anotado
+  en 3.1; es la tercera petición suya que choca con lo mismo.
 
 - [x] **2.14 Perímetros de extremidades y tronco** (2 h) · *fuera del plan original*
   Brazo relajado y contraído, tórax, muslo y pantorrilla, con su evolución en la
@@ -162,6 +158,19 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 ---
 
 ## ⚙️ Grupo 3 — Motor de reglas (el corazón) (58 h)
+
+- [ ] **3.9 Revisión de la gramática: lo que Giovanni pide y no cabe** (8 h) · *nuevo, 1-sep*
+  Tres peticiones suyas seguidas han chocado con el mismo muro, así que ya no es
+  un caso raro sino un límite del diseño:
+  1. *"Las sentadillas con precaución"* (31-ago) — `modificador` solo se cuelga
+     de un ejercicio EXCLUIDO o PRIORIZADO, así que no se puede decir "este se
+     hace, pero así". Se resolvió con un aviso de sesión, que es más tosco.
+  2. *Tabla de tobillo* (1-sep, tarea 3.8) — nueve filas de "modificar
+     ejecución/posición" por ejercicio. Hoy no se pueden expresar.
+  3. *"Ajustar el volumen en esa zona"* (2.15) — `volumen_factor` y
+     `volumen_series` son globales; no hay volumen por grupo muscular.
+  Las tres piden lo mismo: **acciones dirigidas a un ejercicio o a un grupo
+  muscular sin tener que excluirlo**. Hasta que exista, su método entra recortado.
 
 - [x] **3.1 Diseño del esquema de reglas en BD** (5 h)
   Gramática fijada en `src/domain/reglas.ts` y documentada en
