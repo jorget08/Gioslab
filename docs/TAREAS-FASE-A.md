@@ -305,11 +305,18 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   Rojo, dorado y negro muestreados de su logo y sus informes. Media entrega de
   los assets: faltan el logo en archivo y la plantilla de reporte.
 
-- [ ] **4.7 Ver un ejercicio sin poder editarlo** (4 h) · *nuevo, 29-ago*
-  Salió al terminar 4.2 y es un hueco real: `/biblioteca/ejercicio` está guardada
-  a `super_admin`, así que el entrenador ve la miniatura en el listado pero no
-  puede abrir la foto ni el video. El material existe para que se vea la técnica;
-  hoy solo lo ve Giovanni. Hace falta una vista de solo lectura.
+- [x] **4.7 Ver un ejercicio sin poder editarlo** (4 h) · *nuevo, 29-ago*
+  `/biblioteca/detalle`, abierta a todo el staff. Cierra el hueco que dejaron 4.2
+  y 4.3: las fotos, el video y las sustituciones existían pero vivían detrás de
+  un formulario guardado a `super_admin`, así que el entrenador veía la miniatura
+  y no podía abrirla. Material de técnica que solo ve quien lo subió no sirve.
+  **Es el destino de todos, no una pantalla de segunda.** Giovanni también entra
+  aquí desde el listado y pulsa «Editar». Un clic más a cambio de que haya un
+  solo sitio donde mirar un ejercicio: una ficha que solo usara el entrenador
+  sería la que nadie revisa y se quedaría atrás sin que se note.
+  Los medios van arriba y a ancho completo, porque es a lo que se entra: se abre
+  en mitad de una sesión para ver cómo se ejecuta, no para leer la clasificación.
+  Las sustituciones son enlaces, así que se puede seguir la cadena.
 
 - [x] **4.5 Importación del contenido de Giovanni** (5 h)
   **Cerrada el 31-ago.** Su `Formulario_Ajustes_Motor_Giova.docx` trajo los 21

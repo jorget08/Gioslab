@@ -222,29 +222,27 @@ function Biblioteca() {
                           </span>
                         )}
                       </span>
-                      {puedeEditar && (
-                        <ChevronRight
-                          className="size-4 shrink-0 text-muted-foreground"
-                          aria-hidden="true"
-                        />
-                      )}
+                      <ChevronRight
+                        className="size-4 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                      />
                     </>
                   );
 
                   return (
                     <li key={e.id}>
-                      {/* Al entrenador no se le ofrece un enlace que lleva a un
-                          formulario que no puede guardar. */}
-                      {puedeEditar ? (
-                        <Link
-                          href={`/biblioteca/ejercicio?id=${e.id}`}
-                          className="flex min-h-14 items-center gap-2 px-4 py-2"
-                        >
-                          {fila}
-                        </Link>
-                      ) : (
-                        <div className="flex min-h-14 items-center gap-2 px-4 py-2">{fila}</div>
-                      )}
+                      {/* Ahora entra TODO EL MUNDO, a la ficha de solo lectura
+                          (4.7). Antes al entrenador no se le ofrecía enlace
+                          porque el único destino era un formulario que no podía
+                          guardar — y eso dejaba las fotos y los videos que subió
+                          Giovanni sin nadie que pudiera abrirlos. Él llega a la
+                          misma ficha y edita desde allí. */}
+                      <Link
+                        href={`/biblioteca/detalle?id=${e.id}`}
+                        className="flex min-h-14 items-center gap-2 px-4 py-2"
+                      >
+                        {fila}
+                      </Link>
                     </li>
                   );
                 })}
