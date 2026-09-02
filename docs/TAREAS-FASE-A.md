@@ -333,6 +333,75 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   repreguntado.
   *Faltan los medios*, que ya tienen dónde entrar desde 4.2.
 
+## 🏗️ Grupo 5 — Generador de rutinas (45 h)
+
+**Grupo nuevo, y no es un capricho de alcance: era un hueco.** El motor dice qué
+ejercicios sí y cuáles no, con su justificación. No dice semanas, días, series,
+repeticiones, RPE, descansos ni progresión. Sin eso, la tarea "Plantilla PDF:
+rutina prescrita" no tenía rutina que imprimir y la app del atleta no tendría
+nada que mostrar. Fase A no se podía cerrar tal como estaba escrita.
+
+- [x] **5.1 Esquema del plan de entrenamiento** (4 h)
+  `src/domain/plan.ts`. Mesociclo → semanas → días → **tres fases** → ejercicios,
+  con la forma que resolvió `gymapp`: calentamiento aparte de las series
+  efectivas, rango de repeticiones en vez de una cifra —es sobre lo que opera su
+  doble progresión— y RPE distinto para las primeras series y para la última.
+  **Sin una sola cifra suya**, y es deliberado: series, repeticiones y RPE son
+  método, y el método es dato que se carga, no código (§3.1). Sus números entran
+  en 5.2.
+  Las **tres fases son obligatorias en el tipo**, no una validación amable: su
+  documento del 1-sep dice que el sistema no debe permitir guardar una sesión que
+  no las cumpla. Y su prohibición del estiramiento estático tras hipertrofia **no
+  se valida: no existe como opción de cierre** — lo que no se puede escribir no
+  se puede prescribir por error.
+  **`periodization_type` deja de estar pendiente** desde la migración 1.3: sus
+  dos documentos lo cierran en `lineal | ondulante | atr`. Eso fija cómo se
+  llaman, no a quién le toca cada uno, que sigue abierto en 5.2.
+  El CHECK de la base es superficial a propósito —comprueba que sea un plan— y el
+  árbol lo valida el dominio, que da mensajes en español. De paso reapareció el
+  agujero de la 4.2: una clave ausente da NULL y un CHECK con NULL PASA, así que
+  sin `coalesce` un objeto sin versión se colaba como plan válido.
+
+- [ ] **5.2 Método de programación de Giovanni (spec)** (6 h)
+  **Ya no está bloqueada.** Contestó las cinco preguntas el 31-ago y el 1-sep:
+  tres periodizaciones, reparto de la semana para 3/4/5 días (más dos variantes
+  para mujer), series por grupo muscular (10–22 según grupo), repeticiones, RPE
+  y descanso por objetivo, doble progresión con incremento del 2,5–5 % al tocar
+  el techo del rango, y descarga cada 4ª o 6ª semana al 40–50 % del volumen con
+  RPE 5–6, seguida de una semana de supercompensación.
+  Falta cargarlo como DATO —igual que la matriz de reglas— y quedan dos huecos
+  que sí necesitan una frase suya:
+  1. **Qué eje elige la periodización.** Su anexo la asigna por nivel del atleta
+     y su formulario la describe por objetivo. `athletes` tiene los dos campos
+     (`experience_level`, `training_goal`); cuál manda cuando chocan, no.
+  2. **Sus tres objetivos contra los cuatro del atleta.** Su tabla de
+     repeticiones cubre fuerza, hipertrofia y pérdida de grasa;
+     `training_goal` añade "Recomposición Corporal" y "Rendimiento Deportivo".
+
+- [ ] **5.3 Generador: de la salida del motor a un programa** (12 h)
+  La tarea 3.7 ya calcula el reparto por patrón y los ejercicios prescribibles con
+  sus modificadores. Esto lo reparte en días y semanas aplicando 5.2. Función pura
+  sobre (salida del motor + método + objetivo del atleta), con sus tests.
+
+- [ ] **5.4 Editor del plan para el entrenador** (10 h)
+  §3.6: el sistema es un copiloto. Giovanni tiene que poder cambiar un ejercicio,
+  mover un día, tocar series y repeticiones. Lo que él sobreescriba queda marcado
+  como decisión suya, distinto de lo que propuso el motor: sin esa distinción no
+  se puede aprender de sus correcciones más adelante.
+
+- [ ] **5.5 Sustituciones dentro del plan** (5 h)
+  Cada ejercicio del plan viaja con dos alternativas, que salen de 4.3. En el
+  gimnasio la máquina está ocupada y el atleta necesita un plan B **que el motor
+  ya haya aprobado para él**. Sin esto, sustituye por su cuenta y se salta las
+  contraindicaciones.
+
+- [ ] **5.6 Golden tests del generador contra planes reales** (8 h)
+  Diego Mafla y Daniela Méndez llegaron el 27-ago **con su plan entregado**, no
+  solo con la ficha. Es el mismo trato que con los cálculos (§3.4): si el
+  generador no se parece a lo que Giovanni les dio, manda él.
+
+---
+
 ## 📄 Grupo 6 — Reportes PDF (20 h)
 
 **Reducido de 29 h a 20 h, y cambió de papel.** El PDF ya no es el producto ni el
