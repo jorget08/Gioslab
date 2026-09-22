@@ -403,7 +403,7 @@ nada que mostrar. Fase A no se podía cerrar tal como estaba escrita.
   agujero de la 4.2: una clave ausente da NULL y un CHECK con NULL PASA, así que
   sin `coalesce` un objeto sin versión se colaba como plan válido.
 
-- [ ] **5.2 Método de programación de Giovanni (spec)** (6 h)
+- [x] **5.2 Método de programación de Giovanni (spec)** (6 h)
   **Ya no está bloqueada.** Contestó las cinco preguntas el 31-ago y el 1-sep:
   tres periodizaciones, reparto de la semana para 3/4/5 días (más dos variantes
   para mujer), series por grupo muscular (10–22 según grupo), repeticiones, RPE
@@ -425,6 +425,22 @@ nada que mostrar. Fase A no se podía cerrar tal como estaba escrita.
   así que RIR 1 → RPE 9 y RIR 2 → RPE 8—, y la conversión se hace **al cargar el
   dato, no al mostrarlo**: dos escalas conviviendo en la misma pantalla es como
   se equivoca un entrenador con prisa.
+  **Cargado el 22-sep en `training_methods`**, no en un `.ts`: sus cifras son
+  suyas y las va a querer cambiar sin pedirme un despliegue, igual que la matriz
+  (§3.1). Tabla versionada, una sola activa, inmutable salvo `is_active`, y el
+  lector desconfiado en `domain/metodo.ts` — el CHECK de la base solo mira el
+  primer nivel, y un rango de repeticiones invertido no falla al guardarse: falla
+  al generar el plan de alguien.
+  **Cuatro cosas no las dijo con esas palabras y las leímos nosotros**, marcadas
+  `DERIVADO` en la migración y preguntadas el 22-sep: los patrones de cada día de
+  su semana (él escribió títulos, no claves del catálogo), el reparto del rango
+  de RPE entre primeras y última, el descanso —que sale de su plan de Diego, no
+  de su formulario— y las series de calentamiento, que es lo único que no sale de
+  ningún documento suyo.
+  **Y una fila sigue en blanco: Mantenimiento.** De sus cinco objetivos cerró
+  cuatro. El quinto vale `null`, que significa "él no lo ha dicho", y entonces el
+  generador se lo pregunta al entrenador en vez de meterlo en hipertrofia por
+  parecido.
 
 - [ ] **5.3 Generador: de la salida del motor a un programa** (12 h)
   La tarea 3.7 ya calcula el reparto por patrón y los ejercicios prescribibles con

@@ -911,3 +911,71 @@ llegue la plantilla. Queda dicho para que no sorprenda en el hito 7.4.
 - **Con qué se hace el Step-up Bajo**: peso corporal o mancuernas. `equipment`
   quedó NULL.
 - **Las contraindicaciones de los 8 unilaterales nuevos** (4.8).
+
+---
+
+## 22 de septiembre — cargado tu método, y cuatro cosas que leí yo
+
+Giovanni, ya está cargado todo lo que me pasaste sobre cómo programas: el
+reparto de la semana, las series por grupo, las repeticiones, el RPE, el
+descanso, la doble progresión y la descarga. Está en la base como dato, igual
+que la matriz de reglas, así que cuando quieras cambiar un número lo cambias tú
+y no hay que tocar nada más.
+
+**Cuatro cosas no las dijiste con esas palabras y las tuve que leer yo.** Van
+marcadas como `DERIVADO` en la migración para que se puedan discutir una a una.
+Ninguna bloquea nada: el generador ya funciona con ellas. Pero si alguna no es
+lo que harías tú, se cambia en una línea.
+
+### 1. Los patrones de cada día de tu semana
+
+Tú escribiste **"Torso (Empuje/Tracción)"**, **"Pierna (Cuádriceps/Cadera)"**,
+**"Full Body"**. El sistema necesita saber qué patrones del catálogo entran en
+cada día, así que los traduje: "Empuje/Tracción" son los cuatro patrones de
+torso, "Cuádriceps/Cadera" son los dos de pierna, y así.
+
+Dos decisiones dentro de esa traducción:
+
+- **El core solo entra donde tú lo nombras**: en el Full Body de 3 días y en tus
+  dos días "y core" de las variantes de mujer. No lo metí en los días de torso
+  aunque sea costumbre. ¿Lo quieres en algún día más?
+- En tus variantes de mujer distingo **"cuádriceps y glúteo"** de
+  **"isquiosurales y glúteo"** filtrando además por músculo, que si no los dos
+  días de pierna saldrían iguales.
+
+### 2. Un principiante, ¿qué periodización lleva?
+
+Me dijiste el 2-sep que cuando tu anexo (que asigna por nivel) y tu formulario
+(que asigna por objetivo) choquen, **manda el objetivo**. Aplicado tal cual:
+fuerza e hipertrofia van a **Ondulante**, y pérdida de grasa a **ATR**.
+
+**Y entonces tu fila LINEAL no se la lleva nadie**, porque la describes solo por
+nivel ("principiantes o fases iniciales"). Hoy queda como algo que el entrenador
+pone a mano en el editor. ¿Es lo que quieres, o un principiante debería entrar
+en lineal aunque su objetivo sea hipertrofia?
+
+### 3. El RPE y el descanso vienen en rango, y el plan lleva un número
+
+Tu tabla dice "RPE 8 – 9.5" y "180 a 300 s". Lo resolví así:
+
+- **RPE**: el piso del rango para las series previas y el techo para la última.
+  Es como está escrito tu método —la última serie es la dura— y encaja con los
+  planes que ya entregas.
+- **Descanso**: lo saqué del plan de Diego, donde lo dejas explícito —
+  *"Multiarticulares 90–120 s, Monoarticulares 60–75 s"*—. O sea, los compuestos
+  van arriba del rango y el aislamiento abajo.
+
+### 4. Las series de calentamiento
+
+Tus planes empiezan directo en las series efectivas, así que las de aproximación
+me las inventé yo: **2 en los ejercicios compuestos y ninguna en el aislamiento**.
+Es lo único de todo el método que no sale de un documento tuyo. Dime cuántas
+pones tú.
+
+### Y una que sigue en blanco: **Mantenimiento**
+
+De tus cinco objetivos del atleta cerraste cuatro: Hipertrofia e Hipertrofia,
+Pérdida de Grasa y Pérdida de Grasa, Recomposición como hipertrofia y
+Rendimiento como fuerza. **Mantenimiento se quedó sin fila.** No lo rellené:
+cuando el atleta tiene esa meta, el sistema le pregunta al entrenador con qué
+objetivo programar en vez de elegir por parecido. ¿Cómo lo programas tú?
