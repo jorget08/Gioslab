@@ -459,17 +459,31 @@ nada que mostrar. Fase A no se podía cerrar tal como estaba escrita.
   Y cuando no se llega, **se dice con el número exacto** en vez de apretar: un
   plan que finge cumplir su método es peor que uno que avisa de que no llega.
 
-- [ ] **5.4 Editor del plan para el entrenador** (10 h)
+- [x] **5.4 Editor del plan para el entrenador** (10 h)
   §3.6: el sistema es un copiloto. Giovanni tiene que poder cambiar un ejercicio,
   mover un día, tocar series y repeticiones. Lo que él sobreescriba queda marcado
   como decisión suya, distinto de lo que propuso el motor: sin esa distinción no
   se puede aprender de sus correcciones más adelante.
+  **Esa distinción se guarda entera, no como una marca.** Columna nueva
+  `plan_generado`, inmutable: el plan tal como salió del motor. Una marca
+  `editado: ["series"]` diría QUÉ cambió pero no DE QUÉ a qué, y lo que hay que
+  aprender de él es justo eso —que donde el motor pone 4 series él pone 3—.
+  **Una regla que no se ve en pantalla y que está en el dominio con sus tests:**
+  cambiar, quitar, añadir o mover un ejercicio se propaga a TODAS las semanas
+  (un mesociclo es el mismo entrenamiento con la carga cambiando), pero series,
+  reps, RPE y descanso cambian solo en la semana que se está viendo — propagar
+  eso borraría la descarga sin avisar, y eso no se nota hasta que el atleta llega
+  reventado a la semana siguiente.
+  Generar de nuevo **inserta una fila**, no pisa la anterior (§3.5).
 
-- [ ] **5.5 Sustituciones dentro del plan** (5 h)
+- [x] **5.5 Sustituciones dentro del plan** (5 h)
   Cada ejercicio del plan viaja con dos alternativas, que salen de 4.3. En el
   gimnasio la máquina está ocupada y el atleta necesita un plan B **que el motor
   ya haya aprobado para él**. Sin esto, sustituye por su cuenta y se salta las
   contraindicaciones.
+  Las dos alternativas se congelan al generar —copia, no referencia, como
+  `engine_runs.rules_fired`— y solo entran las que el motor aprobó para ESTE
+  atleta. Viajan al PDF y encabezan el desplegable de cambiar ejercicio.
 
 - [ ] **5.6 Golden tests del generador contra planes reales** (8 h)
   Diego Mafla y Daniela Méndez llegaron el 27-ago **con su plan entregado**, no
@@ -485,20 +499,39 @@ canal de entrega: es una exportación para el cliente que todavía no está en l
 app, y para que Giovanni tenga algo que enseñar en una reunión. Sigue importando
 —es lo que vende— pero deja de justificar dos rondas largas de diseño.
 
-- [ ] **6.1 Elegir e integrar el motor PDF** (4 h)
-  React-PDF vs. Gotenberg/WeasyPrint. **No está bloqueada por los assets:** la
-  decisión técnica se puede tomar y probar con una plantilla provisional.
+- [x] **6.1 Elegir e integrar el motor PDF** (4 h)
+  **React-PDF, y corriendo en el navegador.** Gotenberg/WeasyPrint se descartó
+  por lo de siempre: es infraestructura aparte que desplegar y pagar para una app
+  sin un solo cliente todavía. Imprimir la página se descartó porque no deja un
+  ARCHIVO que se pueda adjuntar o mandar por WhatsApp, que es como entrega él.
+  **Y el primer intento fue una ruta de servidor `/api/plan/pdf`, que el build
+  rechazó.** Con razón: `output: "export"` está puesto justo para eso
+  (`docs/ARQUITECTURA.md`) y aquí no hay servidor donde correr nada. Se generó en
+  el cliente. La descarga pasa por `lib/descarga.ts`, que es el único sitio que
+  habrá que tocar para el plugin nativo en Fase B (§3.3).
 
 - [?] **6.2 Plantilla PDF: ficha del atleta (marca GQ)** (6 h)
   *Requiere:* logo en archivo y plantilla de reporte. Incluye la ronda de ajustes
   con Giovanni, que antes era una tarea aparte.
 
-- [ ] **6.3 Plantilla PDF: rutina prescrita** (6 h)
-  Ahora sí tiene de dónde salir: consume el plan del grupo 5.
+- [x] **6.3 Plantilla PDF: rutina prescrita** (6 h)
+  Ahora sí tiene de dónde salir: consume el plan del grupo 5. Cabecera del
+  atleta, las tres fases de cada día, tabla de series/reps/RPE/descanso, los
+  sustitutos y las notas del motor, y una semana por página.
+  Lleva también **los avisos del generador y el descargo del copiloto**: el PDF
+  viaja fuera de la app y ahí ya no hay interfaz que explique por qué un grupo se
+  queda corto de series ni quién prescribe.
+  **La maqueta es provisional a propósito** —falta su plantilla y el escudo GQ en
+  vectorial— y por eso el grupo 6 no se cierra todavía (2-sep). Lo que sí está
+  cerrado es el contenido.
 
-- [ ] **6.4 Generar, descargar y guardar PDFs** (4 h)
+- [~] **6.4 Generar, descargar y guardar PDFs** (4 h)
   Botón en ficha y en plan; PDF guardado y asociado al atleta. Ojo §3.3: dentro de
   Capacitor no hay descarga de navegador, así que la ruta nativa se prevé desde ya.
+  **Hecho: descargar desde el plan**, con el motor cargado en diferido —son
+  cientos de kilobytes que no pinta bajar al móvil de quien solo viene a mirar la
+  rutina—. **Falta: subirlo a Storage y guardar `generated_pdf_url`**, y el botón
+  en la ficha del atleta (ese depende de la 6.2, que sigue esperando su logo).
 
 ---
 

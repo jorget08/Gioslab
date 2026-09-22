@@ -1208,6 +1208,44 @@ export type Database = {
           },
         ]
       }
+      training_methods: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          method_data: Json
+          source: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          method_data: Json
+          source: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          method_data?: Json
+          source?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_methods_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_plans: {
         Row: {
           athlete_id: string
@@ -1219,6 +1257,7 @@ export type Database = {
           id: string
           periodization_type: string | null
           plan_data: Json
+          plan_generado: Json | null
           status: string
           tenant_id: string
           title: string | null
@@ -1235,6 +1274,7 @@ export type Database = {
           id?: string
           periodization_type?: string | null
           plan_data?: Json
+          plan_generado?: Json | null
           status?: string
           tenant_id: string
           title?: string | null
@@ -1251,6 +1291,7 @@ export type Database = {
           id?: string
           periodization_type?: string | null
           plan_data?: Json
+          plan_generado?: Json | null
           status?: string
           tenant_id?: string
           title?: string | null

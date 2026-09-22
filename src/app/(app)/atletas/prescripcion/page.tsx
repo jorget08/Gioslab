@@ -8,18 +8,14 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { Guarda } from "@/components/shared/guarda";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
-import type { Ejercicio } from "@/domain/ejercicios";
-import { resolverHechos } from "@/domain/hechos-atleta";
 import {
-  evaluar,
   excluidos as descartados,
   hechosQueFaltan,
   incluidos as disponibles,
-  type Resultado,
 } from "@/domain/motor";
-import { esTipoRelacion, type Relacion } from "@/domain/relaciones";
 import { FICHA_PATRON, esPatron } from "@/domain/patrones";
-import { ETIQUETA_NIVEL, HECHOS, validarRegla, type Regla } from "@/domain/reglas";
+import { ETIQUETA_NIVEL, HECHOS } from "@/domain/reglas";
+import { cargarMotorDelAtleta, type CargaMotor } from "@/lib/motor-atleta";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -41,110 +37,28 @@ import { createClient } from "@/lib/supabase/client";
  *    falta de datos, esto NO es una prescripción terminada. Enseñarla igual, en
  *    silencio, la haría parecer segura cuando solo está desinformada.
  *
- * Aquí no se genera ninguna rutina: eso es el grupo de Fase B. Esto es el
- * análisis, que es lo que el entrenador usa para decidir.
+ * Aquí no se genera ninguna rutina: esto es el análisis, que es lo que el
+ * entrenador usa para decidir. El plan se arma en `/atletas/plan` (5.3–5.4) y
+ * de ahí sale el botón del final.
  */
-
-interface Atleta {
-  id: string;
-  full_name: string;
-  sex: string;
-}
 
 function Prescripcion() {
   const atletaId = useSearchParams().get("id") ?? "";
 
-  const [atleta, setAtleta] = useState<Atleta | null>(null);
-  const [resultado, setResultado] = useState<Resultado | null>(null);
+  const [carga, setCarga] = useState<CargaMotor | null>(null);
   const [cargando, setCargando] = useState(Boolean(atletaId));
-  const [patronDe, setPatronDe] = useState<Record<string, string | null>>({});
-  const [ilegibles, setIlegibles] = useState<string[]>([]);
 
+  // La carga vive en `lib/motor-atleta` desde la 5.4: el generador necesita
+  // exactamente los mismos datos, y dos listas de columnas se olvidan de crecer
+  // a la vez. La que se olvida calla —el motor recibe un hecho menos, no falla,
+  // y prescribe de más—, que es el fallo más caro de este proyecto.
   useEffect(() => {
     if (!atletaId) return;
     let vivo = true;
-    const supabase = createClient();
 
-    Promise.all([
-      supabase.from("athletes").select("id, full_name, sex").eq("id", atletaId).single(),
-      supabase.from("biomech_evaluations").select("*").eq("athlete_id", atletaId)
-        .is("voided_at", null).order("evaluated_at", { ascending: false }).limit(1),
-      // Los perímetros bilaterales viajan con la medición porque de ellos sale
-      // el hecho `asimetrias` (2.15). Sin ellos el motor los ve vacíos y
-      // concluye que no hay asimetría, que es peor que no saberlo.
-      supabase.from("anthropometric_measurements")
-        .select("body_fat_pct, arm_flexed_cm, arm_flexed_left_cm, thigh_cm, thigh_left_cm, calf_cm, calf_left_cm")
-        .eq("athlete_id", atletaId)
-        .is("voided_at", null).order("measured_at", { ascending: false }).limit(1),
-      supabase.from("menstrual_cycle_logs")
-        .select("last_period_start, cycle_length_days, uses_hormonal_contraception")
-        .eq("athlete_id", atletaId).is("voided_at", null)
-        .order("last_period_start", { ascending: false }).limit(1),
-      supabase.from("athlete_injuries").select("body_region, status").eq("athlete_id", atletaId),
-      supabase.from("athlete_conditions").select("condition").eq("athlete_id", atletaId).eq("is_active", true),
-      supabase.from("rules")
-        .select("rule_key, version, nivel, condition, actions, justification, evidence_level")
-        .eq("is_active", true),
-      supabase.from("exercise_library")
-        .select("id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, is_active")
-        .eq("is_active", true),
-      // 4.3 — la matriz de equivalencia. Se traen los pares de ids y se
-      // resuelven a nombres abajo: el motor trabaja con nombres porque es como
-      // los nombran las reglas, y hacer el join en PostgREST sobre dos claves
-      // ajenas a la misma tabla obliga a desambiguar cada una a mano.
-      supabase.from("exercise_variants").select("exercise_id, variant_exercise_id, relation_type"),
-    ]).then(([a, bio, med, cic, les, con, reg, ejs, rel]) => {
+    cargarMotorDelAtleta(createClient(), atletaId).then((c) => {
       if (!vivo) return;
-      setAtleta(a.data as Atleta | null);
-
-      const ejercicios = (ejs.data ?? []) as Ejercicio[];
-      setPatronDe(Object.fromEntries(ejercicios.map((e) => [e.name, e.movement_pattern])));
-
-      // Solo se resuelven las relaciones entre ejercicios ACTIVOS: si uno se
-      // archivó, ofrecerlo como alternativa mandaría al entrenador a un
-      // ejercicio que ya no está en la biblioteca.
-      const nombrePorId = new Map(ejercicios.map((e) => [e.id, e.name]));
-      const relaciones: Relacion[] = [];
-      for (const v of rel.data ?? []) {
-        const ejercicio = nombrePorId.get(v.exercise_id);
-        const variante = nombrePorId.get(v.variant_exercise_id);
-        // Un tipo que el motor no conoce se descarta aquí, no se cuela: el
-        // CHECK de la migración lo impide en la base, pero esta pantalla lee
-        // filas que pudieron entrar antes de existir ese CHECK.
-        if (ejercicio && variante && esTipoRelacion(v.relation_type)) {
-          relaciones.push({ ejercicio, variante, tipo: v.relation_type });
-        }
-      }
-
-      const hechos = resolverHechos({
-        atleta: a.data ?? undefined,
-        biomecanica: bio.data?.[0],
-        medicion: med.data?.[0],
-        ciclo: cic.data?.[0],
-        // Una lesión recuperada ya no restringe: seguir excluyendo por ella
-        // dejaría al atleta con media biblioteca vetada para siempre.
-        lesiones: (les.data ?? [])
-          .filter((l) => l.status !== "recuperada")
-          .map((l) => l.body_region),
-        condiciones: (con.data ?? []).map((c) => c.condition),
-      });
-
-      // La fila de la base es JSON sin tipar. El CHECK de la migración garantiza
-      // la FORMA (`condition.todas` es un array, `actions` no está vacío) pero no
-      // la GRAMÁTICA: nada impide guardar un hecho que el motor no conoce. Así
-      // que se valida aquí, y lo que no pasa se cuenta en pantalla en vez de
-      // desaparecer: una regla que el motor ignora en silencio es peor que una
-      // regla que falta, porque Giovanni la ve en la matriz y la cree viva.
-      const crudas = (reg.data ?? []) as unknown as Regla[];
-      const rotas: string[] = [];
-      const reglas = crudas.filter((r) => {
-        const errores = validarRegla(r);
-        if (errores.length > 0) rotas.push(`${r.rule_key}: ${errores[0]}`);
-        return errores.length === 0;
-      });
-      setIlegibles(rotas);
-
-      setResultado(evaluar({ hechos, reglas, ejercicios, relaciones }));
+      setCarga(c);
       setCargando(false);
     });
 
@@ -152,6 +66,11 @@ function Prescripcion() {
       vivo = false;
     };
   }, [atletaId]);
+
+  const atleta = carga?.atleta ?? null;
+  const resultado = carga?.resultado ?? null;
+  const patronDe = carga?.patronDe ?? {};
+  const ilegibles = carga?.ilegibles ?? [];
 
   const faltan = useMemo(() => (resultado ? hechosQueFaltan(resultado) : []), [resultado]);
 
@@ -456,6 +375,16 @@ function Prescripcion() {
         Esto es un análisis, no una rutina. El motor señala qué desaconseja la biomecánica de
         este atleta y por qué; quien prescribe eres tú, y puedes ignorarlo con criterio.
       </p>
+
+      {/* El paso siguiente, y el único que convierte este análisis en algo que
+          el atleta pueda hacer el lunes. Va después del descargo de arriba a
+          propósito: primero se lee que esto no manda, y después se genera. */}
+      <Button asChild className="min-h-11 w-full">
+        <Link href={`/atletas/plan?id=${atleta.id}`}>
+          <Sparkles className="size-4" aria-hidden="true" />
+          Generar la rutina
+        </Link>
+      </Button>
 
       <Button asChild variant="outline" className="min-h-11 w-full">
         <Link href={`/atletas/ficha?id=${atleta.id}`}>Volver a la ficha</Link>
