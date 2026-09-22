@@ -1,17 +1,18 @@
 "use client";
 
-import { AlertTriangle, Download, Save, Sparkles } from "lucide-react";
+import { AlertTriangle, Download, Save } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { DiaEditable, type OpcionEjercicio } from "@/components/plan/dia-editable";
+import { FormularioGenerar } from "@/components/plan/formulario-generar";
 import { Guarda } from "@/components/shared/guarda";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
 import { cambiosDelDia, resumenDeCambios } from "@/domain/ediciones";
 import { generarPlan } from "@/domain/generador";
-import { diasDisponibles, objetivoDeMeta } from "@/domain/metodo";
+import { objetivoDeMeta } from "@/domain/metodo";
 import { incluidos } from "@/domain/motor";
 import { nombrePatron } from "@/domain/patrones";
 import {
@@ -303,70 +304,18 @@ function PlanDelAtleta() {
 
       {/* --- Generar ---------------------------------------------------- */}
       {carga.metodo && (
-        <Bloque rotulo={plan ? "Volver a generar" : "Generar la rutina"}>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <label className="block space-y-1">
-              <span className="text-xs text-muted-foreground">Días por semana</span>
-              <select
-                value={dias}
-                onChange={(e) => setDias(Number(e.target.value))}
-                className="min-h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base"
-              >
-                {diasDisponibles(carga.metodo).map((d) => (
-                  <option key={d} value={d}>
-                    {d} días
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block space-y-1">
-              <span className="text-xs text-muted-foreground">Semanas</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={52}
-                value={semanas}
-                onChange={(e) => setSemanas(Number(e.target.value))}
-                className="min-h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base tabular-nums"
-              />
-            </label>
-
-            <label className="block space-y-1">
-              <span className="text-xs text-muted-foreground">Objetivo</span>
-              <select
-                value={objetivo}
-                onChange={(e) => setObjetivo(e.target.value as Objetivo | "")}
-                className="min-h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base"
-              >
-                <option value="">Según su meta</option>
-                {(Object.keys(FICHA_OBJETIVO) as Objetivo[]).map((o) => (
-                  <option key={o} value={o}>
-                    {FICHA_OBJETIVO[o]}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <p className="text-xs text-muted-foreground">
-            La descarga cae en la 4ª semana y la siguiente es de supercompensación, que es como
-            programa Giovanni. Un mesociclo de 5 semanas trae las dos.
-          </p>
-
-          <Button type="button" className="min-h-11 w-full" disabled={trabajando} onClick={generar}>
-            <Sparkles className="size-4" aria-hidden="true" />
-            {plan ? "Generar de nuevo" : "Generar rutina"}
-          </Button>
-
-          {plan && (
-            <p className="text-xs text-muted-foreground">
-              Generar de nuevo crea una rutina nueva y deja la anterior en el historial. Lo que
-              hayas editado no se pierde: se queda en la de antes.
-            </p>
-          )}
-        </Bloque>
+        <FormularioGenerar
+          metodo={carga.metodo}
+          hayPlan={Boolean(plan)}
+          dias={dias}
+          semanas={semanas}
+          objetivo={objetivo}
+          trabajando={trabajando}
+          onDias={setDias}
+          onSemanas={setSemanas}
+          onObjetivo={setObjetivo}
+          onGenerar={generar}
+        />
       )}
 
       {errores.length > 0 && (
