@@ -70,14 +70,19 @@ describe("umbrales", () => {
     expect(asimetriaDe(medicion({ thigh_cm: 58, thigh_left_cm: 55.9 }), "muslo")!.superaUmbral).toBe(true);
   });
 
-  it("la pantorrilla NO tiene umbral, y eso no es lo mismo que estar bien", () => {
-    // Giovanni no lo ha cerrado: su formulario decía 1 cm y su Principios habla
-    // de 2 cm en piernas. Inventarlo activaría un protocolo correctivo sobre
-    // alguien que no lo necesita.
-    expect(UMBRAL_CM.pantorrilla).toBeNull();
-    const a = asimetriaDe(medicion({ calf_cm: 40, calf_left_cm: 34 }), "pantorrilla")!;
-    expect(a.diferenciaCm).toBe(6);
-    expect(a.superaUmbral).toBeNull();
+  it("la pantorrilla ya tiene umbral: 1,5 cm, como el brazo", () => {
+    // Lo cerró el 2-sep. Estuvo en null porque sus dos documentos decían cosas
+    // distintas (1 cm en el formulario, 2 cm en Principios) y juzgar mal una
+    // pantorrilla activa un protocolo correctivo sobre quien no lo necesita.
+    expect(UMBRAL_CM.pantorrilla).toBe(1.5);
+    expect(asimetriaDe(medicion({ calf_cm: 38, calf_left_cm: 36.5 }), "pantorrilla")!.superaUmbral).toBe(false);
+    expect(asimetriaDe(medicion({ calf_cm: 38, calf_left_cm: 36.4 }), "pantorrilla")!.superaUmbral).toBe(true);
+  });
+
+  it("ya no queda ningún segmento sin criterio, pero el estado sigue existiendo", () => {
+    // El tipo conserva `null` a propósito: es el estado "medido pero sin
+    // criterio suyo", y hará falta el día que añada un cuarto segmento.
+    expect(Object.values(UMBRAL_CM).every((u) => u !== null)).toBe(true);
   });
 });
 
@@ -102,9 +107,24 @@ describe("segmentosConAsimetria: lo que ve el motor", () => {
     ).toEqual(["brazo"]);
   });
 
+  it("la pantorrilla ya entra: tiene umbral desde el 2-sep", () => {
+    expect(segmentosConAsimetria(medicion({ calf_cm: 40, calf_left_cm: 32 }))).toEqual(["pantorrilla"]);
+  });
+
   it("un segmento SIN umbral nunca entra, por grande que sea la diferencia", () => {
     // Dispararía una regla con un criterio que Giovanni no ha fijado.
-    expect(segmentosConAsimetria(medicion({ calf_cm: 40, calf_left_cm: 32 }))).toEqual([]);
+    //
+    // Hoy los tres segmentos tienen umbral, así que este caso ya no se alcanza
+    // con datos reales. La garantía se prueba igual quitando el umbral a mano:
+    // el día que añada un cuarto segmento nacerá en `null` y este es el test
+    // que impide que dispare reglas mientras tanto.
+    const original = UMBRAL_CM.pantorrilla;
+    UMBRAL_CM.pantorrilla = null;
+    try {
+      expect(segmentosConAsimetria(medicion({ calf_cm: 40, calf_left_cm: 32 }))).toEqual([]);
+    } finally {
+      UMBRAL_CM.pantorrilla = original;
+    }
   });
 });
 

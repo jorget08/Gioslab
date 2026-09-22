@@ -737,3 +737,177 @@ un tobillo malo, o solo el de máquina se salva subiendo los pies?
 Sigo esperando **las fotos y videos** de los ejercicios y **el logo con una
 plantilla de reporte**. Y la tabla de los siete de rodilla que te mandé esta
 mañana — la prensa sobre todo.
+
+---
+
+## 2 de septiembre — contestó las nueve, y el tobillo queda cerrado de su lado
+
+Sesión en directo. Se le pasaron las preguntas abiertas y contestó todas menos
+tres, que aplazó él mismo.
+
+### ✅ Tobillo — las tres, y las tres cambian cosas
+
+**1. "Deficiente" es menos de 5 cm.** El tramo severo. Con eso su tabla de 9
+filas **no convive con las exclusiones actuales: las reemplaza.**
+
+**2. Los dos que hoy bloquea el tramo severo pasan a permitirse con talón
+elevado** — la Sentadilla Libre Profunda y el Hack Libre. Se le preguntó
+casilla por casilla y con la consecuencia escrita delante, porque es la regla
+más protectora del motor y la diferencia es prescribir o no una sentadilla
+profunda a alguien con 3 cm.
+
+**3. Hack libre y hack de máquina son distintos.** Solo el de máquina se salva
+subiendo los pies; el libre se queda como está.
+
+**Y de los nombres, no eran seis los que faltaban: eran dos.** Confirmó que
+cinco son renombres de ejercicios que ya existen —se prescriben con una
+indicación de ejecución, sin duplicar la ficha, que es justo lo que se le
+propuso— y que el **Step-up Bajo** era nuevo. La séptima la encontramos
+nosotros al cruzar su respuesta 2 con la 3: la **Sentadilla Hack en Máquina**
+tampoco estaba en la biblioteca. Dijo que la creáramos.
+
+> **Nada de esto se ha cargado como regla todavía, y no es por él.** Las tres
+> respuestas piden decir *"este se hace, PERO modificado"*, y la gramática hoy
+> solo cuelga `modificador` de un ejercicio excluido o priorizado. Cargarlo
+> ahora obligaría a excluir para poder modificar. Va detrás de la **3.9**.
+
+### ✅ Rodilla — los siete, menos el sissy squat
+
+Dijo que los siete se podían. Se le repreguntó **solo el Sissy Squat** —el
+ejercicio que más carga la rodilla de la biblioteca, flexión profunda en el
+punto de mayor cizalla— y rectificó: ese se queda fuera.
+
+Aplicado: **Prensa 45°, Prensa Inclinada, Hack Libre, Zancadas Caminando,
+Extensiones de Cuádriceps y Curl Femoral Acostado** dejan de descartarse por
+lesión de rodilla. Con eso la prensa deja de estar prohibida mientras la goblet
+se permitía, que era lo que chirriaba.
+
+Cambia además el **motivo** por el que el sissy squat queda fuera: hasta hoy era
+prudencia nuestra ante un silencio suyo; desde hoy es criterio suyo por escrito.
+
+### ✅ Somatotipo — Yuhasz, confirmado
+
+Cierra la contradicción a tres bandas de sus documentos. Ya estaba implementado
+y validado al decimal contra Diego y Daniela (2.10). **Desbloquea la 2.6.**
+
+### ✅ Periodización — manda el objetivo
+
+Cuando su anexo (por nivel) y su formulario (por objetivo) chocan, el eje es
+`training_goal`. Dato para la 5.2.
+
+### ⏳ Aplazadas por él
+
+- **Sus tres objetivos contra los cuatro del atleta** (Recomposición Corporal y
+  Rendimiento Deportivo). *"Va a pasarme la info más tarde."* Es lo único que
+  falta para cargar el método de programación entero.
+- **El umbral de asimetría de pantorrilla y qué ejercicios son unilaterales.**
+- **Cuánto es "ajustar el volumen en esa zona".** Aclaró que es **un porcentaje
+  del peso**, no series extra —lo cual cambia lo que hay que construir: es
+  carga dirigida, no volumen— pero no supo decir cuánto. Queda para después.
+
+### 📷 El logo: mandó la pieza, no el archivo
+
+Llegó la promocional: 518×382 px, con el fondo de montañas, el eslogan
+incrustado y el texto quemado en la imagen. Para redes está bien; para la app no
+sirve —a ese tamaño el escudo GQ se pixela en cualquier encabezado y no se puede
+poner sobre fondo claro ni oscuro.
+
+**Lo que hace falta es el escudo GQ solo, en SVG o PNG con transparencia, en
+grande** —o el archivo original del diseñador (`.ai`, `.svg`, `.psd`)—. Con eso
+entra en la app, en el PDF y en el ícono de la app móvil. **Sigue bloqueado el
+grupo 6**, junto con la plantilla de reporte y los medios de los ejercicios.
+
+---
+
+## 2 de septiembre (segunda ronda) — y lo que corrigió de la primera
+
+Se le repreguntó lo que había quedado a medias. Dos de sus respuestas de la
+primera ronda cambiaron, y conviene que quede escrito cuáles.
+
+### ✅ Los objetivos: mapeo de 5 a 3, cerrado
+
+Había dicho *"se programan igual que los otros 3"*, que no decía **a cuál**. Con
+la tabla delante señaló:
+
+| Objetivo del atleta | Se programa como |
+|---|---|
+| **Recomposición Corporal** | Hipertrofia |
+| **Rendimiento Deportivo** | Fuerza |
+
+**Con esto la 5.2 deja de esperar nada suyo.** Es la que estaba delante de todo
+el generador de rutinas.
+
+### 🔄 Corrigió el hack: era al revés
+
+En la primera ronda dijo que los dos ejercicios nuevos contraindicaban rodilla.
+Al señalarle que eso dejaba el **hack de máquina más restrictivo que el libre**
+—al revés de lo esperable, y con el libre recién liberado esa misma mañana—
+contestó: *"fue equivocación, es al revés"*.
+
+Estado final: **Hack Libre sí contraindica rodilla** (vuelve a la lista) y el
+**Hack en Máquina no**. De los siete que se le preguntaron por la mañana, entran
+cinco, no seis: se caen el sissy squat y el hack libre.
+
+> Vale la pena anotarlo porque es el mismo patrón de la mañana: la pregunta que
+> destapó el error no fue "¿estás seguro?", fue enseñarle **la consecuencia**
+> —un ejercicio de máquina más restrictivo que su versión libre—. Las tres
+> correcciones del día salieron así.
+
+### 🔄 Y corrigió lo del volumen: no era volumen
+
+Por la mañana dijo que "ajustar el volumen en esa zona" era **un porcentaje del
+peso**. Al volver: *"fue un error, lo que hace es que con la parte débil se
+hacen 3 o 4 repeticiones más que en el lado fuerte"*.
+
+**Eso ya cabe en la gramática actual**: es un `modificador` sobre un ejercicio
+PRIORIZADO, y el motor sabe hacerlo. Se cae una de las tres razones que
+justificaban la 3.9 — y de paso deja una lección: se había apuntado como límite
+del diseño algo que era una petición mal entendida. El diagnóstico también falla
+por exceso.
+
+### ✅ Pantorrilla: 1,5 cm
+
+El del brazo, no el del muslo. Cierra los tres umbrales de la 2.15 y la
+pantorrilla pasa a juzgarse por primera vez.
+
+### ✅ Hombro: se queda en 175°
+
+Confirmó el umbral de su matriz. No hay nada que cambiar.
+
+### 📚 La biblioteca unilateral — 22 ejercicios, y la decisión que la ordena
+
+Mandó los 22 con músculo objetivo, series, repeticiones, RIR y una
+justificación por ejercicio. Dos preguntas la ordenaron antes de tocar nada:
+
+**1. ¿Unilateral es una ficha aparte o la misma ejecutada a un lado?**
+→ *"Son el mismo ejercicio pero ejecutada a un lado."*
+
+Es la respuesta que evita el desastre. **14 de los 22 ya existían con otro
+nombre** —su "Prensa Unilateral a 45°" es nuestra "Prensa 45°", su "Step-Up
+Unilateral en Banco" es el "Step-up Bajo" creado esa misma mañana— y cargarlos
+como fichas nuevas habría llevado la biblioteca de 46 a 68 con las
+contraindicaciones partidas entre las dos copias de cada ejercicio. Sale un
+**marcador de ejecución unilateral**, no fichas nuevas. Los 8 restantes sí son
+altas de verdad. Tarea **4.8**.
+
+**2. Su lista viene en RIR y todo su método en RPE.** → *"conviértelo"*.
+`RPE = 10 − RIR`, y se convierte **al cargar el dato, no al mostrarlo**.
+
+### 📦 Material: lo aparca él
+
+Dijo que el logo, la plantilla de reporte y los medios *"no son primordiales ni
+bloqueantes por ahora"*. Se acepta, con una salvedad que no es opinión: **la
+plantilla de reporte sigue siendo lo único que falta para el grupo 6**. Se puede
+construir el PDF con una maqueta provisional y cambiar los assets después —
+cuesta poco— pero entonces el grupo 6 no se puede dar por terminado hasta que
+llegue la plantilla. Queda dicho para que no sorprenda en el hito 7.4.
+
+### ⏳ Lo único que sigue pendiente de él
+
+- **Las contraindicaciones completas** de la Sentadilla Hack en Máquina y el
+  Step-up Bajo. Solo dijo la rodilla; falta el resto de regiones (el Hack Libre
+  tiene lumbar, tobillo, hernia e hipertensión). Los dos ejercicios están
+  creados pero **inactivos** hasta que lleguen.
+- **Con qué se hace el Step-up Bajo**: peso corporal o mancuernas. `equipment`
+  quedó NULL.
+- **Las contraindicaciones de los 8 unilaterales nuevos** (4.8).

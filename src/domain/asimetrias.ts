@@ -46,13 +46,22 @@ export const FICHA_SEGMENTO: Record<Segmento, { nombre: string; derecho: string;
  * `null` = todavía no lo ha dicho. NO se rellena con el de al lado: un umbral
  * inventado activa un protocolo correctivo sobre alguien que no lo necesita, y
  * el atleta acaba haciendo trabajo unilateral por una decisión nuestra.
- * Pantorrilla está pendiente desde el 1-sep (su formulario decía 1 cm y su
- * `Principios` habla de 2 cm en piernas).
+ *
+ * Los tres están cerrados desde el 2-sep, cuando dio la pantorrilla: **1,5 cm**,
+ * el mismo que el brazo y no el del muslo. Estuvo en `null` desde el 1-sep
+ * porque sus dos documentos se contradecían (su formulario decía 1 cm y su
+ * `Principios` habla de 2 cm en piernas) y se prefirió no juzgar la pantorrilla
+ * antes que juzgarla mal.
+ *
+ * El tipo mantiene `number | null` a propósito aunque hoy no haya ninguno en
+ * `null`: si mañana añade un cuarto segmento, el estado "medido pero sin
+ * criterio" tiene que seguir existiendo. Es el mismo motivo por el que
+ * `superaUmbral` distingue `false` de `null`.
  */
 export const UMBRAL_CM: Record<Segmento, number | null> = {
   brazo: 1.5,
   muslo: 2,
-  pantorrilla: null,
+  pantorrilla: 1.5,
 };
 
 export interface Asimetria {

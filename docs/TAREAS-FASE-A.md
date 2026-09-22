@@ -3,8 +3,8 @@
 Espejo del tablero de monday.com. **Se ejecutan en orden numérico.**
 Estados: `[ ]` por hacer · `[~]` en progreso · `[?]` esperando a Giovanni · `[x]` hecho
 
-Estimado total Fase A: ≈325 h de programación enfocada. Van ≈195 h hechas;
-quedan ≈130 h, que a 12–15 h/semana son ≈9–11 semanas.
+Estimado total Fase A: ≈331 h de programación enfocada. Van ≈203 h hechas;
+quedan ≈128 h, que a 12–15 h/semana son ≈9–11 semanas.
 Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 > **Reconfigurado el 29-ago.** Se añadió el grupo 5 (generador de rutinas), el
@@ -95,11 +95,16 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   motor por ejercicio, no algo que clasifique el entrenador (MÓDULO 02). Este
   paso cierra la evaluación biomecánica: inserta la fila con lo del paso 3.
 
-- [?] **2.6 Cálculo de somatotipo Heath-Carter (+ golden tests)** (8 h)
-  **Bloqueada por contradicción, y ahora a tres bandas.** Su módulo 01 confirma
-  Jackson & Pollock; su documento de recomendaciones pide Heath-Carter; y sus
-  fichas reales (27-ago) calculan con **Yuhasz**. Se implementó Yuhasz por §3.4
-  —manda el Excel que usa— conservando J&P. Falta que él cierre cuál quiere.
+- [x] **2.6 Cálculo de composición corporal (+ golden tests)** (8 h)
+  **Desbloqueada el 2-sep: confirmó Yuhasz.** Estuvo tres meses en contradicción
+  a tres bandas —su módulo 01 dice Jackson & Pollock, su documento de
+  recomendaciones pide Heath-Carter y sus fichas reales calculan con Yuhasz— y
+  se resolvió por §3.4: manda el Excel que usa de verdad. Yuhasz sobre 6
+  pliegues ya estaba implementado y validado al decimal contra Diego y Daniela
+  en la 2.10; solo faltaba su palabra, y llegó. J&P se conserva.
+  **El título de la tarjeta decía "Heath-Carter" y era falso**: nunca se
+  implementó y ya no se va a implementar. Se renombra en vez de dejar el nombre
+  de un método que no usamos.
 
 - [?] **2.7 Cálculo de 1RM estimado y relaciones de palanca** (5 h)
   Fórmula confirmada (Epley), pero necesita telemetría por serie —peso levantado
@@ -125,8 +130,10 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 - [x] **2.15 Perímetros bilaterales y detección de asimetrías** (5 h) · *nuevo, 27-ago*
   Se miden los dos lados de brazo, muslo y pantorrilla, y de la resta sale el
   hecho `asimetrias` que el motor puede mirar. Umbrales suyos: brazo 1,5 cm,
-  muslo 2 cm. **Pantorrilla no tiene umbral y por eso no se juzga** — la ficha lo
-  dice con esas palabras en vez de fingir que está bien.
+  muslo 2 cm y, **desde el 2-sep, pantorrilla 1,5 cm** — el del brazo, no el del
+  muslo. Estuvo sin umbral y sin juzgarse doce días, y la ficha lo decía con esas
+  palabras en vez de fingir que estaba bien; el estado "medido pero sin criterio"
+  se conserva en el tipo aunque hoy ya no lo use ningún segmento.
   **La columna vieja pasa a ser el lado derecho y se añade el izquierdo**, en vez
   de renombrar las dos: las mediciones ya guardadas se tomaron de un lado que
   nadie anotó, y bautizarlo retroactivamente invertiría la asimetría justo donde
@@ -136,9 +143,16 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   anotar el otro tres campos más abajo es como se cruzan los lados.
   Dos reglas nuevas avisan de por dónde empezar. **No priorizan ejercicios
   todavía**: la biblioteca no marca cuáles son unilaterales y esa lista es
-  criterio de Giovanni, no nuestro. Y **"ajustar el volumen en esa zona" no cabe
-  en la gramática** — `volumen_factor` y `volumen_series` son globales. Anotado
-  en 3.1; es la tercera petición suya que choca con lo mismo.
+  criterio de Giovanni, no nuestro — **llegó el 2-sep** (22 ejercicios) y se
+  trabaja en la 4.8.
+  **Y "ajustar el volumen en esa zona" resultó no ser volumen.** Se le repreguntó
+  dos veces: primero dijo que era un porcentaje del peso y luego se corrigió
+  —*"fue un error"*— para dejarlo en **3 o 4 repeticiones más en el lado débil
+  que en el fuerte**. Eso cabe en la gramática tal como está: es un `modificador`
+  sobre un ejercicio PRIORIZADO, que es justo lo que el motor sí sabe hacer.
+  **Cae una de las tres razones que justificaban la 3.9**; quedan el tobillo y
+  "las sentadillas con precaución", que siguen necesitando modificar sin
+  excluir.
 
 - [x] **2.14 Perímetros de extremidades y tronco** (2 h) · *fuera del plan original*
   Brazo relajado y contraído, tórax, muslo y pantorrilla, con su evolución en la
@@ -167,10 +181,15 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
      hace, pero así". Se resolvió con un aviso de sesión, que es más tosco.
   2. *Tabla de tobillo* (1-sep, tarea 3.8) — nueve filas de "modificar
      ejecución/posición" por ejercicio. Hoy no se pueden expresar.
-  3. *"Ajustar el volumen en esa zona"* (2.15) — `volumen_factor` y
-     `volumen_series` son globales; no hay volumen por grupo muscular.
-  Las tres piden lo mismo: **acciones dirigidas a un ejercicio o a un grupo
-  muscular sin tener que excluirlo**. Hasta que exista, su método entra recortado.
+  3. ~~*"Ajustar el volumen en esa zona"* (2.15)~~ — **se cayó el 2-sep.** Al
+     repreguntarle resultó que no era volumen: son **3 o 4 repeticiones más en
+     el lado débil**, y eso ya cabe como `modificador` sobre un ejercicio
+     PRIORIZADO. Queda como aviso de que el diagnóstico también puede fallar por
+     exceso: se apuntó como límite de la gramática algo que era una petición mal
+     entendida.
+  Las dos que quedan piden lo mismo: **acciones dirigidas a un ejercicio sin
+  tener que excluirlo**. Hasta que exista, su método entra recortado — y la 3.8,
+  que son nueve filas suyas, no entra en absoluto.
 
 - [x] **3.1 Diseño del esquema de reglas en BD** (5 h)
   Gramática fijada en `src/domain/reglas.ts` y documentada en
@@ -185,28 +204,31 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   conflictos por evidencia y denuncia empates y datos que faltan. Cada decisión
   arrastra su justificación. `hechos-atleta.ts` es el puente con la base.
 
-- [?] **3.8 Tabla de acciones por tobillo deficiente** (6 h) · *nuevo, 1-sep*
-  **Bloqueada, y no por poco.** Mandó una matriz de 9 filas para "Evaluación
-  Tobillo = Deficiente" que es mucho más rica que las dos reglas de dorsiflexión
-  que hay: en vez de excluir, **modifica** (cuña de talón, pies altos en la
-  prensa, apoyo alto en el hack) y marca cuatro ejercicios como "mantener al
-  100 %" porque no exigen tobillo. Ninguna de las 9 filas excluye nada.
-  Tres cosas la frenan:
-  1. **"Deficiente" no está en centímetros.** El motor decide con
-     `dorsiflexion_cm` en dos tramos: menos de 5 (severa, excluye) y de 5 a 10
-     (limitada, adapta). Si "Deficiente" es el tramo severo, la tabla **anula**
-     las exclusiones actuales; si es el otro, convive con ellas. Adivinarlo
-     puede dejar prescrita una sentadilla profunda a alguien con 3 cm.
-  2. **Seis de las variantes que nombra no existen en la biblioteca**, y tres de
-     ellas huelen a renombre de una que sí (Hip Thrust en Banco, Sillón de
-     Extensión, Curl Femoral en Máquina). Es la tercera vez que choca la
-     granularidad de nombres; esta vez se pregunta antes de emparejar.
-  3. **Su tabla dice "Hack en Máquina" y la regla vigente excluye "Hack Libre"**,
-     que son ejercicios distintos.
-  Además destapa un límite de la gramática (§3.1): `modificador` solo se puede
-  colgar de un ejercicio EXCLUIDO o PRIORIZADO, así que hoy no se puede decir
-  "este se hace, pero con los talones elevados" sin excluirlo antes. Eso es
-  trabajo de 3.1, no de esta tarjeta.
+- [ ] **3.8 Tabla de acciones por tobillo deficiente** (6 h) · *nuevo, 1-sep*
+  **Ya no la bloquea Giovanni: la bloquea la 3.9.** Contestó las tres el 2-sep y
+  las tres respuestas apuntan al mismo sitio.
+  1. **"Deficiente" es menos de 5 cm** — el tramo severo. Así que su tabla no
+     convive con las exclusiones actuales: **las reemplaza**. La sentadilla
+     libre profunda y el hack libre dejan de estar bloqueados con menos de 5 cm
+     y pasan a permitirse **con talón elevado**. Es un cambio de fondo en la
+     regla más protectora del motor, y lo confirmó sabiendo la consecuencia,
+     que se le escribió dos veces antes de preguntársela.
+  2. **Solo faltaban dos ejercicios, no seis.** Confirmó que cinco de las
+     variantes son renombres de las que ya existen —se prescriben con una
+     indicación de ejecución, no duplicando la ficha— y que el Step-up Bajo era
+     nuevo. La séptima la destapamos nosotros: la **Sentadilla Hack en Máquina**
+     tampoco estaba, porque la biblioteca solo tiene el Hack Libre. Los dos
+     quedan creados e **inactivos** desde la migración del 2-sep; se encienden
+     aquí, y para eso hacen falta **sus contraindicaciones completas**, que es lo
+     único que sigue pendiente de él en esta tarjeta: solo dijo la rodilla.
+  3. **Hack libre y hack de máquina son ejercicios distintos** y se comportan
+     distinto: solo el de máquina se salva subiendo los pies. De paso corrigió al
+     revés lo de la rodilla —el libre la contraindica, el de máquina no—, así que
+     el Hack Libre vuelve a la lista de descartes por rodilla.
+  Lo que la frena es que las tres piden decir *"este se hace, PERO modificado"*,
+  y `modificador` solo se cuelga hoy de un ejercicio EXCLUIDO o PRIORIZADO
+  (§3.1). Cargarla ahora obligaría a **excluir para poder modificar**, que es lo
+  contrario de lo que pidió. **Va detrás de la 3.9.**
 
 - [x] **3.3 Carga de las reglas de los Excels a la BD** (8 h)
   Migración `20260827200000_matriz_giovanni.sql`: **25 reglas** de su matriz del
@@ -252,7 +274,7 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
 
 ---
 
-## 📚 Grupo 4 — Biblioteca de ejercicios (26 h)
+## 📚 Grupo 4 — Biblioteca de ejercicios (32 h)
 
 - [x] **4.1 CRUD de ejercicios** (6 h)
   Nombre, músculo objetivo, patrón, tipo biomecánico, contraindicaciones.
@@ -318,6 +340,25 @@ Cada tarea está dimensionada para 1–2 sesiones nocturnas.
   en mitad de una sesión para ver cómo se ejecuta, no para leer la clasificación.
   Las sustituciones son enlaces, así que se puede seguir la cadena.
 
+- [ ] **4.8 Biblioteca unilateral y trabajo por lado** (6 h) · *nuevo, 2-sep*
+  Mandó 22 ejercicios unilaterales con su músculo objetivo, series, repeticiones
+  y una justificación por ejercicio. Es lo que le faltaba a la 2.15 para dejar de
+  avisar y empezar a prescribir.
+  **Y no son 22 ejercicios nuevos.** Se le preguntó si "unilateral" es una ficha
+  aparte o la misma ejecutada a un lado, y contestó lo segundo: **la misma
+  ejecutada a un lado**. Eso cambia el trabajo entero — 14 de los 22 ya existen
+  con otro nombre (su "Prensa Unilateral a 45°" es nuestra "Prensa 45°", su
+  "Step-Up Unilateral en Banco" es el "Step-up Bajo" creado ese mismo día) y
+  duplicarlos habría llevado la biblioteca de 46 a 68 fichas con las
+  contraindicaciones partidas entre las dos copias. Es la cuarta vez que choca la
+  granularidad de nombres, y la primera que se pregunta antes de cargar.
+  Sale por tanto un **marcador de ejecución unilateral** sobre la ficha que ya
+  existe, no fichas nuevas. Los 8 restantes sí son ejercicios que no tenemos
+  (predicador, concentrado, cross-body, overhead, single-leg RDL) y entran como
+  altas normales, con sus contraindicaciones — que él todavía no ha dado.
+  Su lista viene en **RIR** y el resto de su método en RPE; se convierte al
+  cargar (`RPE = 10 − RIR`), decidido en la 5.2.
+
 - [x] **4.5 Importación del contenido de Giovanni** (5 h)
   **Cerrada el 31-ago.** Su `Formulario_Ajustes_Motor_Giova.docx` trajo los 21
   que faltaban, y esta vez los 21 nombres coincidieron literalmente: se le mandó
@@ -369,14 +410,21 @@ nada que mostrar. Fase A no se podía cerrar tal como estaba escrita.
   y descanso por objetivo, doble progresión con incremento del 2,5–5 % al tocar
   el techo del rango, y descarga cada 4ª o 6ª semana al 40–50 % del volumen con
   RPE 5–6, seguida de una semana de supercompensación.
-  Falta cargarlo como DATO —igual que la matriz de reglas— y quedan dos huecos
-  que sí necesitan una frase suya:
-  1. **Qué eje elige la periodización.** Su anexo la asigna por nivel del atleta
-     y su formulario la describe por objetivo. `athletes` tiene los dos campos
-     (`experience_level`, `training_goal`); cuál manda cuando chocan, no.
-  2. **Sus tres objetivos contra los cuatro del atleta.** Su tabla de
-     repeticiones cubre fuerza, hipertrofia y pérdida de grasa;
-     `training_goal` añade "Recomposición Corporal" y "Rendimiento Deportivo".
+  **Los dos huecos que faltaban se cerraron el 2-sep. Ya no espera nada de él.**
+  1. ✅ **Manda el objetivo, no el nivel.** Su anexo asignaba la periodización
+     por nivel del atleta y su formulario por objetivo; cuando choquen, el eje
+     es `training_goal`. `experience_level` sigue existiendo y seguirá pesando
+     en volumen y progresión, pero no elige periodización.
+  2. ✅ **Los cinco objetivos del atleta caen en sus tres filas.** Recomposición
+     Corporal se programa como **hipertrofia**; Rendimiento Deportivo, como
+     **fuerza**. La tabla de repeticiones no crece: es un mapeo de 5 a 3, y vive
+     como dato junto al resto del método.
+  Queda solo cargarlo como DATO, igual que la matriz de reglas. **Una decisión
+  de forma que sale de aquí:** su biblioteca unilateral (2-sep) viene en RIR y
+  todo el resto de su método en RPE. Confirmó que se convierta —`RPE = 10 − RIR`,
+  así que RIR 1 → RPE 9 y RIR 2 → RPE 8—, y la conversión se hace **al cargar el
+  dato, no al mostrarlo**: dos escalas conviviendo en la misma pantalla es como
+  se equivoca un entrenador con prisa.
 
 - [ ] **5.3 Generador: de la salida del motor a un programa** (12 h)
   La tarea 3.7 ya calcula el reparto por patrón y los ejercicios prescribibles con
