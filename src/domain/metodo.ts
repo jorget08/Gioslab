@@ -85,6 +85,18 @@ export interface SeriesPorEjercicio {
   calentamientoAislamiento: number;
 }
 
+/**
+ * Cuántos ejercicios lleva un día. También de su plan real.
+ *
+ * Sin suelo, un día con pocos patrones —"Pierna" son dos— saldría con dos
+ * ejercicios y no llegaría ni de lejos a sus 12–22 series semanales de pierna.
+ * Sin techo, el full body de 3 días saldría con ocho.
+ */
+export interface EjerciciosPorDia {
+  min: number;
+  max: number;
+}
+
 export interface Progresion {
   tipo: string;
   incrementoMinPct: number;
@@ -124,6 +136,7 @@ export interface Metodo {
   seriesSemanales: Record<string, RangoSeries>;
   grupoPorMusculo: Record<string, string>;
   seriesPorEjercicio: SeriesPorEjercicio;
+  ejerciciosPorDia: EjerciciosPorDia;
   progresion: Progresion;
   descarga: Descarga;
   fases: Fases;
@@ -264,6 +277,17 @@ export function validarMetodo(crudo: unknown): string[] {
     }
   }
 
+  const epd = crudo.ejercicios_por_dia;
+  if (!esObjeto(epd)) {
+    e.push("Faltan los ejercicios por día.");
+  } else {
+    const min = num(epd.min);
+    const max = num(epd.max);
+    if (min === null || max === null || min < 1 || min > max) {
+      e.push("El suelo y el techo de ejercicios por día no son válidos.");
+    }
+  }
+
   // --- Progresión, descarga y fases ----------------------------------------
   if (!esObjeto(crudo.progresion)) e.push("Falta la progresión.");
 
@@ -362,6 +386,7 @@ export function leerMetodo(crudo: unknown): Metodo | null {
   }
 
   const spe = c.series_por_ejercicio as Crudo;
+  const epd = c.ejercicios_por_dia as Crudo;
   const d = c.descarga as Crudo;
   const pr = c.progresion as Crudo;
   const f = c.fases as Crudo;
@@ -383,6 +408,7 @@ export function leerMetodo(crudo: unknown): Metodo | null {
       calentamientoCompuesto: (spe.calentamiento_compuesto as number) ?? 0,
       calentamientoAislamiento: (spe.calentamiento_aislamiento as number) ?? 0,
     },
+    ejerciciosPorDia: { min: epd.min as number, max: epd.max as number },
     progresion: {
       tipo: pr.tipo as string,
       incrementoMinPct: pr.incremento_min_pct as number,

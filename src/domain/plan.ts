@@ -189,6 +189,16 @@ export interface DiaPlan {
   preparacion: Preparacion;
   central: Central;
   final: Final;
+  /**
+   * Lo que vale para la sesión entera, no para un ejercicio (5.3).
+   *
+   * Aquí caen los modificadores generales del motor —"elevar talones 2,5 cm"—,
+   * las maniobras prohibidas y qué es esta semana. Van en el día y no repetidos
+   * bajo cada ejercicio por lo mismo que en la 3.7: "elevar talones" bajo un
+   * Press Militar es absurdo, y una indicación absurda repetida seis veces
+   * desacredita a las seis.
+   */
+  notas?: string[];
 }
 
 export interface SemanaPlan {

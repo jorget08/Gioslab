@@ -175,6 +175,11 @@ create policy metodos_activa_admin on public.training_methods
 --   El calentamiento por ejercicio SÍ es nuestro: su plan empieza directo en las
 --   series efectivas. DERIVADO (4).
 --
+-- `ejercicios_por_dia` — también de su plan real: los cinco días de Diego llevan
+--   4, 5, 5, 6 y 6 ejercicios. Sin un suelo, un día con pocos patrones —"Pierna"
+--   son dos— saldría con dos ejercicios y no llegaría ni de lejos a sus 12–22
+--   series de pierna; sin un techo, el full body de 3 días saldría con ocho.
+--
 -- `progresion` y `descarga` — su respuesta 5, literal. "Cada 4ª o 6ª semana": se
 --   carga la 4ª y la otra queda como alternativa que el entrenador elige.
 --
@@ -264,6 +269,8 @@ values (
     "calentamiento_compuesto": 2,
     "calentamiento_aislamiento": 0
   },
+
+  "ejercicios_por_dia": { "min": 4, "max": 6 },
 
   "progresion": {
     "tipo": "doble_variable",

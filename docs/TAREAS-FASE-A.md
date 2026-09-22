@@ -442,10 +442,22 @@ nada que mostrar. Fase A no se podía cerrar tal como estaba escrita.
   generador se lo pregunta al entrenador en vez de meterlo en hipertrofia por
   parecido.
 
-- [ ] **5.3 Generador: de la salida del motor a un programa** (12 h)
+- [x] **5.3 Generador: de la salida del motor a un programa** (12 h)
   La tarea 3.7 ya calcula el reparto por patrón y los ejercicios prescribibles con
   sus modificadores. Esto lo reparte en días y semanas aplicando 5.2. Función pura
   sobre (salida del motor + método + objetivo del atleta), con sus tests.
+  **Pura de verdad, y no por elegancia:** la 5.6 compara su salida con los planes
+  que él ya entregó, y eso solo se puede hacer si el resultado es reproducible.
+  Sin fechas, sin azar, sin leer nada de fuera.
+  **El motor manda sobre el método**: su `volumen_series` sustituye al rango del
+  grupo, `volumen_factor` lo escala y un suelo de RIR recorta el RPE. El método es
+  la dosis por defecto; el motor es lo que ese atleta tolera.
+  Repartir el volumen resultó tener **dos mitades que la primera versión
+  confundía**: faltar series (se suben, dentro del techo por ejercicio) y faltar
+  ejercicios — con un solo curl no se llega a sus 8 series de brazo ni poniéndole
+  5 series, hay que meter otro—. Se separó en `domain/volumen.ts`.
+  Y cuando no se llega, **se dice con el número exacto** en vez de apretar: un
+  plan que finge cumplir su método es peor que uno que avisa de que no llega.
 
 - [ ] **5.4 Editor del plan para el entrenador** (10 h)
   §3.6: el sistema es un copiloto. Giovanni tiene que poder cambiar un ejercicio,
