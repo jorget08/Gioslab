@@ -202,3 +202,37 @@ describe("qué marcó el entrenador", () => {
     expect(cambios.porEjercicio).toEqual({});
   });
 });
+
+describe("las jerarquías en el editor (25-sep)", () => {
+  const conJ = (): Plan => {
+    const p = plan();
+    return {
+      ...p,
+      semanas: p.semanas.map((s) => ({
+        ...s,
+        dias: [
+          dia(1, "Torso", [ej("Press Inclinado", { jerarquia: 1 }), ej("Pec Deck", { jerarquia: 3 })]),
+          s.dias[1],
+        ],
+      })),
+    };
+  };
+
+  it("cambiar un ejercicio se lleva SU jerarquía, no la del que sustituye", () => {
+    const p = cambiarEjercicio(conJ(), { dia: 0, indice: 1 }, "Press Plano", [], 2);
+    expect(p.semanas[0].dias[0].central.ejercicios[1].jerarquia).toBe(2);
+    const sinJ = cambiarEjercicio(conJ(), { dia: 0, indice: 1 }, "Fondos", [], null);
+    expect(sinJ.semanas[0].dias[0].central.ejercicios[1]).not.toHaveProperty("jerarquia");
+  });
+
+  it("un J1 añadido entra delante de los J3, y el plan sigue valiendo", () => {
+    const p = anadirEjercicio(conJ(), 0, () => ej("Jalón al Pecho", { jerarquia: 1 }));
+    expect(nombresDe(p, 0, 0)).toEqual(["Press Inclinado", "Jalón al Pecho", "Pec Deck"]);
+    expect(validarPlan(p)).toEqual([]);
+  });
+
+  it("subir un J3 por encima de un J1 deja el plan sin poder guardarse", () => {
+    const p = moverEjercicio(conJ(), { dia: 0, indice: 1 }, -1);
+    expect(validarPlan(p).join(" ")).toContain("Los J1 van primero");
+  });
+});

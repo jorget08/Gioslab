@@ -21,6 +21,7 @@
  * borraría sin avisar.
  */
 
+import type { Jerarquia } from "@/domain/jerarquias";
 import { esAislamiento, type Metodo } from "@/domain/metodo";
 import type { EjercicioPlan, Objetivo, Plan, SemanaPlan, TipoSemana } from "@/domain/plan";
 
@@ -65,15 +66,27 @@ export function cambiarNumero(
   );
 }
 
-/** Otro ejercicio en el mismo hueco, en todas las semanas. */
+/**
+ * Otro ejercicio en el mismo hueco, en todas las semanas.
+ *
+ * Con SU jerarquía, no con la del que sustituye: si cambia un J2 por un J3 y el
+ * J3 queda antes de un J1, `validarPlan` tiene que verlo.
+ */
 export function cambiarEjercicio(
   plan: Plan,
   sitio: Sitio,
   nombre: string,
   sustitutos: string[],
+  jerarquia?: Jerarquia | null,
 ): Plan {
   return conDias(plan, sitio.dia, (ejercicios) =>
-    ejercicios.map((e, i) => (i === sitio.indice ? { ...e, ejercicio: nombre, sustitutos } : e)),
+    ejercicios.map((e, i) => {
+      if (i !== sitio.indice) return e;
+      const nuevo: EjercicioPlan = { ...e, ejercicio: nombre, sustitutos };
+      if (jerarquia) nuevo.jerarquia = jerarquia;
+      else delete nuevo.jerarquia;
+      return nuevo;
+    }),
   );
 }
 
@@ -99,13 +112,24 @@ export function moverEjercicio(plan: Plan, sitio: Sitio, salto: -1 | 1): Plan {
  * El ejercicio se construye POR SEMANA porque la de descarga no lleva las
  * mismas series ni el mismo RPE: añadir uno ahí con la carga de una semana
  * normal convierte la descarga en una semana de carga con otro nombre.
+ *
+ * Entra delante del primero de jerarquía mayor, no al final: un J1 añadido
+ * detrás de un J3 dejaría el plan sin poder guardarse por un orden que el
+ * entrenador no eligió.
  */
 export function anadirEjercicio(
   plan: Plan,
   dia: number,
   construir: (tipo: TipoSemana) => EjercicioPlan,
 ): Plan {
-  return conDias(plan, dia, (ejercicios, semana) => [...ejercicios, construir(semana.tipo)]);
+  return conDias(plan, dia, (ejercicios, semana) => {
+    const nuevo = construir(semana.tipo);
+    const j = nuevo.jerarquia;
+    const sitio = j === undefined ? -1 : ejercicios.findIndex((e) => (e.jerarquia ?? 0) > j);
+    return sitio === -1
+      ? [...ejercicios, nuevo]
+      : [...ejercicios.slice(0, sitio), nuevo, ...ejercicios.slice(sitio)];
+  });
 }
 
 /** Mover un día dentro de la semana. Se propaga: el reparto es el mismo. */
@@ -140,8 +164,9 @@ export function ejercicioDelMetodo(opciones: {
   objetivo: Objetivo;
   tipo: TipoSemana;
   sustitutos?: string[];
+  jerarquia?: Jerarquia | null;
 }): EjercicioPlan {
-  const { nombre, patron, metodo, objetivo, tipo, sustitutos = [] } = opciones;
+  const { nombre, patron, metodo, objetivo, tipo, sustitutos = [], jerarquia } = opciones;
   const aislamiento = esAislamiento(patron);
   const p = metodo.parametros[objetivo];
   const base = aislamiento
@@ -164,5 +189,6 @@ export function ejercicioDelMetodo(opciones: {
     rpeUltima: descarga ? metodo.descarga.rpeUltima : p.rpeUltima,
     descansoSeg: aislamiento ? p.descansoMinSeg : p.descansoMaxSeg,
     sustitutos,
+    ...(jerarquia ? { jerarquia } : {}),
   };
 }

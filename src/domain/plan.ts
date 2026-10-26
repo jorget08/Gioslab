@@ -32,6 +32,8 @@
  * · La periodización sale de su formulario del 31-ago y de su anexo ATR.
  */
 
+import { esJerarquia, j3AntesDeJ1, type Jerarquia } from "@/domain/jerarquias";
+
 // ---------------------------------------------------------------------------
 // Catálogos
 // ---------------------------------------------------------------------------
@@ -162,6 +164,15 @@ export interface EjercicioPlan {
    */
   sustitutos: string[];
   notas?: string;
+  /**
+   * J1/J2/J3 del ejercicio, congelada al generar como `sustitutos`.
+   *
+   * Viaja en el plan porque `validarPlan` no tiene la biblioteca y tiene que
+   * poder bloquear un J3 antes que un J1 también cuando lo mueve el editor.
+   * Opcional: los planes de antes de las jerarquías no la tienen y siguen
+   * siendo válidos.
+   */
+  jerarquia?: Jerarquia;
 }
 
 /** Fase 1. Tiempo fijo y sin carga externa: es su especificación literal. */
@@ -319,7 +330,17 @@ export function validarPlan(plan: Plan): string[] {
           // cambio de sitio al teclear, y nadie lo notaría mirando el plan.
           errores.push(`${ee}: la última serie tiene menos RPE que las anteriores.`);
         }
+        if (e.jerarquia !== undefined && !esJerarquia(e.jerarquia)) {
+          errores.push(`${ee}: jerarquía desconocida (${String(e.jerarquia)}).`);
+        }
       });
+
+      // Su regla 3 del 25-sep: el aislamiento al final no le quita tensión al
+      // principal; al revés, la fatiga periférica sí. No es un aviso: él pidió
+      // que el sistema BLOQUEE estas rutinas, y lo que no valida no se guarda.
+      for (const { j3, j1 } of j3AntesDeJ1(d.central.ejercicios)) {
+        errores.push(`${dd}: "${j3}" (J3) va antes que "${j1}" (J1). Los J1 van primero.`);
+      }
     });
   });
 

@@ -13,6 +13,8 @@
  */
 
 import { leerContraindicaciones } from "@/domain/contraindicaciones";
+import { esJerarquia, esPerfil, type Clasificacion } from "@/domain/jerarquias";
+import { esAislamiento } from "@/domain/metodo";
 import { esPatron, type Patron } from "@/domain/patrones";
 
 /**
@@ -91,7 +93,33 @@ export interface Ejercicio {
    * pantallas de la biblioteca.
    */
   media_urls?: unknown;
+  /**
+   * Jerarquía J1/J2/J3, perfil de longitud y si es la versión guiada (25-sep).
+   * Se leen con desconfianza en `clasificacionDe`: vienen de la base y un 4 o
+   * un perfil mal escrito no deben ordenar nada.
+   *
+   * Opcionales por lo mismo que `media_urls`: lo que no los pide no los trae.
+   */
+  hierarchy_level?: number | null;
+  length_profile?: string | null;
+  is_guided?: boolean | null;
   is_active: boolean;
+}
+
+/**
+ * La clasificación J1/J2/J3 de un ejercicio, leída con desconfianza.
+ *
+ * Un valor que no es del catálogo cuenta como "sin clasificar", no como error:
+ * un ejercicio sin jerarquía se sigue pudiendo prescribir, solo que sin su
+ * criterio de orden.
+ */
+export function clasificacionDe(e: Ejercicio): Clasificacion {
+  return {
+    jerarquia: esJerarquia(e.hierarchy_level) ? e.hierarchy_level : null,
+    perfil: esPerfil(e.length_profile) ? e.length_profile : null,
+    guiada: e.is_guided === true,
+    aislamiento: esAislamiento(e.movement_pattern),
+  };
 }
 
 /** Línea de apoyo en el listado: músculo, equipo y cuántas contraindicaciones. */

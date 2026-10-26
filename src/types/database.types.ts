@@ -686,8 +686,11 @@ export type Database = {
           created_by: string | null
           description: string | null
           equipment: string | null
+          hierarchy_level: number | null
           id: string
           is_active: boolean
+          is_guided: boolean
+          length_profile: string | null
           media_urls: Json
           movement_pattern: string | null
           name: string
@@ -701,8 +704,11 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           equipment?: string | null
+          hierarchy_level?: number | null
           id?: string
           is_active?: boolean
+          is_guided?: boolean
+          length_profile?: string | null
           media_urls?: Json
           movement_pattern?: string | null
           name: string
@@ -716,8 +722,11 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           equipment?: string | null
+          hierarchy_level?: number | null
           id?: string
           is_active?: boolean
+          is_guided?: boolean
+          length_profile?: string | null
           media_urls?: Json
           movement_pattern?: string | null
           name?: string

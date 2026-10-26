@@ -28,6 +28,7 @@ import {
   sugerencias,
   type Ejercicio,
 } from "@/domain/ejercicios";
+import { FICHA_JERARQUIA, FICHA_PERFIL, JERARQUIAS, PERFILES } from "@/domain/jerarquias";
 import { leerMedios, type Medio } from "@/domain/medios";
 import { esTipoRelacion, type Relacion } from "@/domain/relaciones";
 import { FICHA_PATRON, PATRONES } from "@/domain/patrones";
@@ -48,7 +49,7 @@ import { ejercicioSchema, type EjercicioForm, type EjercicioValidado } from "@/l
  */
 
 const COLUMNAS =
-  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, is_active";
+  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, hierarchy_level, length_profile, is_guided, is_active";
 
 function Formulario() {
   const params = useSearchParams();
@@ -114,6 +115,9 @@ function Formulario() {
             tipoBiomecanico: actual.biomechanical_type ?? "",
             patron: (actual.movement_pattern ?? "") as EjercicioForm["patron"],
             contraindicaciones: leerContraindicaciones(actual.contraindications),
+            jerarquia: (actual.hierarchy_level ? String(actual.hierarchy_level) : "") as EjercicioForm["jerarquia"],
+            perfil: (actual.length_profile ?? "") as EjercicioForm["perfil"],
+            guiada: actual.is_guided ?? false,
             activo: actual.is_active,
           });
         }
@@ -146,6 +150,9 @@ function Formulario() {
       biomechanical_type: datos.tipoBiomecanico ?? null,
       movement_pattern: datos.patron ?? null,
       contraindications: datos.contraindicaciones,
+      hierarchy_level: datos.jerarquia ?? null,
+      length_profile: datos.perfil ?? null,
+      is_guided: datos.guiada,
     };
 
     const supabase = createClient();
@@ -254,6 +261,25 @@ function Formulario() {
             </option>
           ))}
         </CampoSelect>
+
+        {/* Su orden de la sesión (25-sep). Sin jerarquía se puede prescribir,
+            pero el generador lo pone detrás de lo que sí está clasificado. */}
+        <CampoSelect etiqueta="Jerarquía" ayuda="En qué orden va en la sesión" {...register("jerarquia")}>
+          <option value="">Sin clasificar</option>
+          {JERARQUIAS.map((j) => (
+            <option key={j} value={j}>{FICHA_JERARQUIA[j].nombre}</option>
+          ))}
+        </CampoSelect>
+        <CampoSelect etiqueta="Perfil de longitud" ayuda="Dónde trabaja el músculo en el recorrido" {...register("perfil")}>
+          <option value="">Sin indicar</option>
+          {PERFILES.map((p) => (
+            <option key={p} value={p}>{FICHA_PERFIL[p]}</option>
+          ))}
+        </CampoSelect>
+        <label className="flex min-h-11 cursor-pointer select-none items-center gap-2 text-sm">
+          <input type="checkbox" className="size-5" {...register("guiada")} />
+          Versión guiada: sustituye al libre cuando hay una restricción
+        </label>
 
         {/* Los tres campos siguientes no tienen catálogo cerrado porque Giovanni
             no lo ha fijado. En vez de inventarlo, se sugiere lo ya escrito: el

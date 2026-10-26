@@ -479,3 +479,106 @@ describe("sus variantes de mujer", () => {
     expect(plan!.semanas[0].dias[0].final.minutos).toBe(20);
   });
 });
+
+// --- Jerarquías J1/J2/J3 (25-sep) --------------------------------------------
+
+describe("sus jerarquías eligen y ordenan", () => {
+  // Giovanni reportó que a todos les salía la misma rutina. La causa era el
+  // desempate alfabético: "Press de Banca" gana a "Press Inclinado" por la d.
+  // Con su jerarquía, el J1 de pecho es el inclinado.
+  const clasificado = (
+    e: Ejercicio,
+    hierarchy_level: number,
+    length_profile: string | null,
+    is_guided = false,
+  ): Ejercicio => ({ ...e, hierarchy_level, length_profile, is_guided });
+
+  const porNombre = new Map(BIBLIOTECA.map((e) => [e.name, e]));
+  const de = (n: string) => porNombre.get(n)!;
+
+  const CLASIFICADA: Ejercicio[] = [
+    ...BIBLIOTECA.filter(
+      (e) => !["Press de Banca Plano", "Peso Muerto Rumano", "Hip Thrust"].includes(e.name),
+    ),
+    clasificado(de("Press de Banca Plano"), 2, "medio"),
+    clasificado(ejercicio("Press Inclinado con Mancuernas", "horizontal_push", "Pectoral"), 1, "estiramiento"),
+    clasificado(ejercicio("Press Inclinado en Multipower", "horizontal_push", "Pectoral"), 1, "estiramiento", true),
+    clasificado(ejercicio("Pec Deck", "isolation_accessory", "Pectoral"), 3, "acortamiento"),
+    clasificado(de("Peso Muerto Rumano"), 1, "estiramiento"),
+    clasificado(ejercicio("Curl Femoral Acostado", "isolation_accessory", "Isquiosurales"), 3, "acortamiento"),
+    clasificado(de("Hip Thrust"), 1, "acortamiento"),
+  ];
+
+  const generar = (excluir: string[] = []) =>
+    generarPlan(
+      entrada({
+        ejercicios: CLASIFICADA,
+        resultado: resultado({
+          ejercicios: CLASIFICADA.map((e) => decision(e.name, { incluido: !excluir.includes(e.name) })),
+        }),
+      }),
+    );
+
+  const torso = (plan: Plan) => plan.semanas[0].dias[0].central.ejercicios.map((e) => e.ejercicio);
+
+  it("el J1 gana al alfabeto", () => {
+    const { plan } = generar();
+    expect(torso(plan!)).toContain("Press Inclinado con Mancuernas");
+    expect(torso(plan!)).not.toContain("Press de Banca Plano");
+  });
+
+  it("J1 restringido → su versión guiada, no el J2", () => {
+    const { plan } = generar(["Press Inclinado con Mancuernas"]);
+    expect(torso(plan!)).toContain("Press Inclinado en Multipower");
+    expect(torso(plan!)).not.toContain("Press de Banca Plano");
+  });
+
+  it("sin ningún J1 disponible, baja a J2", () => {
+    const { plan } = generar(["Press Inclinado con Mancuernas", "Press Inclinado en Multipower"]);
+    expect(torso(plan!)).toContain("Press de Banca Plano");
+  });
+
+  it("dos atletas con evaluaciones distintas ya no reciben la misma rutina", () => {
+    const sano = generar().plan!;
+    const conHombro = generar(["Press Inclinado con Mancuernas"]).plan!;
+    expect(torso(sano)).not.toEqual(torso(conHombro));
+  });
+
+  it("ningún día pone un J3 antes que un J1, y la jerarquía viaja en el plan", () => {
+    const { plan } = generar();
+    expect(validarPlan(plan!)).toEqual([]);
+    for (const d of plan!.semanas[0].dias) {
+      const j = d.central.ejercicios.map((e) => e.jerarquia ?? 0).filter((n) => n === 1 || n === 3);
+      expect(j).toEqual([...j].sort());
+    }
+    const rdl = delPlan(plan!).find((e) => e.ejercicio === "Peso Muerto Rumano");
+    expect(rdl?.jerarquia).toBe(1);
+  });
+
+  it("y si alguien lo reordena a mano, el plan no valida", () => {
+    const { plan } = generar();
+    const dia = plan!.semanas[0].dias.find(
+      (d) => d.central.ejercicios.some((e) => e.jerarquia === 3) && d.central.ejercicios[0].jerarquia === 1,
+    )!;
+    const alReves: Plan = {
+      ...plan!,
+      semanas: [
+        {
+          ...plan!.semanas[0],
+          dias: plan!.semanas[0].dias.map((d) =>
+            d !== dia ? d : { ...d, central: { ejercicios: [...d.central.ejercicios].reverse() } },
+          ),
+        },
+      ],
+    };
+    expect(validarPlan(alReves).join(" ")).toContain("Los J1 van primero");
+  });
+
+  it("si al J1 le falta su compañero compensatorio y el día no lo admite, se avisa", () => {
+    // El primer torso de la semana de 4 días no admite aislamiento: el Pec Deck
+    // no cabe ahí, y su regla 2 queda sin cumplir ese día.
+    const { avisos } = generar();
+    expect(avisos.join(" ")).toContain("Perfil compensatorio incompleto");
+    expect(avisos.join(" ")).toContain("Torso (Empuje/Tracción)");
+  });
+});

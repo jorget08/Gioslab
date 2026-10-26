@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { CONDICIONES_SISTEMICAS, ZONAS_ANATOMICAS } from "@/domain/contraindicaciones";
+import { PERFILES, type Jerarquia } from "@/domain/jerarquias";
 import { PATRONES } from "@/domain/patrones";
 
 /**
@@ -48,6 +49,18 @@ export const ejercicioSchema = z.object({
   contraindicaciones: z
     .array(z.enum([...ZONAS_ANATOMICAS, ...CONDICIONES_SISTEMICAS]))
     .default([]),
+
+  // Jerarquía J1/J2/J3 (25-sep). Un <select> devuelve texto: se convierte
+  // aquí para que a la base llegue el smallint que su CHECK espera.
+  jerarquia: z
+    .union([z.enum(["1", "2", "3"]), z.literal("")])
+    .optional()
+    .transform((v) => (v ? (Number(v) as Jerarquia) : undefined)),
+  perfil: z
+    .union([z.enum(PERFILES), z.literal("")])
+    .optional()
+    .transform((v) => v || undefined),
+  guiada: z.boolean().default(false),
 
   activo: z.boolean().default(true),
 });

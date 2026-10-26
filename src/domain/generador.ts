@@ -32,7 +32,13 @@
  *    es la dosis por defecto; el motor es lo que ese atleta concreto tolera.
  */
 
-import type { Ejercicio } from "@/domain/ejercicios";
+import { clasificacionDe, type Ejercicio } from "@/domain/ejercicios";
+import {
+  compensatoriosQueFaltan,
+  FICHA_JERARQUIA,
+  ordenarSesion,
+} from "@/domain/jerarquias";
+import { elegirDelDia } from "@/domain/eleccion";
 import {
   esAislamiento,
   grupoDeMusculo,
@@ -41,7 +47,6 @@ import {
   repartoPara,
   diasDisponibles,
   type Metodo,
-  type PlantillaDia,
 } from "@/domain/metodo";
 import { incluidos, type DecisionEjercicio, type Resultado } from "@/domain/motor";
 import {
@@ -59,7 +64,6 @@ import {
 import { sustitutosDe, type Relacion } from "@/domain/relaciones";
 import {
   ajustarVolumen,
-  cabeEnElDia,
   completarVolumen,
   type Candidato,
   type Colocado,
@@ -152,77 +156,6 @@ function rpeConElMotor(
   return { primeras, ultima };
 }
 
-/**
- * Los ejercicios de un día, en el orden en que se prescriben.
- *
- * Primero uno por cada patrón del día —para que un día de torso no salgan
- * cuatro empujes y ninguna tracción—, y después se rellena hasta su mínimo con
- * lo que quede. Se prefiere lo no usado esta semana: sus planes reales cambian
- * de ejercicio entre el día A y el día B del mismo grupo, y repetir el mismo
- * seis veces es lo que distingue una rutina de una plantilla.
- */
-function elegirDelDia(
-  plantilla: PlantillaDia,
-  candidatos: Candidato[],
-  usados: Set<string>,
-  cupo: { min: number; max: number },
-  ratio: Record<string, number> | null,
-): Candidato[] {
-  const delDia = candidatos.filter((c) => cabeEnElDia(c, plantilla));
-
-  // El aislamiento acompaña al grupo del día: unas elevaciones laterales en un
-  // día de pierna son técnicamente legales y metodológicamente absurdas. Los
-  // grupos del día salen de sus ejercicios compuestos, que son los que lo
-  // definen.
-  const gruposDelDia = new Set(
-    delDia.filter((c) => !c.aislamiento).map((c) => c.grupo).filter((g): g is string => !!g),
-  );
-  const encaja = (c: Candidato) =>
-    !c.aislamiento || !c.grupo || gruposDelDia.size === 0 || gruposDelDia.has(c.grupo) ? 0 : 1;
-
-  const peso = (c: Candidato) => ratio?.[c.patron] ?? 0;
-  const orden = (a: Candidato, b: Candidato) =>
-    Number(b.prioritario) - Number(a.prioritario) ||
-    Number(a.aislamiento) - Number(b.aislamiento) ||
-    encaja(a) - encaja(b) ||
-    peso(b) - peso(a) ||
-    a.nombre.localeCompare(b.nombre, "es");
-
-  const elegidos: Candidato[] = [];
-  const yaHoy = new Set<string>();
-
-  const meter = (c: Candidato) => {
-    elegidos.push(c);
-    yaHoy.add(c.nombre);
-    usados.add(c.nombre);
-  };
-
-  // Uno por patrón, y solo lo que no se haya usado ya esta semana. El orden de
-  // los patrones es el suyo, salvo que el motor haya pedido un reparto:
-  // entonces el patrón que él priorizó entra primero y se queda con el hueco si
-  // el día se llena.
-  const patrones = [...plantilla.patrones].sort((a, b) => (ratio?.[b] ?? 0) - (ratio?.[a] ?? 0));
-  for (const p of patrones) {
-    if (elegidos.length >= cupo.max) break;
-    const elegido = delDia
-      .filter((c) => c.patron === p && !yaHoy.has(c.nombre) && !usados.has(c.nombre))
-      .sort(orden)[0];
-    if (elegido) meter(elegido);
-  }
-
-  // Relleno hasta su mínimo. Aquí sí se puede repetir lo de otro día —entrenar
-  // el mismo patrón dos veces por semana es el propio reparto suyo— pero
-  // primero se agota lo que no se ha usado.
-  const resto = delDia.filter((c) => !yaHoy.has(c.nombre)).sort(orden);
-  for (const c of [...resto.filter((x) => !usados.has(x.nombre)), ...resto]) {
-    if (elegidos.length >= cupo.min || elegidos.length >= cupo.max) break;
-    if (yaHoy.has(c.nombre)) continue;
-    meter(c);
-  }
-
-  return elegidos;
-}
-
 // ---------------------------------------------------------------------------
 // El generador
 // ---------------------------------------------------------------------------
@@ -287,6 +220,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
       continue;
     }
     const grupo = grupoDeMusculo(metodo, ficha.target_muscle);
+    const { jerarquia, perfil, guiada } = clasificacionDe(ficha);
 
     candidatos.push({
       nombre: d.ejercicio,
@@ -296,6 +230,9 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
       aislamiento: esAislamiento(ficha.movement_pattern),
       prioritario: d.prioritario,
       modificadores: d.modificadores,
+      jerarquia,
+      perfil,
+      guiada,
       // 5.5: las alternativas salen de la matriz de equivalencia y se congelan
       // al generar. Solo las que el motor aprobó para ESTE atleta: ofrecer una
       // excluida es mandarlo a un ejercicio que le está prohibido.
@@ -345,6 +282,26 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
   // un grupo que necesita otro ejercicio no llega nunca a su mínimo.
   completarVolumen(semanaBase, reparto.plantilla, candidatos, metodo, resultado);
   ajustarVolumen(semanaBase, metodo, resultado, avisos);
+
+  // El orden de la sesión, al final y no al elegir: `completarVolumen` añade
+  // ejercicios por detrás, y un J1 añadido ahí quedaría después de los J3.
+  semanaBase.forEach((delDia, i) => {
+    semanaBase[i] = ordenarSesion(delDia, (c) => c.candidato);
+  });
+
+  const sinCompensar = semanaBase.flatMap((delDia, i) =>
+    compensatoriosQueFaltan(delDia.map((c) => c.candidato)).map(
+      (f) =>
+        `${reparto.plantilla[i].titulo}: "${f.j1}" (J1) va sin su ${FICHA_JERARQUIA[f.falta.jerarquia].nombre.split(" ·")[0]} ` +
+        `de ${f.falta.perfil} de ${f.musculo}`,
+    ),
+  );
+  if (sinCompensar.length > 0) {
+    avisos.push(
+      `Perfil compensatorio incompleto (su regla 2): ${sinCompensar.join("; ")}. ` +
+        "El día no admite ese ejercicio o no hay uno aprobado y clasificado.",
+    );
+  }
 
   // El aviso se da sobre lo que ENTRA en el plan, no sobre todo lo aprobado:
   // avisar del core cuando ningún día lo entrena es ruido, y el ruido se lee
@@ -422,6 +379,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
             ? parametros.descansoMinSeg
             : parametros.descansoMaxSeg,
           sustitutos: c.candidato.sustitutos,
+          ...(c.candidato.jerarquia !== null ? { jerarquia: c.candidato.jerarquia } : {}),
           notas:
             c.candidato.modificadores.length > 0
               ? c.candidato.modificadores.join(" · ")

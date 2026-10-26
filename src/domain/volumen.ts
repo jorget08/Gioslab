@@ -19,6 +19,7 @@
  * dos cosas: uno decide QUÉ ejercicios y el otro CUÁNTAS series.
  */
 
+import { rangoDeEleccion, type Jerarquia, type Perfil } from "@/domain/jerarquias";
 import { seriesSemanalesDe, type Metodo, type PlantillaDia } from "@/domain/metodo";
 import type { Resultado } from "@/domain/motor";
 
@@ -32,6 +33,10 @@ export interface Candidato {
   prioritario: boolean;
   modificadores: string[];
   sustitutos: string[];
+  /** Su clasificación J1/J2/J3 (25-sep). `null` = él aún no la dio. */
+  jerarquia: Jerarquia | null;
+  perfil: Perfil | null;
+  guiada: boolean;
 }
 
 /** Un candidato ya colocado en un día, con sus series antes de ajustar. */
@@ -117,7 +122,9 @@ export function completarVolumen(
     for (const grupo of faltos) {
       const opciones = candidatos
         .filter((c) => c.grupo === grupo && !enPlan.has(c.nombre))
-        .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+        // Por su jerarquía y no por orden alfabético: el alfabeto era el que
+        // decidía, y por eso a todo el mundo le salía la misma rutina.
+        .sort((a, b) => rangoDeEleccion(a) - rangoDeEleccion(b) || a.nombre.localeCompare(b.nombre, "es"));
 
       for (const cand of opciones) {
         const dias = semana

@@ -11,6 +11,7 @@ import { Guarda } from "@/components/shared/guarda";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
 import { cambiosDelDia, resumenDeCambios } from "@/domain/ediciones";
+import { clasificacionDe } from "@/domain/ejercicios";
 import { generarPlan } from "@/domain/generador";
 import { objetivoDeMeta } from "@/domain/metodo";
 import { incluidos } from "@/domain/motor";
@@ -267,6 +268,13 @@ function PlanDelAtleta() {
           .slice(0, 2)
       : [];
 
+  // De la biblioteca y no del ejercicio que reemplaza: cada ejercicio trae su
+  // propia jerarquía, y es la que `validarPlan` necesita para el orden.
+  const jerarquiaDe = (nombre: string) => {
+    const ficha = carga?.ejercicios.find((e) => e.name === nombre);
+    return ficha ? clasificacionDe(ficha).jerarquia : null;
+  };
+
   if (cargando) {
     return <p role="status" className="text-sm text-muted-foreground">Cargando…</p>;
   }
@@ -396,7 +404,15 @@ function PlanDelAtleta() {
                 )
               }
               onCambiar={(indice, nombre) =>
-                editar(cambiarEjercicio(plan, { dia: iDia, indice }, nombre, sustitutosDe_(nombre)))
+                editar(
+                  cambiarEjercicio(
+                    plan,
+                    { dia: iDia, indice },
+                    nombre,
+                    sustitutosDe_(nombre),
+                    jerarquiaDe(nombre),
+                  ),
+                )
               }
               onQuitar={(indice) => editar(quitarEjercicio(plan, { dia: iDia, indice }))}
               onMover={(indice, salto) => editar(moverEjercicio(plan, { dia: iDia, indice }, salto))}
@@ -411,6 +427,7 @@ function PlanDelAtleta() {
                       objetivo: plan.objetivo,
                       tipo,
                       sustitutos: sustitutosDe_(nombre),
+                      jerarquia: jerarquiaDe(nombre),
                     }),
                   ),
                 )
