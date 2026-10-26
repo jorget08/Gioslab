@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -12,6 +12,7 @@ import {
   seriesSemanalesDe,
   validarMetodo,
 } from "@/domain/metodo";
+import { FICHA_PERIODIZACION } from "@/domain/plan";
 
 /**
  * El método de Giovanni y su lector (tarea 5.2).
@@ -22,14 +23,15 @@ import {
  * descubrirían en la pantalla del entrenador, con un plan raro delante y sin
  * pista de dónde viene. La migración es la fuente, así que se lee la migración.
  *
+ * En PLURAL, además: el método está versionado y cada corrección posterior es
+ * una fila nueva que se mezcla sobre la anterior. Leer solo la 5.2 sería
+ * comprobar cifras que ya no usa nadie. `BUENO` es el método ACTIVO.
+ *
  * Los casos de fallo parten de una copia del método bueno con UNA cosa rota,
  * que es como llegan los errores de verdad.
  */
 
-const SQL = readFileSync(
-  new URL("../../supabase/migrations/20260903100000_metodo_programacion.sql", import.meta.url),
-  "utf8",
-);
+const MIGRACIONES = new URL("../../supabase/migrations/", import.meta.url);
 
 /** Lo justo para manejar el JSON crudo en los tests, sin `any`. */
 interface DiaJson {
@@ -51,9 +53,40 @@ interface MetodoJson {
   repartos: { dias: number; sexo: string | null; plantilla: DiaJson[] }[];
 }
 
-const BUENO: MetodoJson = JSON.parse(
-  SQL.slice(SQL.indexOf("$json$") + 6, SQL.lastIndexOf("$json$")),
-);
+/**
+ * El método activo, armado como lo arma la base.
+ *
+ * La 5.2 carga el documento entero; cada corrección posterior inserta una
+ * versión con `method_data || {...}`, que en jsonb mezcla por arriba y sin
+ * recursión. Aquí se hace lo mismo con un spread, en el orden en que corren las
+ * migraciones. Si este archivo ignorara una versión nueva, los tests de abajo
+ * estarían aprobando cifras retiradas y nadie se enteraría.
+ */
+function metodoActivo(): MetodoJson {
+  const archivos = readdirSync(MIGRACIONES)
+    .filter((f) => f.endsWith(".sql"))
+    .sort();
+
+  const versiones: Record<string, unknown>[] = [];
+
+  for (const archivo of archivos) {
+    const sql = readFileSync(new URL(archivo, MIGRACIONES), "utf8");
+    if (!sql.includes("into public.training_methods")) continue;
+
+    const abre = sql.indexOf("$json$");
+    const cierra = sql.lastIndexOf("$json$");
+    // Una migración que toque la tabla sin traer JSON —apagar una versión, por
+    // ejemplo— no aporta nada que mezclar, pero tampoco es un error.
+    if (abre === -1 || cierra === abre) continue;
+
+    versiones.push(JSON.parse(sql.slice(abre + 6, cierra)) as Record<string, unknown>);
+  }
+
+  if (versiones.length === 0) throw new Error("Ninguna migración carga un método.");
+  return versiones.reduce((a, v) => ({ ...a, ...v })) as unknown as MetodoJson;
+}
+
+const BUENO: MetodoJson = metodoActivo();
 
 /** Copia profunda del método bueno con un retoque. */
 function con(cambio: (m: MetodoJson) => void): unknown {
@@ -93,6 +126,38 @@ describe("las cifras que cargó la 5.2 son las suyas", () => {
     expect(BUENO.parametros.perdida_grasa).toMatchObject({ rep_min: 8, rep_max: 15 });
     expect(BUENO.parametros.fuerza.descanso_min_seg).toBe(180);
     expect(BUENO.parametros.perdida_grasa.descanso_max_seg).toBe(90);
+  });
+
+  it("ningún objetivo de composición corporal se programa con ATR", () => {
+    // El fallo que reportó el 22-sep: la v1 mandaba `perdida_grasa` a `atr` y el
+    // plan salía rotulado "ATR / Bloques concentrados". Su argumento, que es el
+    // que manda (§3.4): el ATR es para picos de rendimiento en atletas de
+    // elite, y un bloque concentrado de fatiga en déficit calórico empuja
+    // cortisol y proteólisis. No hay competencia que supercompensar.
+    expect(BUENO.periodizacion_por_objetivo.perdida_grasa).not.toBe("atr");
+
+    // Y el mapeo entero, para que la próxima vez no haga falta que lo cace él.
+    expect(BUENO.periodizacion_por_objetivo).toEqual({
+      fuerza: "ondulante",
+      hipertrofia: "ondulante",
+      perdida_grasa: "ondulante",
+    });
+  });
+
+  it("el catálogo y el método no se contradicen sobre para qué es cada modelo", () => {
+    // Esto es lo que faltaba el 3-sep. `FICHA_PERIODIZACION.atr` ya decía
+    // "Rendimiento y fisicoculturismo" mientras el método mandaba ahí a la
+    // pérdida de grasa, y nada lo atrapó porque nadie miraba las dos cosas
+    // juntas. Aquí se miran.
+    const deRendimiento = Object.entries(FICHA_PERIODIZACION)
+      .filter(([, f]) => /fisicoculturismo|[Rr]endimiento/.test(f.cuando))
+      .map(([clave]) => clave);
+
+    expect(deRendimiento).toContain("atr");
+
+    for (const modelo of deRendimiento) {
+      expect(BUENO.periodizacion_por_objetivo.perdida_grasa).not.toBe(modelo);
+    }
   });
 
   it("doble progresión del 2,5 al 5 % y descarga en la 4ª semana", () => {
@@ -247,7 +312,9 @@ describe("consultas sobre el método", () => {
   it("la periodización sale del objetivo, que es lo que dijo el 2-sep", () => {
     expect(periodizacionPara(metodo, "hipertrofia")).toBe("ondulante");
     expect(periodizacionPara(metodo, "fuerza")).toBe("ondulante");
-    expect(periodizacionPara(metodo, "perdida_grasa")).toBe("atr");
+    // Era "atr" hasta la v2. Lo cazó él probando el 22-sep, no este test, que
+    // se limitaba a repetir lo cargado. Ahora el de arriba mira el porqué.
+    expect(periodizacionPara(metodo, "perdida_grasa")).toBe("ondulante");
   });
 
   it("la variante de mujer manda cuando existe", () => {
