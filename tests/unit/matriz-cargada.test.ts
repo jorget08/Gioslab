@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -11,6 +11,7 @@ import {
   type NivelMotor,
   type Regla,
 } from "@/domain/reglas";
+import { TESTS } from "@/domain/movilidad";
 
 /**
  * La matriz que se cargó en la base, comprobada contra la gramática (tarea 3.3).
@@ -134,5 +135,54 @@ describe("la matriz cargada en la 3.3", () => {
       const suma = Object.values(r.actions.ratio_patron).reduce((a, b) => a + b, 0);
       expect(suma, r.rule_key).toBeCloseTo(1, 5);
     }
+  });
+});
+
+// --- Pantalla y motor dicen lo mismo (26-oct) ---------------------------------
+
+describe("las reglas de movilidad no bloquean lo que la pantalla da por Óptimo", () => {
+  // El fallo que reportó Giovanni el 26-oct: él fijó el Óptimo de flexión de
+  // hombro en 170° (AAOS), la pantalla se actualizó y la regla se quedó en 175°.
+  // De 170° a 174° el entrenador veía "Óptimo" y el motor le quitaba el press.
+  // Nada lo atrapó porque nadie miraba los dos umbrales juntos.
+  //
+  // La regla ACTIVA es la última condición escrita para ese hecho en las
+  // migraciones, en el orden en que corren: las correcciones son versiones
+  // nuevas, no ediciones de la matriz original.
+  const DIR = new URL("../../supabase/migrations/", import.meta.url);
+  const archivos = readdirSync(DIR).filter((f) => f.endsWith(".sql")).sort();
+  const sql = archivos.map((f) => readFileSync(new URL(f, DIR), "utf8")).join("\n");
+
+  const corteActivo = (hecho: string): number | null => {
+    const re = new RegExp(
+      `\\{"todas":\\[\\{"hecho":"${hecho}","op":"(<|entre)","valor":(\\[[^\\]]*\\]|[-\\d.]+)\\}\\]\\}`,
+      "g",
+    );
+    const todas = [...sql.matchAll(re)];
+    if (todas.length === 0) return null;
+    const ultimo = todas[todas.length - 1];
+    const valor = JSON.parse(ultimo[2]) as number | number[];
+    // "<X" restringe por debajo de X; "entre [a, b]" restringe hasta b (abierto).
+    return Array.isArray(valor) ? valor[1] : valor;
+  };
+
+  const HECHO_DE: Record<keyof typeof TESTS, string> = {
+    ankle_dorsiflexion_cm: "dorsiflexion_cm",
+    hip_flexion_deg: "flexion_cadera_grados",
+    hip_internal_rotation_deg: "rotacion_interna_cadera_grados",
+    thomas_test_deg: "thomas_test_grados",
+    slr_deg: "slr_grados",
+    shoulder_flexion_deg: "flexion_hombro_grados",
+    shoulder_external_rotation_deg: "rotacion_externa_hombro_grados",
+  };
+
+  it.each(Object.entries(HECHO_DE))("%s", (test, hecho) => {
+    const corte = corteActivo(hecho);
+    if (corte === null) return;
+    expect(corte).toBeLessThanOrEqual(TESTS[test as keyof typeof TESTS].umbralOptimo);
+  });
+
+  it("la de hombro, en concreto, corta en 170", () => {
+    expect(corteActivo("flexion_hombro_grados")).toBe(170);
   });
 });
