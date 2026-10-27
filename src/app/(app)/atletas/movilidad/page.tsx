@@ -19,6 +19,7 @@ import {
   TOTAL_TESTS,
   type ExtensionToracica,
 } from "@/domain/movilidad";
+import { HECHOS } from "@/domain/reglas";
 import type { ClaseSegmento } from "@/domain/segmentos";
 import { createClient } from "@/lib/supabase/client";
 
@@ -49,7 +50,23 @@ interface BorradorBiomecanica {
   proporcion?: string;
   rom?: Record<string, string>;
   toracica?: ExtensionToracica;
+  perfil?: Partial<Record<ColumnaPerfil, string>>;
 }
+
+/**
+ * Su "Perfil biomecánico" (ESPECIFICACION-FICHAS): lo que el entrenador OBSERVA
+ * y no mide. Las reglas de nivel 3 dependen de esto y ninguna pantalla lo
+ * preguntaba, así que toda evaluación salía "incompleta" (27-oct). Las
+ * opciones salen de `HECHOS`, que es lo que las reglas comparan: escritas aquí
+ * a mano, una tilde de diferencia haría que la regla no disparara nunca.
+ */
+const PERFIL = [
+  { columna: "squat_dominance", hecho: "dominancia_sentadilla" },
+  { columna: "glute_vector", hecho: "vector_gluteo" },
+  { columna: "back_dominance", hecho: "dominancia_espalda" },
+  { columna: "axial_load_tolerance", hecho: "tolerancia_carga_axial" },
+] as const;
+type ColumnaPerfil = (typeof PERFIL)[number]["columna"];
 
 type TestNumerico = keyof typeof TESTS;
 const NUMERICOS = Object.keys(TESTS) as TestNumerico[];
@@ -81,6 +98,7 @@ function Movilidad() {
   const [segmentos, setSegmentos] = useState<BorradorBiomecanica>({});
   const [rom, setRom] = useState<Record<string, string>>({});
   const [toracica, setToracica] = useState<ExtensionToracica | undefined>();
+  const [perfil, setPerfil] = useState<Partial<Record<ColumnaPerfil, string>>>({});
   const [anterior, setAnterior] = useState<Record<string, number | null>>({});
   const [pendiente, setPendiente] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
@@ -125,16 +143,21 @@ function Movilidad() {
 
     setSegmentos(b.datos);
     // Si además ya había movilidad tecleada, se ofrece retomarla.
-    if (b.datos.rom || b.datos.toracica) setPendiente(b.guardadoEn);
+    if (b.datos.rom || b.datos.toracica || b.datos.perfil) setPendiente(b.guardadoEn);
   }, [atletaId, usuarioId]);
 
   const persistir = useCallback(
-    (nuevoRom: Record<string, string>, nuevaToracica: ExtensionToracica | undefined) => {
+    (
+      nuevoRom: Record<string, string>,
+      nuevaToracica: ExtensionToracica | undefined,
+      nuevoPerfil: Partial<Record<ColumnaPerfil, string>>,
+    ) => {
       if (!usuarioId || !atletaId) return;
       guardarBorrador("biomecanica", usuarioId, atletaId, {
         ...segmentos,
         rom: nuevoRom,
         toracica: nuevaToracica,
+        perfil: nuevoPerfil,
       });
     },
     [segmentos, usuarioId, atletaId],
@@ -143,23 +166,30 @@ function Movilidad() {
   function cambiarROM(test: string, valor: string) {
     const siguiente = { ...rom, [test]: valor };
     setRom(siguiente);
-    persistir(siguiente, toracica);
+    persistir(siguiente, toracica, perfil);
   }
 
   function cambiarToracica(valor: ExtensionToracica) {
     setToracica(valor);
-    persistir(rom, valor);
+    persistir(rom, valor, perfil);
+  }
+
+  function cambiarPerfil(columna: ColumnaPerfil, valor: string) {
+    const siguiente = { ...perfil, [columna]: valor };
+    setPerfil(siguiente);
+    persistir(rom, toracica, siguiente);
   }
 
   function restaurar() {
     setRom(segmentos.rom ?? {});
     setToracica(segmentos.toracica);
+    setPerfil(segmentos.perfil ?? {});
     setPendiente(null);
   }
 
   function descartar() {
     setPendiente(null);
-    persistir({}, undefined);
+    persistir({}, undefined, {});
   }
 
   const tomados =
@@ -192,6 +222,10 @@ function Movilidad() {
       thoracic_extension: toracica ?? null,
       shoulder_flexion_deg: aNumero(rom.shoulder_flexion_deg),
       shoulder_external_rotation_deg: aNumero(rom.shoulder_external_rotation_deg),
+      squat_dominance: perfil.squat_dominance ?? null,
+      glute_vector: perfil.glute_vector ?? null,
+      back_dominance: perfil.back_dominance ?? null,
+      axial_load_tolerance: perfil.axial_load_tolerance ?? null,
     });
 
     if (e) {
@@ -279,6 +313,24 @@ function Movilidad() {
             valor={rom[t] ?? ""}
             onChange={(v) => cambiarROM(t, v)}
             anterior={anterior[t]}
+          />
+        ))}
+      </Bloque>
+
+      <Bloque rotulo="Perfil biomecánico">
+        <p className="text-xs text-muted-foreground">
+          Lo que observas al verlo entrenar. Sin esto, el motor no puede repartir el trabajo
+          entre cuádriceps y cadera, ni entre anchura y grosor de espalda.
+        </p>
+        {PERFIL.map(({ columna, hecho }) => (
+          <GrupoOpciones
+            key={columna}
+            nombre={columna}
+            etiqueta={HECHOS[hecho].etiqueta}
+            opciones={(HECHOS[hecho].dominio ?? []).map((o) => ({ valor: o, texto: o }))}
+            valor={perfil[columna]}
+            onChange={(v) => cambiarPerfil(columna, v)}
+            columnas
           />
         ))}
       </Bloque>
