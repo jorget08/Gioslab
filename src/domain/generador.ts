@@ -39,6 +39,7 @@ import {
   ordenarSesion,
 } from "@/domain/jerarquias";
 import { elegirDelDia } from "@/domain/eleccion";
+import { semanaDelModelo } from "@/domain/modelos";
 import {
   esAislamiento,
   grupoDeMusculo,
@@ -280,8 +281,22 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
 
   // Primero los ejercicios que faltan y solo después las series: subir series a
   // un grupo que necesita otro ejercicio no llega nunca a su mínimo.
+  // El modelo se decide aquí porque cambia cómo se cuentan las series: si trae
+  // su propia tabla semanal (el lineal), las series salen de ella y no del
+  // rango por grupo muscular.
+  const periodizacion =
+    opciones.periodizacion ?? periodizacionPara(metodo, objetivo, atleta.experience_level);
+  const modelo = metodo.modelos[periodizacion] ?? null;
+
   completarVolumen(semanaBase, reparto.plantilla, candidatos, metodo, resultado);
-  ajustarVolumen(semanaBase, metodo, resultado, avisos);
+  if (modelo) {
+    avisos.push(
+      `Modelo ${periodizacion}: las series, repeticiones y RPE de cada semana salen de su tabla ` +
+        "de mesociclo, no del rango semanal por grupo muscular.",
+    );
+  } else {
+    ajustarVolumen(semanaBase, metodo, resultado, avisos);
+  }
 
   // El orden de la sesión, al final y no al elegir: `completarVolumen` añade
   // ejercicios por detrás, y un J1 añadido ahí quedaría después de los J3.
@@ -323,7 +338,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
     { primeras: parametros.rpePrimeras, ultima: parametros.rpeUltima },
     resultado.rir,
   );
-  if (rpeCarga.ultima !== parametros.rpeUltima) {
+  if (!modelo && rpeCarga.ultima !== parametros.rpeUltima) {
     avisos.push(
       `El motor bajó la intensidad: RPE ${rpeCarga.primeras}/${rpeCarga.ultima} en vez de ` +
         `${parametros.rpePrimeras}/${parametros.rpeUltima}.`,
@@ -341,14 +356,28 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
 
   const semanas: SemanaPlan[] = [];
   for (let n = 1; n <= opciones.semanas; n++) {
-    const tipo: TipoSemana = esDescarga(n)
-      ? "descarga"
-      : esDescarga(n - 1) && metodo.descarga.supercompensacionDespues
-        ? "supercompensacion"
-        : "carga";
+    // Con tabla propia, la semana es su fila: incluida su descarga, que en el
+    // lineal es la 6ª y no la 4ª del método general.
+    const fila = modelo ? semanaDelModelo(modelo, n) : null;
+    const rpeFila = fila ? rpeConElMotor({ primeras: fila.rpe, ultima: fila.rpe }, resultado.rir) : null;
 
-    const notasSemana =
-      tipo === "descarga"
+    const tipo: TipoSemana = fila
+      ? fila.descarga
+        ? "descarga"
+        : "carga"
+      : esDescarga(n)
+        ? "descarga"
+        : esDescarga(n - 1) && metodo.descarga.supercompensacionDespues
+          ? "supercompensacion"
+          : "carga";
+
+    const notasSemana = fila
+      ? [
+          `${tipo === "descarga" ? "Descarga activa" : `Semana ${n} del mesociclo ${periodizacion}`}: ` +
+            `${fila.series} series de ${fila.repMin === fila.repMax ? fila.repMin : `${fila.repMin}–${fila.repMax}`} ` +
+            `a RPE ${rpeFila!.ultima}.`,
+        ]
+      : tipo === "descarga"
         ? [
             `Semana de descarga: −${metodo.descarga.reduccionVolumenPct} % de series y ` +
               `RPE ${metodo.descarga.rpePrimeras}–${metodo.descarga.rpeUltima}, con los mismos ejercicios.`,
@@ -360,8 +389,11 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
     const dias: DiaPlan[] = semanaBase.map((delDia, i) => {
       const plantilla = reparto.plantilla[i];
       const ejerciciosDia: EjercicioPlan[] = delDia.map((c) => {
-        const series =
-          tipo === "descarga"
+        // El factor de volumen del motor también escala su tabla: el motor
+        // manda sobre el método (regla 3 de este archivo).
+        const series = fila
+          ? Math.max(1, Math.round(fila.series * resultado.volumenFactor))
+          : tipo === "descarga"
             ? Math.max(1, Math.round(c.series * (1 - metodo.descarga.reduccionVolumenPct / 100)))
             : c.series;
 
@@ -371,10 +403,14 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
             ? metodo.seriesPorEjercicio.calentamientoAislamiento
             : metodo.seriesPorEjercicio.calentamientoCompuesto,
           seriesEfectivas: series,
-          repMin: parametros.repMin,
-          repMax: parametros.repMax,
-          rpePrimeras: tipo === "descarga" ? metodo.descarga.rpePrimeras : rpeCarga.primeras,
-          rpeUltima: tipo === "descarga" ? metodo.descarga.rpeUltima : rpeCarga.ultima,
+          repMin: fila ? fila.repMin : parametros.repMin,
+          repMax: fila ? fila.repMax : parametros.repMax,
+          rpePrimeras: rpeFila
+            ? rpeFila.primeras
+            : tipo === "descarga" ? metodo.descarga.rpePrimeras : rpeCarga.primeras,
+          rpeUltima: rpeFila
+            ? rpeFila.ultima
+            : tipo === "descarga" ? metodo.descarga.rpeUltima : rpeCarga.ultima,
           descansoSeg: c.candidato.aislamiento
             ? parametros.descansoMinSeg
             : parametros.descansoMaxSeg,
@@ -406,7 +442,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
 
   const plan: Plan = {
     version: VERSION_PLAN,
-    periodizacion: opciones.periodizacion ?? periodizacionPara(metodo, objetivo),
+    periodizacion,
     objetivo,
     diasPorSemana: opciones.diasPorSemana,
     semanas,

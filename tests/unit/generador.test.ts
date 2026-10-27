@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import type { Ejercicio } from "@/domain/ejercicios";
@@ -580,5 +580,77 @@ describe("sus jerarquías eligen y ordenan", () => {
     const { avisos } = generar();
     expect(avisos.join(" ")).toContain("Perfil compensatorio incompleto");
     expect(avisos.join(" ")).toContain("Torso (Empuje/Tracción)");
+  });
+});
+
+// --- Principiante → lineal (método v3, 26-oct) ---------------------------------
+
+describe("un principiante entra en lineal, y el plan es lineal de verdad", () => {
+  // El método ACTIVO, mezclado como lo mezcla la base: cada corrección es una
+  // fila `method_data || {...}` sobre la anterior.
+  const DIR = new URL("../../supabase/migrations/", import.meta.url);
+  const ACTIVO: Metodo = leerMetodo(
+    readdirSync(DIR)
+      .filter((f) => f.endsWith(".sql"))
+      .sort()
+      .map((f) => readFileSync(new URL(f, DIR), "utf8"))
+      .filter((sql) => sql.includes("into public.training_methods") && sql.includes("$json$"))
+      .map((sql) => JSON.parse(sql.slice(sql.indexOf("$json$") + 6, sql.lastIndexOf("$json$"))))
+      .reduce((a, v) => ({ ...a, ...v })),
+  )!;
+
+  const generar = (experience_level: string, semanas = 6) =>
+    generarPlan(
+      entrada({
+        metodo: ACTIVO,
+        atleta: { sexo: "masculino", training_goal: "Hipertrofia (Masa Muscular)", experience_level },
+        opciones: { diasPorSemana: 3, semanas },
+      }),
+    );
+
+  it("el método activo se lee entero", () => {
+    expect(ACTIVO).not.toBeNull();
+    expect(ACTIVO.periodizacionPorNivel).toEqual({ Principiante: "lineal" });
+  });
+
+  it("Principiante con objetivo hipertrofia → lineal; Intermedio → el de su objetivo", () => {
+    // Lo que reportó: un principiante le salía en ondulante.
+    expect(generar("Principiante").plan!.periodizacion).toBe("lineal");
+    expect(generar("Intermedio").plan!.periodizacion).toBe("ondulante");
+  });
+
+  it("las seis semanas siguen su tabla del PDF de mesociclos", () => {
+    const { plan } = generar("Principiante");
+    const resumen = plan!.semanas.map((s) => {
+      const e = s.dias[0].central.ejercicios[0];
+      return [s.tipo, e.seriesEfectivas, e.repMin, e.repMax, e.rpeUltima];
+    });
+    expect(resumen).toEqual([
+      ["carga", 3, 10, 12, 6],
+      ["carga", 3, 10, 12, 6.5],
+      ["carga", 3, 8, 10, 7],
+      ["carga", 4, 8, 8, 7.5],
+      ["carga", 4, 6, 8, 8],
+      ["descarga", 2, 8, 8, 6],
+    ]);
+  });
+
+  it("un plan más largo que su tabla vuelve a empezar el mesociclo", () => {
+    const { plan } = generar("Principiante", 8);
+    expect(plan!.semanas[6].dias[0].central.ejercicios[0].rpeUltima).toBe(6);
+    expect(plan!.semanas[6].tipo).toBe("carga");
+    expect(validarPlan(plan!)).toEqual([]);
+  });
+
+  it("el entrenador puede forzar otro modelo (§3.6)", () => {
+    const { plan } = generarPlan(
+      entrada({
+        metodo: ACTIVO,
+        atleta: { sexo: "masculino", training_goal: "Hipertrofia (Masa Muscular)", experience_level: "Principiante" },
+        opciones: { diasPorSemana: 3, semanas: 4, periodizacion: "ondulante" },
+      }),
+    );
+    expect(plan!.periodizacion).toBe("ondulante");
+    expect(plan!.semanas[0].dias[0].central.ejercicios[0].repMin).toBe(6);
   });
 });

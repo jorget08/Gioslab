@@ -30,6 +30,7 @@ import {
   type Objetivo,
   type Periodizacion,
 } from "@/domain/plan";
+import { leerModelos, validarModelos, type Modelo } from "@/domain/modelos";
 import { esPatron, type Patron } from "@/domain/patrones";
 
 // ---------------------------------------------------------------------------
@@ -132,6 +133,13 @@ export interface Metodo {
    */
   objetivoPorMeta: Record<string, Objetivo | null>;
   periodizacionPorObjetivo: Record<Objetivo, Periodizacion>;
+  /**
+   * Niveles cuyo modelo NO depende del objetivo (v3, 26-oct): "a los
+   * principiantes, lineal". Manda sobre `periodizacionPorObjetivo`.
+   */
+  periodizacionPorNivel: Record<string, Periodizacion>;
+  /** Modelos con progresión semana a semana propia. Ver `domain/modelos.ts`. */
+  modelos: Partial<Record<Periodizacion, Modelo>>;
   parametros: Record<Objetivo, Parametros>;
   seriesSemanales: Record<string, RangoSeries>;
   grupoPorMusculo: Record<string, string>;
@@ -321,6 +329,8 @@ export function validarMetodo(crudo: unknown): string[] {
     }
   }
 
+  e.push(...validarModelos(crudo));
+
   // --- Reparto semanal ------------------------------------------------------
   if (!Array.isArray(crudo.repartos) || crudo.repartos.length === 0) {
     e.push("Un método sin reparto de la semana no sirve para generar nada.");
@@ -397,6 +407,7 @@ export function leerMetodo(crudo: unknown): Metodo | null {
     version: VERSION_METODO,
     objetivoPorMeta: c.objetivo_por_meta as Record<string, Objetivo | null>,
     periodizacionPorObjetivo: c.periodizacion_por_objetivo as Record<Objetivo, Periodizacion>,
+    ...leerModelos(c),
     parametros,
     seriesSemanales: c.series_semanales as Record<string, RangoSeries>,
     grupoPorMusculo: c.grupo_por_musculo as Record<string, string>,
@@ -460,8 +471,16 @@ export function objetivoDeMeta(metodo: Metodo, meta: string | null | undefined):
   return metodo.objetivoPorMeta[meta] ?? null;
 }
 
-export function periodizacionPara(metodo: Metodo, objetivo: Objetivo): Periodizacion {
-  return metodo.periodizacionPorObjetivo[objetivo];
+/**
+ * El modelo que le toca. El nivel manda cuando él lo fijó por nivel —hoy solo
+ * "Principiante" → lineal— y si no, el objetivo, como dijo el 2-sep.
+ */
+export function periodizacionPara(
+  metodo: Metodo,
+  objetivo: Objetivo,
+  nivel?: string | null,
+): Periodizacion {
+  return (nivel && metodo.periodizacionPorNivel[nivel]) || metodo.periodizacionPorObjetivo[objetivo];
 }
 
 /**
