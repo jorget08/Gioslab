@@ -98,31 +98,34 @@ export function elegirDelDia(
   // busca en TODOS los candidatos y no solo en los patrones del día, porque
   // esos patrones los derivamos nosotros de sus títulos (5.2) y su regla la
   // escribió él. Solo se respeta el músculo, si el día lo acota.
-  for (const j1 of [...elegidos]) {
-    if (elegidos.length >= cupo.max) break;
-    const falta = j1.jerarquia === 1 ? perfilCompensatorio(j1.perfil) : null;
-    if (!falta) continue;
-    const yaEsta = elegidos.some(
-      (e) => e.musculo === j1.musculo && e.jerarquia === falta.jerarquia && e.perfil === falta.perfil,
-    );
-    if (yaEsta) continue;
-    const companero = candidatos
-      .filter(
-        (c) =>
-          c.musculo === j1.musculo &&
-          c.jerarquia === falta.jerarquia &&
-          c.perfil === falta.perfil &&
-          !yaHoy.has(c.nombre) &&
-          (!plantilla.musculos || (c.musculo !== null && plantilla.musculos.includes(c.musculo))),
-      )
-      .sort(
-        (a, b) =>
-          Number(usados.has(a.nombre)) - Number(usados.has(b.nombre)) ||
-          rangoDeEleccion(a) - rangoDeEleccion(b) ||
-          a.nombre.localeCompare(b.nombre, "es"),
-      )[0];
-    if (companero) meter(companero);
-  }
+  const compensar = () => {
+    for (const j1 of [...elegidos]) {
+      if (elegidos.length >= cupo.max) break;
+      const falta = j1.jerarquia === 1 ? perfilCompensatorio(j1.perfil) : null;
+      if (!falta) continue;
+      const yaEsta = elegidos.some(
+        (e) => e.musculo === j1.musculo && e.jerarquia === falta.jerarquia && e.perfil === falta.perfil,
+      );
+      if (yaEsta) continue;
+      const companero = candidatos
+        .filter(
+          (c) =>
+            c.musculo === j1.musculo &&
+            c.jerarquia === falta.jerarquia &&
+            c.perfil === falta.perfil &&
+            !yaHoy.has(c.nombre) &&
+            (!plantilla.musculos || (c.musculo !== null && plantilla.musculos.includes(c.musculo))),
+        )
+        .sort(
+          (a, b) =>
+            Number(usados.has(a.nombre)) - Number(usados.has(b.nombre)) ||
+            rangoDeEleccion(a) - rangoDeEleccion(b) ||
+            a.nombre.localeCompare(b.nombre, "es"),
+        )[0];
+      if (companero) meter(companero);
+    }
+  };
+  compensar();
 
   // Relleno hasta su mínimo. Aquí sí se puede repetir lo de otro día —entrenar
   // el mismo patrón dos veces por semana es el propio reparto suyo— pero
@@ -136,6 +139,11 @@ export function elegirDelDia(
     if (!siguiente) break;
     meter(siguiente);
   }
+
+  // Otra pasada: el relleno puede haber metido un J1 nuevo (el Rumano entra
+  // aquí cuando el patrón de cadera ya lo ocupó el Hip Thrust), y ese J1 también
+  // lleva su compañero.
+  compensar();
 
   return elegidos;
 }

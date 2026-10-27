@@ -298,7 +298,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
   }
   if (modelo) {
     avisos.push(
-      `Modelo ${periodizacion}: las series, repeticiones y RPE de cada semana salen de su tabla ` +
+      `Modelo ${FICHA_PERIODIZACION[periodizacion].nombre}: las series de cada semana salen de su tabla ` +
         "de mesociclo, no del rango semanal por grupo muscular.",
     );
   } else {
@@ -314,14 +314,14 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
   const sinCompensar = semanaBase.flatMap((delDia, i) =>
     compensatoriosQueFaltan(delDia.map((c) => c.candidato)).map(
       (f) =>
-        `${reparto.plantilla[i].titulo}: "${f.j1}" (J1) va sin su ${FICHA_JERARQUIA[f.falta.jerarquia].nombre.split(" ·")[0]} ` +
+        `"${f.j1}" (${reparto.plantilla[i].titulo}) no tiene un ${FICHA_JERARQUIA[f.falta.jerarquia].nombre.split(" ·")[0]} ` +
         `de ${f.falta.perfil} de ${f.musculo}`,
     ),
   );
   if (sinCompensar.length > 0) {
     avisos.push(
-      `Perfil compensatorio incompleto (su regla 2): ${sinCompensar.join("; ")}. ` +
-        "El día no admite ese ejercicio o no hay uno aprobado y clasificado.",
+      `Perfil compensatorio: ${sinCompensar.join("; ")}. ` +
+        "No hay ninguno encendido en la biblioteca o el día ya tiene el máximo de ejercicios.",
     );
   }
 
