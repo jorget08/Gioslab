@@ -131,7 +131,13 @@ export function completarVolumen(
           .map((dia, i) => ({ dia, i }))
           .filter(
             ({ dia, i }) =>
-              cabeEnElDia(cand, plantillas[i]) && dia.length < metodo.ejerciciosPorDia.max,
+              cabeEnElDia(cand, plantillas[i]) &&
+              dia.length < metodo.ejerciciosPorDia.max &&
+              // Un segundo J1 del mismo músculo el mismo día repite estímulo.
+              !(
+                cand.jerarquia === 1 &&
+                dia.some((c) => c.candidato.jerarquia === 1 && c.candidato.musculo === cand.musculo)
+              ),
           )
           .sort(
             (a, b) =>

@@ -52,7 +52,7 @@ import { esJerarquia, j3AntesDeJ1, type Jerarquia } from "@/domain/jerarquias";
  * `athletes` —`experience_level` y `training_goal`— y cuál manda cuando chocan
  * es pregunta abierta de 5.2. Aquí solo se nombra el catálogo.
  */
-export const PERIODIZACIONES = ["lineal", "ondulante", "atr"] as const;
+export const PERIODIZACIONES = ["lineal", "ondulante", "bloques", "atr"] as const;
 export type Periodizacion = (typeof PERIODIZACIONES)[number];
 
 export const FICHA_PERIODIZACION: Record<
@@ -61,18 +61,26 @@ export const FICHA_PERIODIZACION: Record<
 > = {
   lineal: {
     nombre: "Lineal",
-    comoLaLlama: "Lineal Secuencial / Bloques · Lineal Progresiva Simple",
+    comoLaLlama: "Lineal Progresiva Simple · Lineal Secuencial",
     cuando: "Principiantes o fases iniciales de acondicionamiento.",
   },
   ondulante: {
     nombre: "Ondulante",
     comoLaLlama: "Ondulante (DUP/WUP)",
-    cuando: "Intermedios y avanzados. La carga y las repeticiones fluctúan por sesión o por semana.",
+    cuando: "Intermedios. La carga y las repeticiones fluctúan por sesión o por semana.",
+  },
+  // Separado del ATR el 27-oct: "el avanzado es por bloques, de 8 a 12
+  // semanas, muy parecido a tu app". Hasta entonces el catálogo los mezclaba
+  // en "ATR / Bloques concentrados", y por eso el ATR parecía servir para todo.
+  bloques: {
+    nombre: "Bloques",
+    comoLaLlama: "Bloques Modificados · Base → Intensificación",
+    cuando: "Avanzados. Mesociclo de 8 a 12 semanas en bloques que suben el volumen.",
   },
   atr: {
-    nombre: "ATR / Bloques concentrados",
-    comoLaLlama: "ATR · Recomposición / Priorización / Especialización",
-    cuando: "Rendimiento y fisicoculturismo. Acumulación, Transformación y Realización.",
+    nombre: "ATR",
+    comoLaLlama: "ATR Restringido · Acumulación, Transformación y Realización",
+    cuando: "Única y exclusivamente rendimiento deportivo y fuerza máxima.",
   },
 };
 

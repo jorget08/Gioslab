@@ -46,6 +46,13 @@ export interface CargaMotor {
   ilegibles: string[];
   /** El método activo (5.2). `null` si no hay ninguno cargado. */
   metodo: Metodo | null;
+  /**
+   * Cuándo cambió por última vez lo que decide un plan: el método o una regla.
+   * Un plan generado antes está hecho con criterios que ya no valen, y la
+   * pantalla lo tiene que decir (27-oct: Giovanni vio un ATR de septiembre y
+   * creyó que el arreglo no había llegado).
+   */
+  criteriosDesde: string | null;
 }
 
 /**
@@ -99,7 +106,7 @@ export async function cargarMotorDelAtleta(
       .eq("is_active", true),
     supabase
       .from("rules")
-      .select("rule_key, version, nivel, condition, actions, justification, evidence_level")
+      .select("rule_key, version, nivel, condition, actions, justification, evidence_level, created_at")
       .eq("is_active", true),
     supabase
       .from("exercise_library")
@@ -108,7 +115,7 @@ export async function cargarMotorDelAtleta(
       )
       .eq("is_active", true),
     supabase.from("exercise_variants").select("exercise_id, variant_exercise_id, relation_type"),
-    supabase.from("training_methods").select("method_data").eq("is_active", true).maybeSingle(),
+    supabase.from("training_methods").select("method_data, created_at").eq("is_active", true).maybeSingle(),
   ]);
 
   const atleta = (a.data ?? null) as AtletaDelMotor | null;
@@ -155,5 +162,10 @@ export async function cargarMotorDelAtleta(
     patronDe: Object.fromEntries(ejercicios.map((e) => [e.name, e.movement_pattern])),
     ilegibles,
     metodo: leerMetodo((met.data as { method_data?: unknown } | null)?.method_data ?? null),
+    criteriosDesde:
+      [met.data?.created_at, ...((reg.data ?? []) as { created_at: string }[]).map((r) => r.created_at)]
+        .filter((f): f is string => typeof f === "string")
+        .sort()
+        .at(-1) ?? null,
   };
 }

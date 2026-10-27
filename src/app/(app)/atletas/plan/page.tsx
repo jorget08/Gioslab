@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { DiaEditable, type OpcionEjercicio } from "@/components/plan/dia-editable";
-import { FormularioGenerar } from "@/components/plan/formulario-generar";
+import { FormularioGenerar, modeloDelAtleta } from "@/components/plan/formulario-generar";
 import { Guarda } from "@/components/shared/guarda";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,7 @@ interface FilaPlan {
   id: string;
   plan_data: unknown;
   plan_generado: unknown;
+  created_at: string;
 }
 
 function PlanDelAtleta() {
@@ -97,7 +98,7 @@ function PlanDelAtleta() {
       cargarMotorDelAtleta(supabase, atletaId),
       supabase
         .from("workout_plans")
-        .select("id, plan_data, plan_generado")
+        .select("id, plan_data, plan_generado, created_at")
         .eq("athlete_id", atletaId)
         .order("created_at", { ascending: false })
         .limit(1),
@@ -120,6 +121,12 @@ function PlanDelAtleta() {
         // Precargado con lo que ya sabemos de él: el entrenador solo confirma.
         setObjetivo(objetivoDeMeta(c.metodo, c.atleta.training_goal) ?? "");
       }
+
+      // Si su modelo trae duración propia (lineal 6, bloques 12), esa manda
+      // sobre las 5 por defecto y sobre la del plan viejo: un avanzado al que
+      // se le regenera un plan de 5 semanas tiene que salir con sus 12.
+      const duracion = c.metodo && c.atleta ? modeloDelAtleta(c.metodo, c.atleta, "")?.semanas.length : undefined;
+      if (duracion) setSemanas(duracion);
       setCargando(false);
     });
 
@@ -142,6 +149,11 @@ function PlanDelAtleta() {
   }, [carga]);
 
   const problemas = useMemo(() => (plan ? validarPlan(plan) : []), [plan]);
+
+  // El plan guardado se generó antes del último cambio de método o de reglas.
+  const desactualizado = Boolean(
+    fila && carga?.criteriosDesde && fila.created_at < carga.criteriosDesde,
+  );
   const cambios = useMemo(() => resumenDeCambios(generado, plan ?? ({} as Plan)), [generado, plan]);
 
   async function generar() {
@@ -196,7 +208,7 @@ function PlanDelAtleta() {
         plan_generado: salida.plan as unknown as Json,
         status: "borrador",
       })
-      .select("id, plan_data, plan_generado")
+      .select("id, plan_data, plan_generado, created_at")
       .single();
 
     if (error || !data) {
@@ -303,6 +315,13 @@ function PlanDelAtleta() {
         </p>
       </header>
 
+      {desactualizado && (
+        <p className="rounded-xl border border-[color:var(--gl-alerta)]/40 bg-[color:var(--gl-alerta-sv)] p-4 text-sm">
+          Este plan se generó antes de la última actualización del método o de las reglas de
+          Giovanni, así que no las tiene. Dale a <strong>Generar de nuevo</strong> para aplicarlas.
+        </p>
+      )}
+
       {!carga.metodo && (
         <p className="rounded-xl border border-[color:var(--gl-peligro)]/40 p-4 text-sm">
           No hay ningún método de programación activo en la base, así que no se puede generar
@@ -314,6 +333,7 @@ function PlanDelAtleta() {
       {carga.metodo && (
         <FormularioGenerar
           metodo={carga.metodo}
+          atleta={carga.atleta}
           hayPlan={Boolean(plan)}
           dias={dias}
           semanas={semanas}

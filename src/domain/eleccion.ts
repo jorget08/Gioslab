@@ -56,9 +56,15 @@ export function elegirDelDia(
       ? 0
       : 1;
 
+  // Dos J1 del mismo músculo en una sesión (Rumano y Rumano desde bloque) es
+  // repetir el estímulo y dejar sin sitio al J3 que lo completa.
+  const j1Repetido = (c: Candidato) =>
+    c.jerarquia === 1 && elegidos.some((e) => e.jerarquia === 1 && e.musculo === c.musculo) ? 1 : 0;
+
   // El motor manda (prioritario) y después su jerarquía.
   const orden = (a: Candidato, b: Candidato) =>
     Number(b.prioritario) - Number(a.prioritario) ||
+    j1Repetido(a) - j1Repetido(b) ||
     rangoDeEleccion(a) - rangoDeEleccion(b) ||
     compensa(a) - compensa(b) ||
     Number(a.aislamiento) - Number(b.aislamiento) ||
@@ -87,14 +93,48 @@ export function elegirDelDia(
     if (elegido) meter(elegido);
   }
 
+  // Su regla 2 es "obligatoria": cada J1 lleva su compañero —J3 de
+  // acortamiento, o J2 de estiramiento si el J1 ya es de acortamiento—. Se
+  // busca en TODOS los candidatos y no solo en los patrones del día, porque
+  // esos patrones los derivamos nosotros de sus títulos (5.2) y su regla la
+  // escribió él. Solo se respeta el músculo, si el día lo acota.
+  for (const j1 of [...elegidos]) {
+    if (elegidos.length >= cupo.max) break;
+    const falta = j1.jerarquia === 1 ? perfilCompensatorio(j1.perfil) : null;
+    if (!falta) continue;
+    const yaEsta = elegidos.some(
+      (e) => e.musculo === j1.musculo && e.jerarquia === falta.jerarquia && e.perfil === falta.perfil,
+    );
+    if (yaEsta) continue;
+    const companero = candidatos
+      .filter(
+        (c) =>
+          c.musculo === j1.musculo &&
+          c.jerarquia === falta.jerarquia &&
+          c.perfil === falta.perfil &&
+          !yaHoy.has(c.nombre) &&
+          (!plantilla.musculos || (c.musculo !== null && plantilla.musculos.includes(c.musculo))),
+      )
+      .sort(
+        (a, b) =>
+          Number(usados.has(a.nombre)) - Number(usados.has(b.nombre)) ||
+          rangoDeEleccion(a) - rangoDeEleccion(b) ||
+          a.nombre.localeCompare(b.nombre, "es"),
+      )[0];
+    if (companero) meter(companero);
+  }
+
   // Relleno hasta su mínimo. Aquí sí se puede repetir lo de otro día —entrenar
   // el mismo patrón dos veces por semana es el propio reparto suyo— pero
   // primero se agota lo que no se ha usado.
-  const resto = delDia.filter((c) => !yaHoy.has(c.nombre)).sort(orden);
-  for (const c of [...resto.filter((x) => !usados.has(x.nombre)), ...resto]) {
-    if (elegidos.length >= cupo.min || elegidos.length >= cupo.max) break;
-    if (yaHoy.has(c.nombre)) continue;
-    meter(c);
+  //
+  // Se reordena en cada vuelta y no una sola vez: lo que ya entró cambia el
+  // orden —un segundo J1 del mismo músculo pasa a ir detrás—.
+  while (elegidos.length < cupo.min && elegidos.length < cupo.max) {
+    const resto = delDia.filter((c) => !yaHoy.has(c.nombre)).sort(orden);
+    const siguiente = resto.find((c) => !usados.has(c.nombre)) ?? resto[0];
+    if (!siguiente) break;
+    meter(siguiente);
   }
 
   return elegidos;

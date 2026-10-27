@@ -16,14 +16,22 @@
 
 import { PERIODIZACIONES, type Periodizacion } from "@/domain/plan";
 
-/** Una fila de su tabla: lo que se hace esa semana en cada ejercicio. */
+/**
+ * Una fila de su tabla: lo que se hace esa semana en cada ejercicio.
+ *
+ * Repeticiones y RPE son opcionales: el lineal los fija semana a semana, pero
+ * el de bloques solo mueve las series y deja que el rango y el RPE salgan del
+ * objetivo, como en `gymapp`. Lo que la fila no dice, lo dice el objetivo.
+ */
 export interface SemanaModelo {
   series: number;
-  repMin: number;
-  repMax: number;
-  /** Su tabla da un solo RPE por semana: vale para todas las series. */
-  rpe: number;
+  repMin?: number;
+  repMax?: number;
+  rpePrimeras?: number;
+  rpeUltima?: number;
   descarga: boolean;
+  /** Nombre del bloque al que pertenece la semana, para la nota del día. */
+  bloque?: string;
 }
 
 export interface Modelo {
@@ -67,16 +75,27 @@ export function validarModelos(crudo: Crudo): string[] {
       const donde = `Modelo "${nombre}", semana ${i + 1}`;
       const f = esObjeto(s) ? s : {};
       const series = num(f.series);
-      const repMin = num(f.rep_min);
-      const repMax = num(f.rep_max);
-      const rpe = num(f.rpe);
       if (series === null || !Number.isInteger(series) || series < 1 || series > 20) {
         e.push(`${donde}: series inválidas.`);
       }
-      if (repMin === null || repMax === null || repMin < 1 || repMin > repMax) {
-        e.push(`${donde}: el rango de repeticiones no es válido.`);
+      // Las repeticiones van las dos o ninguna: media pareja no es un rango.
+      if (f.rep_min !== undefined || f.rep_max !== undefined) {
+        const repMin = num(f.rep_min);
+        const repMax = num(f.rep_max);
+        if (repMin === null || repMax === null || repMin < 1 || repMin > repMax) {
+          e.push(`${donde}: el rango de repeticiones no es válido.`);
+        }
       }
-      if (rpe === null || rpe < 1 || rpe > 10) e.push(`${donde}: el RPE se sale de 1–10.`);
+      for (const k of ["rpe", "rpe_primeras", "rpe_ultima"] as const) {
+        if (f[k] === undefined) continue;
+        const v = num(f[k]);
+        if (v === null || v < 1 || v > 10) e.push(`${donde}: el RPE se sale de 1–10.`);
+      }
+      const rpe1 = num(f.rpe_primeras);
+      const rpe2 = num(f.rpe_ultima);
+      if (rpe1 !== null && rpe2 !== null && rpe2 < rpe1) {
+        e.push(`${donde}: la última serie tiene menos RPE que las anteriores.`);
+      }
     });
   }
   return e;
@@ -90,13 +109,19 @@ export function leerModelos(crudo: Crudo): {
   const modelos: Partial<Record<Periodizacion, Modelo>> = {};
   for (const [nombre, m] of Object.entries((crudo.modelos as Crudo | undefined) ?? {})) {
     modelos[nombre as Periodizacion] = {
-      semanas: ((m as Crudo).semanas as Crudo[]).map((s) => ({
-        series: s.series as number,
-        repMin: s.rep_min as number,
-        repMax: s.rep_max as number,
-        rpe: s.rpe as number,
-        descarga: s.descarga === true,
-      })),
+      semanas: ((m as Crudo).semanas as Crudo[]).map((s) => {
+        // `rpe` a secas es la forma corta del lineal: un RPE para todas.
+        const rpe = num(s.rpe);
+        const fila: SemanaModelo = { series: s.series as number, descarga: s.descarga === true };
+        if (num(s.rep_min) !== null) fila.repMin = s.rep_min as number;
+        if (num(s.rep_max) !== null) fila.repMax = s.rep_max as number;
+        const rpe1 = num(s.rpe_primeras) ?? rpe;
+        const rpe2 = num(s.rpe_ultima) ?? rpe;
+        if (rpe1 !== null) fila.rpePrimeras = rpe1;
+        if (rpe2 !== null) fila.rpeUltima = rpe2;
+        if (typeof s.bloque === "string") fila.bloque = s.bloque;
+        return fila;
+      }),
     };
   }
   return {

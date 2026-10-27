@@ -574,12 +574,33 @@ describe("sus jerarquías eligen y ordenan", () => {
     expect(validarPlan(alReves).join(" ")).toContain("Los J1 van primero");
   });
 
-  it("si al J1 le falta su compañero compensatorio y el día no lo admite, se avisa", () => {
-    // El primer torso de la semana de 4 días no admite aislamiento: el Pec Deck
-    // no cabe ahí, y su regla 2 queda sin cumplir ese día.
-    const { avisos } = generar();
-    expect(avisos.join(" ")).toContain("Perfil compensatorio incompleto");
-    expect(avisos.join(" ")).toContain("Torso (Empuje/Tracción)");
+  it("cada J1 lleva su compañero compensatorio, aunque el día no liste aislamiento", () => {
+    // Su regla 2 es "obligatoria" (27-oct: la lista de avisos le pareció un
+    // error, y lo era). El primer torso de la semana de 4 días no tiene
+    // aislamiento en sus patrones —derivados por nosotros—, y aun así el
+    // Press Inclinado (J1 de estiramiento) lleva su Pec Deck (J3).
+    const { plan, avisos } = generar();
+    expect(torso(plan!)).toContain("Pec Deck");
+    expect(avisos.join(" ")).not.toContain("Torso (Empuje/Tracción)");
+  });
+
+  it("no mete dos J1 del mismo músculo en la misma sesión", () => {
+    const conDosRumanos = [
+      ...CLASIFICADA,
+      clasificado(ejercicio("Peso Muerto Rumano desde Bloque", "hip_hinge_dominante_cadera", "Isquiosurales"), 1, "estiramiento"),
+    ];
+    const { plan } = generarPlan(
+      entrada({
+        ejercicios: conDosRumanos,
+        resultado: resultado({ ejercicios: conDosRumanos.map((e) => decision(e.name)) }),
+      }),
+    );
+    for (const d of plan!.semanas[0].dias) {
+      const j1Isquio = d.central.ejercicios.filter(
+        (e) => e.jerarquia === 1 && e.ejercicio.startsWith("Peso Muerto Rumano"),
+      );
+      expect(j1Isquio.length).toBeLessThanOrEqual(1);
+    }
   });
 });
 
@@ -610,7 +631,7 @@ describe("un principiante entra en lineal, y el plan es lineal de verdad", () =>
 
   it("el método activo se lee entero", () => {
     expect(ACTIVO).not.toBeNull();
-    expect(ACTIVO.periodizacionPorNivel).toEqual({ Principiante: "lineal" });
+    expect(ACTIVO.periodizacionPorNivel).toEqual({ Principiante: "lineal", Avanzado: "bloques" });
   });
 
   it("Principiante con objetivo hipertrofia → lineal; Intermedio → el de su objetivo", () => {
@@ -652,5 +673,48 @@ describe("un principiante entra en lineal, y el plan es lineal de verdad", () =>
     );
     expect(plan!.periodizacion).toBe("ondulante");
     expect(plan!.semanas[0].dias[0].central.ejercicios[0].repMin).toBe(6);
+  });
+});
+
+describe("un avanzado entra en bloques de 12 semanas (método v4, 27-oct)", () => {
+  const DIR = new URL("../../supabase/migrations/", import.meta.url);
+  const ACTIVO: Metodo = leerMetodo(
+    readdirSync(DIR)
+      .filter((f) => f.endsWith(".sql"))
+      .sort()
+      .map((f) => readFileSync(new URL(f, DIR), "utf8"))
+      .filter((sql) => sql.includes("into public.training_methods") && sql.includes("$json$"))
+      .map((sql) => JSON.parse(sql.slice(sql.indexOf("$json$") + 6, sql.lastIndexOf("$json$"))))
+      .reduce((a, v) => ({ ...a, ...v })),
+  )!;
+
+  const generar = (semanas: number) =>
+    generarPlan(
+      entrada({
+        metodo: ACTIVO,
+        atleta: { sexo: "masculino", training_goal: "Hipertrofia (Masa Muscular)", experience_level: "Avanzado" },
+        opciones: { diasPorSemana: 4, semanas },
+      }),
+    );
+
+  it("Avanzado con hipertrofia → bloques, no ondulante", () => {
+    // Lo que reportó: "Hipertrofia · Ondulante · 5 semanas" para un avanzado.
+    expect(generar(12).plan!.periodizacion).toBe("bloques");
+  });
+
+  it("las series siguen la estructura de gymapp y el rango sale del objetivo", () => {
+    const { plan } = generar(12);
+    const series = plan!.semanas.map((s) => s.dias[0].central.ejercicios[0].seriesEfectivas);
+    expect(series).toEqual([2, 3, 3, 3, 3, 2, 3, 3, 3, 3, 4, 4]);
+    const e = plan!.semanas[1].dias[0].central.ejercicios[0];
+    // Hipertrofia: 6–12 y RPE 7,5 / 9, de su tabla del 31-ago.
+    expect([e.repMin, e.repMax, e.rpePrimeras, e.rpeUltima]).toEqual([6, 12, 7.5, 9]);
+    expect(plan!.semanas[5].tipo).toBe("descarga");
+    expect(plan!.semanas[0].dias[0].central.ejercicios[0].rpeUltima).toBe(7.5);
+    expect(validarPlan(plan!)).toEqual([]);
+  });
+
+  it("con menos de 12 semanas se avisa de que el mesociclo queda cortado", () => {
+    expect(generar(5).avisos.join(" ")).toContain("es de 12 semanas");
   });
 });

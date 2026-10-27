@@ -52,6 +52,7 @@ import {
 import { incluidos, type DecisionEjercicio, type Resultado } from "@/domain/motor";
 import {
   cierrePara,
+  FICHA_PERIODIZACION,
   validarPlan,
   VERSION_PLAN,
   type DiaPlan,
@@ -289,6 +290,12 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
   const modelo = metodo.modelos[periodizacion] ?? null;
 
   completarVolumen(semanaBase, reparto.plantilla, candidatos, metodo, resultado);
+  if (modelo && opciones.semanas < modelo.semanas.length) {
+    avisos.push(
+      `El modelo ${FICHA_PERIODIZACION[periodizacion].nombre} es de ${modelo.semanas.length} semanas; ` +
+        `con ${opciones.semanas} el mesociclo queda cortado antes de terminar.`,
+    );
+  }
   if (modelo) {
     avisos.push(
       `Modelo ${periodizacion}: las series, repeticiones y RPE de cada semana salen de su tabla ` +
@@ -359,7 +366,19 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
     // Con tabla propia, la semana es su fila: incluida su descarga, que en el
     // lineal es la 6ª y no la 4ª del método general.
     const fila = modelo ? semanaDelModelo(modelo, n) : null;
-    const rpeFila = fila ? rpeConElMotor({ primeras: fila.rpe, ultima: fila.rpe }, resultado.rir) : null;
+    const rpeFila = fila
+      ? fila.rpePrimeras !== undefined || fila.rpeUltima !== undefined
+        ? rpeConElMotor(
+            {
+              primeras: fila.rpePrimeras ?? fila.rpeUltima!,
+              ultima: fila.rpeUltima ?? fila.rpePrimeras!,
+            },
+            resultado.rir,
+          )
+        : rpeCarga
+      : null;
+    const repMin = fila?.repMin ?? parametros.repMin;
+    const repMax = fila?.repMax ?? parametros.repMax;
 
     const tipo: TipoSemana = fila
       ? fila.descarga
@@ -373,8 +392,9 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
 
     const notasSemana = fila
       ? [
-          `${tipo === "descarga" ? "Descarga activa" : `Semana ${n} del mesociclo ${periodizacion}`}: ` +
-            `${fila.series} series de ${fila.repMin === fila.repMax ? fila.repMin : `${fila.repMin}–${fila.repMax}`} ` +
+          `${tipo === "descarga" ? "Descarga" : `Semana ${n}`}` +
+            `${fila.bloque ? ` · bloque ${fila.bloque}` : ` del mesociclo ${FICHA_PERIODIZACION[periodizacion].nombre}`}: ` +
+            `${fila.series} series de ${repMin === repMax ? repMin : `${repMin}–${repMax}`} ` +
             `a RPE ${rpeFila!.ultima}.`,
         ]
       : tipo === "descarga"
@@ -403,8 +423,8 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
             ? metodo.seriesPorEjercicio.calentamientoAislamiento
             : metodo.seriesPorEjercicio.calentamientoCompuesto,
           seriesEfectivas: series,
-          repMin: fila ? fila.repMin : parametros.repMin,
-          repMax: fila ? fila.repMax : parametros.repMax,
+          repMin,
+          repMax,
           rpePrimeras: rpeFila
             ? rpeFila.primeras
             : tipo === "descarga" ? metodo.descarga.rpePrimeras : rpeCarga.primeras,
