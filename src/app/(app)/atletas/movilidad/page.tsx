@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
-import { CampoROM } from "@/components/movilidad/campo-rom";
 import { AvisoBorrador } from "@/components/shared/aviso-borrador";
 import { GrupoOpciones } from "@/components/shared/grupo-opciones";
 import { Guarda } from "@/components/shared/guarda";
@@ -13,11 +12,13 @@ import { Button } from "@/components/ui/button";
 import { useSesion } from "@/lib/auth/contexto";
 import { descartarBorrador, guardarBorrador, leerBorrador } from "@/lib/borradores";
 import {
+  estadoElegido,
   EXTENSION_TORACICA,
-  fueraDeRango,
+  opcionesDe,
   TESTS,
   TOTAL_TESTS,
   type ExtensionToracica,
+  type TestNumerico,
 } from "@/domain/movilidad";
 import { HECHOS } from "@/domain/reglas";
 import type { ClaseSegmento } from "@/domain/segmentos";
@@ -35,6 +36,10 @@ import { createClient } from "@/lib/supabase/client";
  * paso 3 (segmentos, que llega en el borrador) más lo de aquí. La tabla es de
  * solo inserción —una evaluación no se corrige, se anula y se repite (§3.5)—,
  * así que no se puede insertar en el paso 3 y completar aquí.
+ *
+ * SIN GRADOS desde el 3-nov. Giovanni: "escribir el valor exacto ralentiza la
+ * evaluación; Óptimo o Restringido". Cada test es un toque, con el umbral
+ * escrito debajo para que el criterio sea el mismo en todos los gimnasios.
  */
 
 interface Atleta {
@@ -68,7 +73,6 @@ const PERFIL = [
 ] as const;
 type ColumnaPerfil = (typeof PERFIL)[number]["columna"];
 
-type TestNumerico = keyof typeof TESTS;
 const NUMERICOS = Object.keys(TESTS) as TestNumerico[];
 
 /** Orden anatómico de recorrido: tobillo → cadera → torso → hombro. */
@@ -99,7 +103,7 @@ function Movilidad() {
   const [rom, setRom] = useState<Record<string, string>>({});
   const [toracica, setToracica] = useState<ExtensionToracica | undefined>();
   const [perfil, setPerfil] = useState<Partial<Record<ColumnaPerfil, string>>>({});
-  const [anterior, setAnterior] = useState<Record<string, number | null>>({});
+  const [anterior, setAnterior] = useState<Record<string, unknown>>({});
   const [pendiente, setPendiente] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,7 +118,7 @@ function Movilidad() {
       supabase
         .from("biomech_evaluations")
         .select(
-          "ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thomas_test_deg, slr_deg, shoulder_flexion_deg, shoulder_external_rotation_deg",
+          "ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thomas_test_deg, slr_deg, shoulder_flexion_deg, shoulder_external_rotation_deg, rom_estados",
         )
         .eq("athlete_id", atletaId)
         .is("voided_at", null)
@@ -125,7 +129,7 @@ function Movilidad() {
       setAtleta(a.data);
       // La movilidad SÍ cambia entre evaluaciones —a diferencia del hueso—, así
       // que la anterior se enseña para comparar pero no se copia sola.
-      setAnterior((e.data?.[0] as Record<string, number | null>) ?? {});
+      setAnterior((e.data?.[0] as Record<string, unknown> | undefined) ?? {});
       setCargando(false);
     });
 
@@ -181,7 +185,17 @@ function Movilidad() {
   }
 
   function restaurar() {
-    setRom(segmentos.rom ?? {});
+    // Un borrador de antes del 3-nov trae grados: se pasan a su estado.
+    const guardado = segmentos.rom ?? {};
+    setRom(
+      Object.fromEntries(
+        NUMERICOS.flatMap((t) => {
+          const v = guardado[t];
+          const estado = estadoElegido(t, aNumero(v), { [t]: v });
+          return estado ? [[t, estado]] : [];
+        }),
+      ),
+    );
     setToracica(segmentos.toracica);
     setPerfil(segmentos.perfil ?? {});
     setPendiente(null);
@@ -192,18 +206,32 @@ function Movilidad() {
     persistir({}, undefined, {});
   }
 
-  const tomados =
-    NUMERICOS.filter((t) => aNumero(rom[t]) !== null).length + (toracica ? 1 : 0);
+  const marcados = NUMERICOS.filter((t) => opcionesDe(t).includes(rom[t] ?? ""));
+  const tomados = marcados.length + (toracica ? 1 : 0);
 
-  // Un valor fuera del CHECK de la tabla se caza aquí, no al guardar: perder el
-  // trabajo al final es lo que hace que se abandone la herramienta.
-  const hayInvalidos = NUMERICOS.some((t) => {
-    const n = aNumero(rom[t]);
-    return n !== null && fueraDeRango(t, n) !== null;
-  });
+  const anteriorDe = (t: TestNumerico) =>
+    estadoElegido(t, anterior[t] as number | null | undefined, anterior.rom_estados);
+
+  /** Un test: dos toques (tres en la dorsiflexión) con su umbral de referencia. */
+  const campo = (t: TestNumerico) => (
+    <div key={t} className="space-y-1">
+      <GrupoOpciones
+        nombre={t}
+        etiqueta={TESTS[t].etiqueta}
+        ayuda={`${TESTS[t].protocolo}. ${TESTS[t].implicacion}.`}
+        opciones={opcionesDe(t).map((o) => ({ valor: o, texto: o }))}
+        valor={rom[t]}
+        onChange={(v) => cambiarROM(t, v)}
+        columnas
+      />
+      {anteriorDe(t) && (
+        <p className="text-xs text-muted-foreground">La vez pasada: {anteriorDe(t)}</p>
+      )}
+    </div>
+  );
 
   async function guardar() {
-    if (!atleta || hayInvalidos) return;
+    if (!atleta) return;
     setGuardando(true);
     setError(null);
 
@@ -214,14 +242,9 @@ function Movilidad() {
       femur_class: segmentos.femur ?? null,
       torso_class: segmentos.torso ?? null,
       femur_torso_ratio: segmentos.proporcion ?? null,
-      ankle_dorsiflexion_cm: aNumero(rom.ankle_dorsiflexion_cm),
-      hip_flexion_deg: aNumero(rom.hip_flexion_deg),
-      hip_internal_rotation_deg: aNumero(rom.hip_internal_rotation_deg),
-      thomas_test_deg: aNumero(rom.thomas_test_deg),
-      slr_deg: aNumero(rom.slr_deg),
+      // Los grados ya no se piden: van vacíos y el estado va aquí.
+      rom_estados: marcados.length > 0 ? Object.fromEntries(marcados.map((t) => [t, rom[t]])) : null,
       thoracic_extension: toracica ?? null,
-      shoulder_flexion_deg: aNumero(rom.shoulder_flexion_deg),
-      shoulder_external_rotation_deg: aNumero(rom.shoulder_external_rotation_deg),
       squat_dominance: perfil.squat_dominance ?? null,
       glute_vector: perfil.glute_vector ?? null,
       back_dominance: perfil.back_dominance ?? null,
@@ -269,26 +292,9 @@ function Movilidad() {
         <AvisoBorrador guardadoEn={pendiente} onRestaurar={restaurar} onDescartar={descartar} />
       )}
 
-      <Bloque rotulo="Tobillo">
-        <CampoROM
-          test="ankle_dorsiflexion_cm"
-          valor={rom.ankle_dorsiflexion_cm ?? ""}
-          onChange={(v) => cambiarROM("ankle_dorsiflexion_cm", v)}
-          anterior={anterior.ankle_dorsiflexion_cm}
-        />
-      </Bloque>
+      <Bloque rotulo="Tobillo">{campo("ankle_dorsiflexion_cm")}</Bloque>
 
-      <Bloque rotulo="Cadera">
-        {CADERA.map((t) => (
-          <CampoROM
-            key={t}
-            test={t}
-            valor={rom[t] ?? ""}
-            onChange={(v) => cambiarROM(t, v)}
-            anterior={anterior[t]}
-          />
-        ))}
-      </Bloque>
+      <Bloque rotulo="Cadera">{CADERA.map(campo)}</Bloque>
 
       <Bloque rotulo="Torso">
         <GrupoOpciones
@@ -305,17 +311,7 @@ function Movilidad() {
         )}
       </Bloque>
 
-      <Bloque rotulo="Hombro">
-        {HOMBRO.map((t) => (
-          <CampoROM
-            key={t}
-            test={t}
-            valor={rom[t] ?? ""}
-            onChange={(v) => cambiarROM(t, v)}
-            anterior={anterior[t]}
-          />
-        ))}
-      </Bloque>
+      <Bloque rotulo="Hombro">{HOMBRO.map(campo)}</Bloque>
 
       <Bloque rotulo="Perfil biomecánico">
         <p className="text-xs text-muted-foreground">
@@ -349,7 +345,7 @@ function Movilidad() {
           type="button"
           className="min-h-11 flex-[2]"
           onClick={guardar}
-          disabled={guardando || hayInvalidos}
+          disabled={guardando}
         >
           {guardando ? "Guardando…" : "Guardar evaluación"}
         </Button>
@@ -363,8 +359,8 @@ function Movilidad() {
           {tomados === 0
             ? "Puedes guardar solo con los segmentos del paso anterior."
             : TOTAL_TESTS - tomados === 1
-              ? "Falta una prueba. El motor no aplicará reglas sobre lo que quede sin medir."
-              : `Faltan ${TOTAL_TESTS - tomados} pruebas. El motor no aplicará reglas sobre lo que quede sin medir.`}
+              ? "Falta una prueba. El motor no aplicará reglas sobre lo que quede sin marcar."
+              : `Faltan ${TOTAL_TESTS - tomados} pruebas. El motor no aplicará reglas sobre lo que quede sin marcar.`}
         </p>
       )}
     </div>

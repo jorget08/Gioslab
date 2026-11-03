@@ -20,7 +20,7 @@ import {
   riesgoCinturaCadera,
   variacion,
 } from "@/domain/evolucion";
-import { perfilMovilidad, severidadDorsiflexion } from "@/domain/movilidad";
+import { estadoElegido, perfilMovilidad } from "@/domain/movilidad";
 import { interpretarProporcion } from "@/domain/segmentos";
 import { createClient } from "@/lib/supabase/client";
 
@@ -89,6 +89,7 @@ interface Biomecanica {
   thoracic_extension: string | null;
   shoulder_flexion_deg: number | null;
   shoulder_external_rotation_deg: number | null;
+  rom_estados: unknown;
 }
 
 interface Ciclo {
@@ -128,7 +129,7 @@ const PERIMETROS_FICHA = [
 const dec = (n: number) => n.toFixed(1).replace(".", ",");
 
 const COLUMNAS_BIOMEC =
-  "evaluated_at, femur_class, torso_class, femur_torso_ratio, ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thomas_test_deg, slr_deg, thoracic_extension, shoulder_flexion_deg, shoulder_external_rotation_deg";
+  "evaluated_at, femur_class, torso_class, femur_torso_ratio, ankle_dorsiflexion_cm, hip_flexion_deg, hip_internal_rotation_deg, thomas_test_deg, slr_deg, thoracic_extension, shoulder_flexion_deg, shoulder_external_rotation_deg, rom_estados";
 
 function Ficha() {
   const atletaId = useSearchParams().get("id") ?? "";
@@ -251,6 +252,7 @@ function Ficha() {
         thoracic_extension: biomec.thoracic_extension as "Normal" | "Cifótica" | null,
         shoulder_flexion_deg: biomec.shoulder_flexion_deg,
         shoulder_external_rotation_deg: biomec.shoulder_external_rotation_deg,
+        rom_estados: biomec.rom_estados,
       })
     : [];
 
@@ -473,8 +475,8 @@ function Ficha() {
                 // La dorsiflexión enseña la severidad, que es lo que dispara
                 // cada una de sus dos reglas distintas.
                 const etiqueta =
-                  r.test === "ankle_dorsiflexion_cm" && biomec.ankle_dorsiflexion_cm !== null
-                    ? severidadDorsiflexion(biomec.ankle_dorsiflexion_cm)
+                  r.test === "ankle_dorsiflexion_cm"
+                    ? estadoElegido(r.test, biomec.ankle_dorsiflexion_cm, biomec.rom_estados)
                     : r.estado;
 
                 return (
@@ -484,7 +486,7 @@ function Ficha() {
                   >
                     <span className="text-sm text-muted-foreground">{r.etiqueta}</span>
                     <span className="flex items-center gap-2">
-                      <span className="text-sm tabular-nums">{r.medida ?? "—"}</span>
+                      {(r.medida || !r.estado) && <span className="text-sm tabular-nums">{r.medida ?? "—"}</span>}
                       {etiqueta && (
                         <span
                           className={

@@ -125,6 +125,44 @@ export const HECHOS = {
     tipo: "numero", unidad: "°", nivel: 1,
     origen: "biomech_evaluations.slr_deg",
   },
+  // Los mismos tests como ESTADO, que es lo que marca el entrenador desde el
+  // 3-nov ("quitar los grados: Óptimo o Restringido"). Las reglas de movilidad
+  // miran estos; los de grados quedan para leer evaluaciones viejas.
+  dorsiflexion: {
+    etiqueta: "Dorsiflexión de tobillo (estado)",
+    tipo: "opcion", nivel: 1, dominio: ["Óptima", "Limitada", "Severa"],
+    origen: "biomech_evaluations.rom_estados, o ankle_dorsiflexion_cm en las viejas",
+  },
+  flexion_hombro: {
+    etiqueta: "Flexión de hombro (estado)",
+    tipo: "opcion", nivel: 1, dominio: ["Óptimo", "Restringido"],
+    origen: "biomech_evaluations.rom_estados, o shoulder_flexion_deg en las viejas",
+  },
+  rotacion_externa_hombro: {
+    etiqueta: "Rotación externa de hombro (estado)",
+    tipo: "opcion", nivel: 1, dominio: ["Óptimo", "Restringido"],
+    origen: "biomech_evaluations.rom_estados, o shoulder_external_rotation_deg en las viejas",
+  },
+  flexion_cadera: {
+    etiqueta: "Flexión de cadera (estado)",
+    tipo: "opcion", nivel: 1, dominio: ["Óptimo", "Restringido"],
+    origen: "biomech_evaluations.rom_estados, o hip_flexion_deg en las viejas",
+  },
+  rotacion_interna_cadera: {
+    etiqueta: "Rotación interna de cadera (estado)",
+    tipo: "opcion", nivel: 1, dominio: ["Óptimo", "Restringido"],
+    origen: "biomech_evaluations.rom_estados, o hip_internal_rotation_deg en las viejas",
+  },
+  thomas_test: {
+    etiqueta: "Thomas Test (estado)",
+    tipo: "opcion", nivel: 1, dominio: ["Óptimo", "Restringido"],
+    origen: "biomech_evaluations.rom_estados, o thomas_test_deg en las viejas",
+  },
+  slr: {
+    etiqueta: "Elevación de pierna recta (estado)",
+    tipo: "opcion", nivel: 1, dominio: ["Óptimo", "Restringido"],
+    origen: "biomech_evaluations.rom_estados, o slr_deg en las viejas",
+  },
   extension_toracica: {
     etiqueta: "Extensión torácica",
     tipo: "opcion", nivel: 1, dominio: ["Normal", "Cifótica"],

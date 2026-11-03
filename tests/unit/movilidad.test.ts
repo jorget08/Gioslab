@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  estadoElegido,
   estadoExtensionToracica,
   estadoROM,
   fueraDeRango,
@@ -223,5 +224,27 @@ describe("testsCompletados", () => {
     // Cero es falsy y además es el umbral: si se colara en la comprobación de
     // ausencia, el test peor clasificado pasaría por "sin medir".
     expect(testsCompletados({ thomas_test_deg: 0 })).toBe(1);
+  });
+});
+
+describe("estado marcado sin grados (3-nov)", () => {
+  it("si hay medida manda la medida; si no, lo que marcó el entrenador", () => {
+    expect(estadoElegido("shoulder_flexion_deg", 165, { shoulder_flexion_deg: "Óptimo" })).toBe("Restringido");
+    expect(estadoElegido("shoulder_flexion_deg", null, { shoulder_flexion_deg: "Óptimo" })).toBe("Óptimo");
+    expect(estadoElegido("ankle_dorsiflexion_cm", 3, null)).toBe("Severa");
+    expect(estadoElegido("ankle_dorsiflexion_cm", null, { ankle_dorsiflexion_cm: "Limitada" })).toBe("Limitada");
+  });
+
+  it("un estado que no es de ese test, o un jsonb raro, cuenta como no evaluado", () => {
+    expect(estadoElegido("slr_deg", null, { slr_deg: "Limitada" })).toBeNull();
+    expect(estadoElegido("slr_deg", null, "Óptimo")).toBeNull();
+    expect(estadoElegido("slr_deg", null, ["Óptimo"])).toBeNull();
+  });
+
+  it("el perfil cuenta como tomados los tests marcados, y Limitada es Restringido", () => {
+    const perfil = perfilMovilidad({ rom_estados: { ankle_dorsiflexion_cm: "Limitada", slr_deg: "Óptimo" } });
+    expect(perfil.find((r) => r.test === "ankle_dorsiflexion_cm")!.estado).toBe("Restringido");
+    expect(perfil.find((r) => r.test === "slr_deg")!.estado).toBe("Óptimo");
+    expect(testsCompletados({ rom_estados: { slr_deg: "Óptimo" } })).toBe(1);
   });
 });

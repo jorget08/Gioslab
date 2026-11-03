@@ -132,3 +132,22 @@ describe("resolverHechos", () => {
     expect(Object.keys(h).length).toBe(Object.keys(HECHOS).length);
   });
 });
+
+describe("resolverHechos con la movilidad por estado (3-nov)", () => {
+  it("el estado marcado se convierte en su hecho; sin marcar, no hay clave", () => {
+    const h = resolverHechos({
+      biomecanica: { rom_estados: { shoulder_flexion_deg: "Restringido", ankle_dorsiflexion_cm: "Severa" } },
+    });
+    expect(h.flexion_hombro).toBe("Restringido");
+    expect(h.dorsiflexion).toBe("Severa");
+    expect("slr" in h).toBe(false);
+    expect("flexion_hombro_grados" in h).toBe(false);
+  });
+
+  it("una evaluación vieja con grados da su estado por el umbral de la pantalla", () => {
+    const h = resolverHechos({ biomecanica: { shoulder_flexion_deg: 172, slr_deg: 60, ankle_dorsiflexion_cm: 7 } });
+    expect(h.flexion_hombro).toBe("Óptimo");
+    expect(h.slr).toBe("Restringido");
+    expect(h.dorsiflexion).toBe("Limitada");
+  });
+});

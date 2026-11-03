@@ -479,6 +479,7 @@ export type Database = {
           humerus_length_cm: number | null
           id: string
           notes: string | null
+          rom_estados: Json | null
           shoulder_external_rotation_deg: number | null
           shoulder_flexion_deg: number | null
           slr_deg: number | null
@@ -510,6 +511,7 @@ export type Database = {
           humerus_length_cm?: number | null
           id?: string
           notes?: string | null
+          rom_estados?: Json | null
           shoulder_external_rotation_deg?: number | null
           shoulder_flexion_deg?: number | null
           slr_deg?: number | null
@@ -541,6 +543,7 @@ export type Database = {
           humerus_length_cm?: number | null
           id?: string
           notes?: string | null
+          rom_estados?: Json | null
           shoulder_external_rotation_deg?: number | null
           shoulder_flexion_deg?: number | null
           slr_deg?: number | null

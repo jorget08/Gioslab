@@ -6,12 +6,16 @@ import {
   HECHOS,
   describirRegla,
   esHecho,
+  validarPredicado,
   validarRegla,
   type ClaveAccion,
+  type Condicion,
   type NivelMotor,
   type Regla,
 } from "@/domain/reglas";
+import { resolverHechos } from "@/domain/hechos-atleta";
 import { TESTS } from "@/domain/movilidad";
+import { evaluarCondicion, type Hechos } from "@/domain/motor";
 
 /**
  * La matriz que se cargó en la base, comprobada contra la gramática (tarea 3.3).
@@ -135,6 +139,66 @@ describe("la matriz cargada en la 3.3", () => {
       const suma = Object.values(r.actions.ratio_patron).reduce((a, b) => a + b, 0);
       expect(suma, r.rule_key).toBeCloseTo(1, 5);
     }
+  });
+});
+
+// --- Movilidad por estado (3-nov) -------------------------------------------
+
+describe("las reglas de movilidad miran el estado que marca el entrenador", () => {
+  // Giovanni quitó los grados el 3-nov: el entrenador marca Óptimo o
+  // Restringido. Antes de esto el fallo era que pantalla y regla tenían dos
+  // umbrales que se olvidaban de moverse juntos (175° vs 170° en el hombro);
+  // con el estado ya no hay umbral en la regla que se pueda desfasar.
+  const SQL = readFileSync(
+    new URL("../../supabase/migrations/20261103110000_movilidad_por_estado.sql", import.meta.url),
+    "utf8",
+  );
+  const condiciones = [...SQL.matchAll(/\('([a-z-]+)',\s+'(\{"todas".*?\})'\)/g)].map((m) => ({
+    rule_key: m[1],
+    condicion: JSON.parse(m[2]) as Condicion,
+  }));
+  const dispara = (c: Condicion, h: Hechos) => evaluarCondicion(c.todas ?? [], h).veredicto;
+
+  it("son las seis, y cada predicado es gramática válida con un valor de su dominio", () => {
+    expect(condiciones.map((c) => c.rule_key).sort()).toEqual([
+      "dorsiflexion-limitada",
+      "dorsiflexion-severa",
+      "flexion-hombro-restringida",
+      "rotacion-externa-hombro-limitada",
+      "slr-isquiotibiales-restringido",
+      "thomas-test-flexores-acortados",
+    ]);
+    for (const c of condiciones) {
+      for (const p of c.condicion.todas ?? []) expect(validarPredicado(p)).toEqual([]);
+    }
+  });
+
+  it("todo Óptimo no dispara ninguna; todo Restringido dispara cada una", () => {
+    const marcar = (estado: "Óptimo" | "Restringido") =>
+      resolverHechos({
+        biomecanica: {
+          rom_estados: Object.fromEntries(
+            Object.keys(TESTS).map((t) => [
+              t,
+              t === "ankle_dorsiflexion_cm" ? (estado === "Óptimo" ? "Óptima" : "Limitada") : estado,
+            ]),
+          ),
+        },
+      });
+    const optimo = marcar("Óptimo");
+    const restringido = marcar("Restringido");
+    for (const c of condiciones) {
+      expect(dispara(c.condicion, optimo)).not.toBe("cumple");
+      if (c.rule_key !== "dorsiflexion-severa") expect(dispara(c.condicion, restringido)).toBe("cumple");
+    }
+  });
+
+  it("una evaluación vieja con grados sigue disparando por su umbral de pantalla", () => {
+    const h = resolverHechos({ biomecanica: { shoulder_flexion_deg: 165, ankle_dorsiflexion_cm: 3 } });
+    const de = (k: string) => condiciones.find((c) => c.rule_key === k)!.condicion;
+    expect(dispara(de("flexion-hombro-restringida"), h)).toBe("cumple");
+    expect(dispara(de("dorsiflexion-severa"), h)).toBe("cumple");
+    expect(dispara(de("dorsiflexion-limitada"), h)).not.toBe("cumple");
   });
 });
 

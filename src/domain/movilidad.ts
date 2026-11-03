@@ -12,9 +12,13 @@
  * no se guarda en la evaluación: depende del ejercicio concreto y de la versión
  * de reglas vigente.
  *
- * Se guarda la MEDIDA, no la etiqueta. Si mañana él baja el umbral de
- * dorsiflexión de 10 a 9 cm, el histórico se reinterpreta solo. Si hubiéramos
- * guardado "Restringido", habría que revisar cada evaluación a mano.
+ * Hasta el 3-nov se guardaba la MEDIDA y la etiqueta se derivaba del umbral.
+ * Giovanni pidió quitar los grados: "escribir el valor exacto ralentiza la
+ * evaluación en el gimnasio; un control de dos estados, Óptimo o Restringido".
+ * Desde entonces el entrenador ELIGE el estado (`rom_estados`) y la medida
+ * queda solo en las evaluaciones viejas, donde el estado sale del umbral como
+ * antes. La dorsiflexión conserva sus tres estados porque sus dos reglas
+ * (Limitada y Severa) mandan cosas distintas.
  *
  * Umbrales: ficha de movilidad de Giovanni (docs/ESPECIFICACION-FICHAS.md §4).
  * No hay ninguno inventado; los que faltan están anotados como tales.
@@ -58,7 +62,9 @@ export interface MetaTest {
   implicacion: string;
 }
 
-export const TESTS: Record<Exclude<TestMovilidad, "thoracic_extension">, MetaTest> = {
+export type TestNumerico = Exclude<TestMovilidad, "thoracic_extension">;
+
+export const TESTS: Record<TestNumerico, MetaTest> = {
   ankle_dorsiflexion_cm: {
     etiqueta: "Dorsiflexión de tobillo",
     protocolo: "Test de pared: distancia del dedo gordo al muro con la rodilla tocando",
@@ -186,6 +192,39 @@ export function estadoExtensionToracica(
   return valor === "Normal" ? "Óptimo" : "Restringido";
 }
 
+/** Lo que el entrenador puede marcar en cada test (3-nov). */
+export const OPCIONES_DORSIFLEXION = ["Óptima", "Limitada", "Severa"] as const;
+export const OPCIONES_ROM = ["Óptimo", "Restringido"] as const;
+
+export function opcionesDe(test: TestNumerico): readonly string[] {
+  return test === "ankle_dorsiflexion_cm" ? OPCIONES_DORSIFLEXION : OPCIONES_ROM;
+}
+
+/**
+ * El estado de un test tal como se presenta y como lo mira el motor: de la
+ * medida si la hay (evaluaciones de antes del 3-nov) y si no, el que marcó el
+ * entrenador. En la dorsiflexión es la severidad, no el binario.
+ */
+export function estadoElegido(
+  test: TestNumerico,
+  medida: number | null | undefined,
+  /** Viene de un jsonb: se lee con desconfianza. */
+  estados: unknown,
+): string | null {
+  if (medida !== null && medida !== undefined && !Number.isNaN(medida)) {
+    return test === "ankle_dorsiflexion_cm" ? severidadDorsiflexion(medida) : estadoROM(test, medida);
+  }
+  const marcado =
+    typeof estados === "object" && estados !== null && !Array.isArray(estados)
+      ? (estados as Record<string, unknown>)[test]
+      : undefined;
+  return typeof marcado === "string" && opcionesDe(test).includes(marcado) ? marcado : null;
+}
+
+/** "Óptima" y "Óptimo" son Óptimo; "Limitada" y "Severa", Restringido. */
+const binario = (estado: string | null): EstadoROM | null =>
+  estado === null ? null : estado.startsWith("Óptim") ? "Óptimo" : "Restringido";
+
 /** Rango duro, el mismo del CHECK. Evita que el guardado falle al final. */
 export function fueraDeRango(
   test: Exclude<TestMovilidad, "thoracic_extension">,
@@ -207,6 +246,8 @@ export interface MedidasMovilidad {
   thoracic_extension?: ExtensionToracica | null;
   shoulder_flexion_deg?: number | null;
   shoulder_external_rotation_deg?: number | null;
+  /** Lo que marcó el entrenador, test → estado. Ver `estadoElegido`. */
+  rom_estados?: unknown;
 }
 
 export interface ResultadoTest {
@@ -234,7 +275,7 @@ export function perfilMovilidad(m: MedidasMovilidad): ResultadoTest[] {
     return {
       test: t,
       etiqueta: meta.etiqueta,
-      estado: estadoROM(t, valor),
+      estado: binario(estadoElegido(t, valor, m.rom_estados)),
       medida: valor === null || valor === undefined ? null : `${valor}${meta.unidad}`,
       implicacion: meta.implicacion,
     };

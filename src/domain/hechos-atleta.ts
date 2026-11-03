@@ -17,6 +17,7 @@
 
 import { segmentosConAsimetria, type MedicionBilateral } from "@/domain/asimetrias";
 import { adaptacionPorCiclo, picoOvulatorio } from "@/domain/calculations/ciclo-menstrual";
+import { estadoElegido, type TestNumerico } from "@/domain/movilidad";
 import type { Hechos } from "@/domain/motor";
 
 export interface FilaAtleta {
@@ -37,7 +38,20 @@ export interface FilaBiomecanica {
   back_dominance?: string | null;
   axial_load_tolerance?: string | null;
   femur_torso_ratio?: string | null;
+  /** Test → estado marcado por el entrenador (3-nov). */
+  rom_estados?: unknown;
 }
+
+/** Cada test de movilidad y el hecho de ESTADO que lo representa en el motor. */
+const ESTADO_DE: Record<TestNumerico, keyof Hechos> = {
+  ankle_dorsiflexion_cm: "dorsiflexion",
+  hip_flexion_deg: "flexion_cadera",
+  hip_internal_rotation_deg: "rotacion_interna_cadera",
+  thomas_test_deg: "thomas_test",
+  slr_deg: "slr",
+  shoulder_flexion_deg: "flexion_hombro",
+  shoulder_external_rotation_deg: "rotacion_externa_hombro",
+};
 
 export interface FilaMedicion extends MedicionBilateral {
   body_fat_pct?: number | null;
@@ -82,6 +96,11 @@ export function resolverHechos(datos: DatosAtleta, hoy: Date = new Date()): Hech
   poner(h, "extension_toracica", b?.thoracic_extension);
   poner(h, "flexion_hombro_grados", b?.shoulder_flexion_deg);
   poner(h, "rotacion_externa_hombro_grados", b?.shoulder_external_rotation_deg);
+  // El estado sale de la medida si la hay y si no del que marcó el entrenador.
+  // Un test que no se tomó de ninguna de las dos formas sigue sin clave.
+  for (const [test, hecho] of Object.entries(ESTADO_DE) as [TestNumerico, keyof Hechos][]) {
+    poner(h, hecho, estadoElegido(test, b?.[test], b?.rom_estados));
+  }
 
   poner(h, "dominancia_sentadilla", b?.squat_dominance);
   poner(h, "vector_gluteo", b?.glute_vector);
