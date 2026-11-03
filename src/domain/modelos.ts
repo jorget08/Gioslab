@@ -36,6 +36,20 @@ export interface SemanaModelo {
 
 export interface Modelo {
   semanas: SemanaModelo[];
+  /**
+   * Cuántas semanas puede llegar a tener cada bloque como poco (3-nov). Él:
+   * "hay avanzados que necesitan dos o tres semanas de intensificación… poder
+   * seleccionar eso". El entrenador acorta un bloque hasta aquí; sin la clave,
+   * el bloque no se acorta.
+   */
+  minimoPorBloque: Record<string, number>;
+}
+
+/** Un bloque del modelo, en orden, con cuántas semanas trae y cuántas admite. */
+export interface BloqueModelo {
+  nombre: string;
+  semanas: number;
+  minimo: number;
 }
 
 type Crudo = Record<string, unknown>;
@@ -45,18 +59,22 @@ const esPeriodizacion = (v: unknown): v is Periodizacion =>
   typeof v === "string" && (PERIODIZACIONES as readonly string[]).includes(v);
 
 /**
- * Problemas de `periodizacion_por_nivel` y `modelos`. Los dos son OPCIONALES:
+ * Problemas de `periodizacion_por_nivel`, `periodizacion_por_meta` y `modelos`. Son OPCIONALES:
  * un método sin ellos es la v2, que sigue siendo válida.
  */
 export function validarModelos(crudo: Crudo): string[] {
   const e: string[] = [];
 
-  const porNivel = crudo.periodizacion_por_nivel;
-  if (porNivel !== undefined) {
-    if (!esObjeto(porNivel)) e.push("La periodización por nivel no es un objeto.");
+  for (const [clave, que] of [
+    ["periodizacion_por_nivel", "nivel"],
+    ["periodizacion_por_meta", "meta"],
+  ] as const) {
+    const mapa = crudo[clave];
+    if (mapa === undefined) continue;
+    if (!esObjeto(mapa)) e.push(`La periodización por ${que} no es un objeto.`);
     else
-      for (const [nivel, p] of Object.entries(porNivel)) {
-        if (!esPeriodizacion(p)) e.push(`El nivel "${nivel}" apunta a una periodización desconocida.`);
+      for (const [k, p] of Object.entries(mapa)) {
+        if (!esPeriodizacion(p)) e.push(`La ${que} "${k}" apunta a una periodización desconocida.`);
       }
   }
 
@@ -70,6 +88,22 @@ export function validarModelos(crudo: Crudo): string[] {
     if (!Array.isArray(semanas) || semanas.length === 0) {
       e.push(`El modelo "${nombre}" no tiene semanas.`);
       continue;
+    }
+    const porBloque = new Map<string, number>();
+    for (const s of semanas) {
+      if (esObjeto(s) && typeof s.bloque === "string") porBloque.set(s.bloque, (porBloque.get(s.bloque) ?? 0) + 1);
+    }
+    const minimos = esObjeto(m) ? m.minimo_por_bloque : undefined;
+    if (minimos !== undefined) {
+      if (!esObjeto(minimos)) e.push(`El modelo "${nombre}": el mínimo por bloque no es un objeto.`);
+      else
+        for (const [bloque, minimo] of Object.entries(minimos)) {
+          const total = porBloque.get(bloque);
+          if (total === undefined) e.push(`El modelo "${nombre}" no tiene ningún bloque "${bloque}".`);
+          else if (!Number.isInteger(minimo) || (minimo as number) < 1 || (minimo as number) > total) {
+            e.push(`El modelo "${nombre}": el mínimo del bloque "${bloque}" tiene que ir de 1 a ${total}.`);
+          }
+        }
     }
     semanas.forEach((s, i) => {
       const donde = `Modelo "${nombre}", semana ${i + 1}`;
@@ -104,6 +138,7 @@ export function validarModelos(crudo: Crudo): string[] {
 /** Lee lo ya validado. */
 export function leerModelos(crudo: Crudo): {
   periodizacionPorNivel: Record<string, Periodizacion>;
+  periodizacionPorMeta: Record<string, Periodizacion>;
   modelos: Partial<Record<Periodizacion, Modelo>>;
 } {
   const modelos: Partial<Record<Periodizacion, Modelo>> = {};
@@ -122,10 +157,12 @@ export function leerModelos(crudo: Crudo): {
         if (typeof s.bloque === "string") fila.bloque = s.bloque;
         return fila;
       }),
+      minimoPorBloque: ((m as Crudo).minimo_por_bloque as Record<string, number> | undefined) ?? {},
     };
   }
   return {
     periodizacionPorNivel: (crudo.periodizacion_por_nivel as Record<string, Periodizacion> | undefined) ?? {},
+    periodizacionPorMeta: (crudo.periodizacion_por_meta as Record<string, Periodizacion> | undefined) ?? {},
     modelos,
   };
 }
@@ -136,4 +173,41 @@ export function leerModelos(crudo: Crudo): {
  */
 export function semanaDelModelo(modelo: Modelo, n: number): SemanaModelo {
   return modelo.semanas[(n - 1) % modelo.semanas.length];
+}
+
+/** Los bloques del modelo en su orden. Vacío si sus semanas no los nombran. */
+export function bloquesDe(modelo: Modelo): BloqueModelo[] {
+  const bloques: BloqueModelo[] = [];
+  for (const s of modelo.semanas) {
+    if (!s.bloque) continue;
+    const b = bloques.find((x) => x.nombre === s.bloque);
+    if (b) b.semanas += 1;
+    else bloques.push({ nombre: s.bloque, semanas: 1, minimo: 0 });
+  }
+  for (const b of bloques) b.minimo = modelo.minimoPorBloque[b.nombre] ?? b.semanas;
+  return bloques;
+}
+
+/**
+ * El modelo con los bloques acortados a lo que eligió el entrenador.
+ *
+ * Se quitan las ÚLTIMAS semanas de cada bloque: lo que se recorta es cuánto
+ * dura esa fase, no cómo empieza. Lo que pida por debajo del mínimo o por
+ * encima de lo que trae la tabla se lleva a esos topes.
+ */
+export function recortarModelo(modelo: Modelo, porBloque: Record<string, number>): Modelo {
+  const quedan = new Map(
+    bloquesDe(modelo).map((b) => [
+      b.nombre,
+      Math.min(b.semanas, Math.max(b.minimo, Math.round(porBloque[b.nombre] ?? b.semanas))),
+    ]),
+  );
+  const vistas = new Map<string, number>();
+  const semanas = modelo.semanas.filter((s) => {
+    if (!s.bloque) return true;
+    const n = (vistas.get(s.bloque) ?? 0) + 1;
+    vistas.set(s.bloque, n);
+    return n <= (quedan.get(s.bloque) ?? n);
+  });
+  return { ...modelo, semanas };
 }

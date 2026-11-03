@@ -45,12 +45,43 @@ export interface Colocado {
   series: number;
 }
 
+/** Minúsculas, sin tildes y sin lo que va entre paréntesis. */
+const normal = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/\(.*?\)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/**
+ * ¿Son el mismo ejercicio base? "Fondos en Paralelas (énfasis pectoral)" y
+ * "(énfasis tríceps)" lo son, y "Peso Muerto Rumano" y "… desde Bloque"
+ * también: uno es el otro con un apellido. Giovanni, 3-nov: en una sesión el
+ * mismo aparato no se repite; el accesorio busca una variante distinta.
+ */
+export function mismaBase(a: string, b: string): boolean {
+  const x = normal(a);
+  const y = normal(b);
+  return x === y || x.startsWith(`${y} `) || y.startsWith(`${x} `);
+}
+
+/**
+ * ¿Entra este músculo en un día acotado por músculos? Sin tildes ni
+ * mayúsculas y por prefijo, porque la biblioteca escribe "Glúteo" y "glúteo
+ * mayor" para lo mismo.
+ */
+export function musculoDelDia(musculo: string | null, plantilla: PlantillaDia): boolean {
+  if (!plantilla.musculos) return true;
+  if (musculo === null) return false;
+  const m = normal(musculo);
+  return plantilla.musculos.some((l) => m.startsWith(normal(l)));
+}
+
 /** ¿Este ejercicio puede ir en este día de su reparto? */
 export function cabeEnElDia(c: Candidato, plantilla: PlantillaDia): boolean {
-  return (
-    (plantilla.patrones as readonly string[]).includes(c.patron) &&
-    (!plantilla.musculos || (c.musculo !== null && plantilla.musculos.includes(c.musculo)))
-  );
+  return (plantilla.patrones as readonly string[]).includes(c.patron) && musculoDelDia(c.musculo, plantilla);
 }
 
 /**
@@ -92,7 +123,9 @@ function ejerciciosPorGrupo(semana: Colocado[][]): Map<string, number> {
  * `ajustarVolumen`.
  *
  * Se añade al día que YA entrena ese grupo —el aislamiento de brazo va donde
- * está el torso— y, si ninguno lo entrena, al más vacío.
+ * está el torso— y, si ninguno lo entrena, al más vacío. Un día de pierna no
+ * lo recibe nunca: sus días de pierna van acotados por músculo en el método
+ * (v5), así que `cabeEnElDia` ya lo deja fuera.
  */
 export function completarVolumen(
   semana: Colocado[][],
@@ -133,6 +166,7 @@ export function completarVolumen(
             ({ dia, i }) =>
               cabeEnElDia(cand, plantillas[i]) &&
               dia.length < metodo.ejerciciosPorDia.max &&
+              !dia.some((c) => mismaBase(c.candidato.nombre, cand.nombre)) &&
               // Un segundo J1 del mismo músculo el mismo día repite estímulo.
               !(
                 cand.jerarquia === 1 &&

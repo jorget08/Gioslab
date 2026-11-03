@@ -7,6 +7,8 @@ import { leerMetodo, type Metodo } from "@/domain/metodo";
 import type { DecisionEjercicio, Resultado } from "@/domain/motor";
 import { seriesPorEjercicioEnSemana, validarPlan, type Plan } from "@/domain/plan";
 import type { Relacion } from "@/domain/relaciones";
+import { elegirDelDia } from "@/domain/eleccion";
+import { mismaBase, type Candidato } from "@/domain/volumen";
 
 /**
  * El generador (tarea 5.3).
@@ -676,7 +678,7 @@ describe("un principiante entra en lineal, y el plan es lineal de verdad", () =>
   });
 });
 
-describe("un avanzado entra en bloques de 12 semanas (método v4, 27-oct)", () => {
+describe("bloques en tres fases, ATR y pierna sin tren superior (método v5, 3-nov)", () => {
   const DIR = new URL("../../supabase/migrations/", import.meta.url);
   const ACTIVO: Metodo = leerMetodo(
     readdirSync(DIR)
@@ -688,33 +690,116 @@ describe("un avanzado entra en bloques de 12 semanas (método v4, 27-oct)", () =
       .reduce((a, v) => ({ ...a, ...v })),
   )!;
 
-  const generar = (semanas: number) =>
+  const generar = (
+    semanas: number,
+    atleta: Partial<EntradaGenerador["atleta"]> = {},
+    extra: Partial<EntradaGenerador["opciones"]> = {},
+  ) =>
     generarPlan(
       entrada({
         metodo: ACTIVO,
-        atleta: { sexo: "masculino", training_goal: "Hipertrofia (Masa Muscular)", experience_level: "Avanzado" },
-        opciones: { diasPorSemana: 4, semanas },
+        atleta: {
+          sexo: "masculino",
+          training_goal: "Hipertrofia (Masa Muscular)",
+          experience_level: "Avanzado",
+          ...atleta,
+        },
+        opciones: { diasPorSemana: 4, semanas, ...extra },
       }),
     );
 
   it("Avanzado con hipertrofia → bloques, no ondulante", () => {
-    // Lo que reportó: "Hipertrofia · Ondulante · 5 semanas" para un avanzado.
+    // Lo que reportó el 27-oct: "Hipertrofia · Ondulante · 5 semanas" para un avanzado.
     expect(generar(12).plan!.periodizacion).toBe("bloques");
   });
 
-  it("las series siguen la estructura de gymapp y el rango sale del objetivo", () => {
+  it("doce semanas en Acumulación, Transmutación e Intensificación, con las cifras de su PDF", () => {
     const { plan } = generar(12);
-    const series = plan!.semanas.map((s) => s.dias[0].central.ejercicios[0].seriesEfectivas);
-    expect(series).toEqual([2, 3, 3, 3, 3, 2, 3, 3, 3, 3, 4, 4]);
-    const e = plan!.semanas[1].dias[0].central.ejercicios[0];
-    // Hipertrofia: 6–12 y RPE 7,5 / 9, de su tabla del 31-ago.
-    expect([e.repMin, e.repMax, e.rpePrimeras, e.rpeUltima]).toEqual([6, 12, 7.5, 9]);
-    expect(plan!.semanas[5].tipo).toBe("descarga");
-    expect(plan!.semanas[0].dias[0].central.ejercicios[0].rpeUltima).toBe(7.5);
+    expect(plan!.semanas.map((s) => s.bloque)).toEqual([
+      ...Array(4).fill("Acumulación"),
+      ...Array(4).fill("Transmutación"),
+      ...Array(4).fill("Intensificación"),
+    ]);
+    const e = (n: number) => plan!.semanas[n].dias[0].central.ejercicios[0];
+    expect([e(1).seriesEfectivas, e(1).repMin, e(1).repMax, e(1).rpeUltima]).toEqual([4, 8, 12, 8]);
+    expect([e(4).seriesEfectivas, e(4).repMin, e(4).repMax, e(4).rpeUltima]).toEqual([4, 4, 8, 9]);
     expect(validarPlan(plan!)).toEqual([]);
   });
 
-  it("con menos de 12 semanas se avisa de que el mesociclo queda cortado", () => {
-    expect(generar(5).avisos.join(" ")).toContain("es de 12 semanas");
+  it("el entrenador acorta un bloque y se quitan sus últimas semanas", () => {
+    // "Hay avanzados que necesitan dos o tres semanas de intensificación."
+    const { plan } = generar(10, {}, { semanasPorBloque: { Intensificación: 2 } });
+    expect(plan!.semanas).toHaveLength(10);
+    expect(plan!.semanas.filter((s) => s.bloque === "Intensificación")).toHaveLength(2);
+    expect(plan!.semanas[8].bloque).toBe("Intensificación");
+  });
+
+  it("no se acorta por debajo del mínimo: de 8 a 12 semanas", () => {
+    const { plan } = generar(8, {}, { semanasPorBloque: { Acumulación: 1, Transmutación: 1, Intensificación: 1 } });
+    expect(plan!.semanas.map((s) => s.bloque)).toEqual([
+      ...Array(3).fill("Acumulación"),
+      ...Array(3).fill("Transmutación"),
+      ...Array(2).fill("Intensificación"),
+    ]);
+  });
+
+  it("Rendimiento Deportivo → ATR de 6 semanas, sea cual sea su nivel", () => {
+    // "Ese esquema del PDF es para cualquier deporte… aplícalo a nivel general."
+    for (const experience_level of ["Intermedio", "Avanzado", "Deportista"]) {
+      const { plan } = generar(6, { training_goal: "Rendimiento Deportivo", experience_level });
+      expect(plan!.periodizacion).toBe("atr");
+      expect(plan!.semanas.map((s) => s.bloque)).toEqual([
+        "Acumulación", "Acumulación", "Transformación", "Transformación", "Realización", "Realización",
+      ]);
+      const ultima = plan!.semanas[5].dias[0].central.ejercicios[0];
+      expect([ultima.seriesEfectivas, ultima.repMin, ultima.repMax]).toEqual([1, 1, 1]);
+    }
+  });
+
+  it("ni la pierna lleva tren superior ni el torso lleva pierna", () => {
+    // Su captura: Curl Martillo y Elevaciones Laterales en "Pierna (Enfoque
+    // Secundario)". Y al acotar la pierna, el relleno de volumen empezó a
+    // llevar las extensiones de cuádriceps al torso: se prueban los dos lados.
+    const PIERNA = ["Cuádriceps", "Glúteo", "Isquiosurales", "Gemelos", "Core"];
+    const musculos = (d: { central: { ejercicios: { ejercicio: string }[] } }) =>
+      d.central.ejercicios.map((e) => BIBLIOTECA.find((b) => b.name === e.ejercicio)!.target_muscle!);
+    for (const [dias, sexo] of [[3, "masculino"], [4, "masculino"], [5, "masculino"], [4, "femenino"], [5, "femenino"]] as const) {
+      const { plan } = generar(12, { sexo }, { diasPorSemana: dias });
+      for (const d of plan!.semanas[0].dias) {
+        if (d.titulo.startsWith("Pierna")) expect(musculos(d).filter((m) => !PIERNA.includes(m))).toEqual([]);
+        if (/^(Torso|Tren superior|Empuje|Tracción)/.test(d.titulo)) {
+          expect(musculos(d).filter((m) => PIERNA.includes(m) && m !== "Core")).toEqual([]);
+        }
+      }
+    }
+  });
+});
+
+describe("el mismo ejercicio base no se repite en una sesión (3-nov)", () => {
+  const cand = (nombre: string, patron: string, musculo: string, aislamiento = false): Candidato => ({
+    nombre, patron, musculo, grupo: null, aislamiento, prioritario: true,
+    modificadores: [], sustitutos: [], jerarquia: null, perfil: null, guiada: false,
+  });
+
+  it("fondos para pecho y fondos para tríceps no van juntos: el accesorio busca otra variante", () => {
+    const elegidos = elegirDelDia(
+      { titulo: "Torso", patrones: ["horizontal_push", "isolation_accessory"] },
+      [
+        cand("Fondos en Paralelas (énfasis pectoral)", "horizontal_push", "Pectoral"),
+        cand("Fondos en Paralelas (énfasis tríceps)", "isolation_accessory", "Tríceps", true),
+        cand("Press Francés", "isolation_accessory", "Tríceps", true),
+      ],
+      new Set(),
+      { min: 3, max: 3 },
+      null,
+    ).map((c) => c.nombre);
+    expect(elegidos).toEqual(["Fondos en Paralelas (énfasis pectoral)", "Press Francés"]);
+  });
+
+  it("un apellido no lo hace otro ejercicio, pero un nombre distinto sí", () => {
+    expect(mismaBase("Peso Muerto Rumano", "Peso Muerto Rumano desde Bloque")).toBe(true);
+    expect(mismaBase("Sentadilla Bulgara", "Sentadilla Búlgara con Apoyo")).toBe(true);
+    expect(mismaBase("Curl Femoral Acostado", "Curl Femoral Sentado")).toBe(false);
+    expect(mismaBase("Press Banca", "Press Militar")).toBe(false);
   });
 });

@@ -8,7 +8,7 @@
 
 import { perfilCompensatorio, rangoDeEleccion } from "@/domain/jerarquias";
 import type { PlantillaDia } from "@/domain/metodo";
-import { cabeEnElDia, type Candidato } from "@/domain/volumen";
+import { cabeEnElDia, mismaBase, musculoDelDia, type Candidato } from "@/domain/volumen";
 
 /**
  * Los ejercicios de un día.
@@ -73,6 +73,9 @@ export function elegirDelDia(
     a.nombre.localeCompare(b.nombre, "es");
 
   const yaHoy = new Set<string>();
+  // El mismo ejercicio base con otro apellido (fondos para pecho y fondos para
+  // tríceps) no entra dos veces en la sesión: el accesorio busca otra variante.
+  const repiteBase = (c: Candidato) => elegidos.some((e) => mismaBase(e.nombre, c.nombre));
 
   const meter = (c: Candidato) => {
     elegidos.push(c);
@@ -88,7 +91,7 @@ export function elegirDelDia(
   for (const p of patrones) {
     if (elegidos.length >= cupo.max) break;
     const elegido = delDia
-      .filter((c) => c.patron === p && !yaHoy.has(c.nombre) && !usados.has(c.nombre))
+      .filter((c) => c.patron === p && !yaHoy.has(c.nombre) && !usados.has(c.nombre) && !repiteBase(c))
       .sort(orden)[0];
     if (elegido) meter(elegido);
   }
@@ -114,7 +117,8 @@ export function elegirDelDia(
             c.jerarquia === falta.jerarquia &&
             c.perfil === falta.perfil &&
             !yaHoy.has(c.nombre) &&
-            (!plantilla.musculos || (c.musculo !== null && plantilla.musculos.includes(c.musculo))),
+            !repiteBase(c) &&
+            musculoDelDia(c.musculo, plantilla),
         )
         .sort(
           (a, b) =>
@@ -134,7 +138,7 @@ export function elegirDelDia(
   // Se reordena en cada vuelta y no una sola vez: lo que ya entró cambia el
   // orden —un segundo J1 del mismo músculo pasa a ir detrás—.
   while (elegidos.length < cupo.min && elegidos.length < cupo.max) {
-    const resto = delDia.filter((c) => !yaHoy.has(c.nombre)).sort(orden);
+    const resto = delDia.filter((c) => !yaHoy.has(c.nombre) && !repiteBase(c)).sort(orden);
     const siguiente = resto.find((c) => !usados.has(c.nombre)) ?? resto[0];
     if (!siguiente) break;
     meter(siguiente);

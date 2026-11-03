@@ -138,6 +138,11 @@ export interface Metodo {
    * principiantes, lineal". Manda sobre `periodizacionPorObjetivo`.
    */
   periodizacionPorNivel: Record<string, Periodizacion>;
+  /**
+   * Metas cuyo modelo es fijo (v5, 3-nov): "el ATR es para rendimiento
+   * deportivo… aplícalo a nivel general". Manda sobre el nivel y el objetivo.
+   */
+  periodizacionPorMeta: Record<string, Periodizacion>;
   /** Modelos con progresión semana a semana propia. Ver `domain/modelos.ts`. */
   modelos: Partial<Record<Periodizacion, Modelo>>;
   parametros: Record<Objetivo, Parametros>;
@@ -472,15 +477,21 @@ export function objetivoDeMeta(metodo: Metodo, meta: string | null | undefined):
 }
 
 /**
- * El modelo que le toca. El nivel manda cuando él lo fijó por nivel —hoy solo
- * "Principiante" → lineal— y si no, el objetivo, como dijo el 2-sep.
+ * El modelo que le toca. Primero su meta, si él la ató a un modelo —hoy
+ * "Rendimiento Deportivo" → ATR—; después su nivel —"Principiante" → lineal,
+ * "Avanzado" → bloques—, y si no, el objetivo, como dijo el 2-sep.
  */
 export function periodizacionPara(
   metodo: Metodo,
   objetivo: Objetivo,
   nivel?: string | null,
+  meta?: string | null,
 ): Periodizacion {
-  return (nivel && metodo.periodizacionPorNivel[nivel]) || metodo.periodizacionPorObjetivo[objetivo];
+  return (
+    (meta && metodo.periodizacionPorMeta[meta]) ||
+    (nivel && metodo.periodizacionPorNivel[nivel]) ||
+    metodo.periodizacionPorObjetivo[objetivo]
+  );
 }
 
 /**

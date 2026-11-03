@@ -39,7 +39,7 @@ import {
   ordenarSesion,
 } from "@/domain/jerarquias";
 import { elegirDelDia } from "@/domain/eleccion";
-import { semanaDelModelo } from "@/domain/modelos";
+import { recortarModelo, semanaDelModelo } from "@/domain/modelos";
 import {
   esAislamiento,
   grupoDeMusculo,
@@ -91,6 +91,11 @@ export interface OpcionesGenerador {
   objetivo?: Objetivo;
   /** El entrenador puede forzarla: §3.6, el sistema es un copiloto. */
   periodizacion?: Periodizacion;
+  /**
+   * Semanas de cada bloque, en los modelos que dejan acortarlos (bloques,
+   * 3-nov). Lo que no venga queda con las de su tabla.
+   */
+  semanasPorBloque?: Record<string, number>;
   /** Él dijo "la 4ª o la 6ª semana". Por defecto, la que traiga el método. */
   cadenciaDescarga?: number;
 }
@@ -286,8 +291,10 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
   // su propia tabla semanal (el lineal), las series salen de ella y no del
   // rango por grupo muscular.
   const periodizacion =
-    opciones.periodizacion ?? periodizacionPara(metodo, objetivo, atleta.experience_level);
-  const modelo = metodo.modelos[periodizacion] ?? null;
+    opciones.periodizacion ??
+    periodizacionPara(metodo, objetivo, atleta.experience_level, atleta.training_goal);
+  const tabla = metodo.modelos[periodizacion] ?? null;
+  const modelo = tabla && opciones.semanasPorBloque ? recortarModelo(tabla, opciones.semanasPorBloque) : tabla;
 
   completarVolumen(semanaBase, reparto.plantilla, candidatos, metodo, resultado);
   if (modelo && opciones.semanas < modelo.semanas.length) {
@@ -457,7 +464,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
       };
     });
 
-    semanas.push({ semana: n, tipo, dias });
+    semanas.push({ semana: n, tipo, ...(fila?.bloque ? { bloque: fila.bloque } : {}), dias });
   }
 
   const plan: Plan = {

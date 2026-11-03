@@ -12,6 +12,7 @@ import {
   seriesSemanalesDe,
   validarMetodo,
 } from "@/domain/metodo";
+import { bloquesDe, recortarModelo } from "@/domain/modelos";
 import { FICHA_PERIODIZACION } from "@/domain/plan";
 
 /**
@@ -358,5 +359,46 @@ describe("consultas sobre el método", () => {
     expect(esAislamiento("core_anti_flexion_extension")).toBe(true);
     expect(esAislamiento("squat_dominante_rodilla")).toBe(false);
     expect(esAislamiento(null)).toBe(false);
+  });
+});
+
+describe("modelos con bloques y periodización por meta (v5, 3-nov)", () => {
+  const metodo = leerMetodo(BUENO)!;
+  type Mutable = Record<string, Record<string, Record<string, unknown>>>;
+
+  it("Rendimiento Deportivo va a ATR por su meta, aunque su objetivo sea fuerza", () => {
+    expect(periodizacionPara(metodo, "fuerza", "Avanzado", "Rendimiento Deportivo")).toBe("atr");
+    expect(periodizacionPara(metodo, "fuerza", "Intermedio", "Pérdida de Grasa")).toBe("ondulante");
+    expect(periodizacionPara(metodo, "hipertrofia", "Avanzado", "Hipertrofia (Masa Muscular)")).toBe("bloques");
+  });
+
+  it("los bloques del modelo salen en orden con su mínimo", () => {
+    expect(bloquesDe(metodo.modelos.bloques!)).toEqual([
+      { nombre: "Acumulación", semanas: 4, minimo: 3 },
+      { nombre: "Transmutación", semanas: 4, minimo: 3 },
+      { nombre: "Intensificación", semanas: 4, minimo: 2 },
+    ]);
+  });
+
+  it("recortar quita las últimas semanas de cada bloque y respeta mínimo y tope", () => {
+    const m = recortarModelo(metodo.modelos.bloques!, { Acumulación: 9, Transmutación: 3, Intensificación: 0 });
+    expect(m.semanas.map((s) => s.bloque![0]).join("")).toBe("AAAATTTII");
+    // La primera de Acumulación es la de entrada (RPE 7) y se conserva.
+    expect(m.semanas[0].rpeUltima).toBe(7);
+  });
+
+  it("un mínimo de un bloque que no existe o mayor que el bloque se rechaza", () => {
+    expect(
+      validarMetodo(con((x) => ((x as unknown as Mutable).modelos.bloques.minimo_por_bloque = { Taper: 1 }))),
+    ).toContain('El modelo "bloques" no tiene ningún bloque "Taper".');
+    expect(
+      validarMetodo(con((x) => ((x as unknown as Mutable).modelos.bloques.minimo_por_bloque = { Acumulación: 5 }))),
+    ).toContain('El modelo "bloques": el mínimo del bloque "Acumulación" tiene que ir de 1 a 4.');
+  });
+
+  it("una meta que apunta a un modelo desconocido se rechaza", () => {
+    expect(
+      validarMetodo(con((x) => ((x as unknown as Record<string, unknown>).periodizacion_por_meta = { Fútbol: "crossfit" }))),
+    ).toContain('La meta "Fútbol" apunta a una periodización desconocida.');
   });
 });

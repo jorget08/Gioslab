@@ -74,13 +74,13 @@ export const FICHA_PERIODIZACION: Record<
   // en "ATR / Bloques concentrados", y por eso el ATR parecía servir para todo.
   bloques: {
     nombre: "Bloques",
-    comoLaLlama: "Bloques Modificados · Base → Intensificación",
-    cuando: "Avanzados. Mesociclo de 8 a 12 semanas en bloques que suben el volumen.",
+    comoLaLlama: "Bloques Modificados · Acumulación → Transmutación → Intensificación",
+    cuando: "Avanzados. Mesociclo de 8 a 12 semanas en tres bloques; el entrenador elige cuántas lleva cada uno.",
   },
   atr: {
     nombre: "ATR",
     comoLaLlama: "ATR Restringido · Acumulación, Transformación y Realización",
-    cuando: "Única y exclusivamente rendimiento deportivo y fuerza máxima.",
+    cuando: "Rendimiento deportivo: fuerza y potencia en sala, de complemento al entrenamiento del deporte.",
   },
 };
 
@@ -223,6 +223,11 @@ export interface DiaPlan {
 export interface SemanaPlan {
   semana: number;
   tipo: TipoSemana;
+  /**
+   * La fase del modelo a la que pertenece (Acumulación, Transmutación…), para
+   * agrupar las semanas en pantalla. Solo en los modelos con bloques.
+   */
+  bloque?: string;
   dias: DiaPlan[];
 }
 
@@ -275,6 +280,9 @@ export function validarPlan(plan: Plan): string[] {
 
     if (!esEntero(s.semana, 1, 104)) errores.push(`${donde}: número de semana inválido.`);
     if (!TIPOS_SEMANA.includes(s.tipo)) errores.push(`${donde}: tipo de semana desconocido.`);
+    if (s.bloque !== undefined && (typeof s.bloque !== "string" || s.bloque.trim() === "")) {
+      errores.push(`${donde}: el bloque no tiene nombre.`);
+    }
 
     if (!Array.isArray(s.dias) || s.dias.length === 0) {
       errores.push(`${donde}: no tiene días.`);
