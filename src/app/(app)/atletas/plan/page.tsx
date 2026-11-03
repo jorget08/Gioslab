@@ -1,19 +1,21 @@
 "use client";
 
-import { AlertTriangle, Download, Save } from "lucide-react";
+import { Download, Save } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
+import { AvisoPlanViejo, AvisosGenerador } from "@/components/plan/avisos-plan";
 import { DiaEditable, type OpcionEjercicio } from "@/components/plan/dia-editable";
 import { FormularioGenerar, modeloDelAtleta } from "@/components/plan/formulario-generar";
+import { SemanasPlan } from "@/components/plan/semanas-plan";
 import { Guarda } from "@/components/shared/guarda";
 import { Bloque } from "@/components/shared/paso-wizard";
 import { Button } from "@/components/ui/button";
 import { cambiosDelDia, resumenDeCambios } from "@/domain/ediciones";
 import { clasificacionDe } from "@/domain/ejercicios";
 import { generarPlan } from "@/domain/generador";
-import { objetivoDeMeta } from "@/domain/metodo";
+import { objetivoDeMeta, periodizacionPara } from "@/domain/metodo";
 import { incluidos } from "@/domain/motor";
 import { nombrePatron } from "@/domain/patrones";
 import {
@@ -84,6 +86,7 @@ function PlanDelAtleta() {
   const [dias, setDias] = useState(4);
   const [semanas, setSemanas] = useState(5);
   const [objetivo, setObjetivo] = useState<Objetivo | "">("");
+  const [porBloque, setPorBloque] = useState<Record<string, number>>({});
   const [trabajando, setTrabajando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [sucio, setSucio] = useState(false);
@@ -154,6 +157,19 @@ function PlanDelAtleta() {
   const desactualizado = Boolean(
     fila && carga?.criteriosDesde && fila.created_at < carga.criteriosDesde,
   );
+  // El modelo que le tocaría HOY. Si su nivel o su meta cambiaron después de
+  // generar, la cabecera dice el modelo del plan guardado y el formulario el
+  // nuevo: Giovanni lo vio el 3-nov ("Ondulante · 5 semanas" arriba y Bloques
+  // abajo) y lo leyó como un fallo. Se dice en claro.
+  const objetivoHoy =
+    (carga?.metodo && carga.atleta ? objetivoDeMeta(carga.metodo, carga.atleta.training_goal) : null) ??
+    plan?.objetivo ??
+    null;
+  const modeloHoy =
+    carga?.metodo && carga.atleta && objetivoHoy
+      ? periodizacionPara(carga.metodo, objetivoHoy, carga.atleta.experience_level, carga.atleta.training_goal)
+      : null;
+  const otroModelo = Boolean(plan && modeloHoy && plan.periodizacion !== modeloHoy);
   const cambios = useMemo(() => resumenDeCambios(generado, plan ?? ({} as Plan)), [generado, plan]);
 
   async function generar() {
@@ -171,6 +187,7 @@ function PlanDelAtleta() {
         diasPorSemana: dias,
         semanas,
         objetivo: objetivo === "" ? undefined : objetivo,
+        semanasPorBloque: porBloque,
       },
     });
 
@@ -315,12 +332,11 @@ function PlanDelAtleta() {
         </p>
       </header>
 
-      {desactualizado && (
-        <p className="rounded-xl border border-[color:var(--gl-alerta)]/40 bg-[color:var(--gl-alerta-sv)] p-4 text-sm">
-          Este plan se generó antes de la última actualización del método o de las reglas de
-          Giovanni, así que no las tiene. Dale a <strong>Generar de nuevo</strong> para aplicarlas.
-        </p>
-      )}
+      <AvisoPlanViejo
+        modeloPlan={otroModelo && plan ? plan.periodizacion : null}
+        modeloHoy={modeloHoy}
+        desactualizado={desactualizado}
+      />
 
       {!carga.metodo && (
         <p className="rounded-xl border border-[color:var(--gl-peligro)]/40 p-4 text-sm">
@@ -338,65 +354,22 @@ function PlanDelAtleta() {
           dias={dias}
           semanas={semanas}
           objetivo={objetivo}
+          porBloque={porBloque}
           trabajando={trabajando}
           onDias={setDias}
           onSemanas={setSemanas}
           onObjetivo={setObjetivo}
+          onPorBloque={setPorBloque}
           onGenerar={generar}
         />
       )}
 
-      {errores.length > 0 && (
-        <div className="space-y-2 rounded-xl border border-[color:var(--gl-peligro)]/40 p-4">
-          <p className="text-sm font-medium">No se pudo generar</p>
-          <ul className="space-y-1 text-xs text-muted-foreground">
-            {errores.map((e) => (
-              <li key={e}>{e}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Los avisos van ANTES del plan: si no se llega a sus series semanales,
-          eso se lee antes de firmar nada, no después. */}
-      {avisos.length > 0 && (
-        <div className="space-y-2 rounded-xl border border-[color:var(--gl-alerta)]/40 bg-[color:var(--gl-alerta-sv)] p-4">
-          <p className="flex items-center gap-2 text-sm font-medium">
-            <AlertTriangle
-              className="size-4 shrink-0 text-[color:var(--gl-alerta)]"
-              aria-hidden="true"
-            />
-            Lo que no cuadra con su método
-          </p>
-          <ul className="space-y-1 text-xs text-muted-foreground">
-            {avisos.map((a) => (
-              <li key={a}>{a}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <AvisosGenerador errores={errores} avisos={avisos} />
 
       {/* --- El plan ------------------------------------------------------ */}
       {plan && semana && (
         <>
-          <div className="flex flex-wrap gap-2">
-            {plan.semanas.map((s) => (
-              <Button
-                key={s.semana}
-                type="button"
-                variant={s.semana === semanaVista ? "default" : "outline"}
-                className="min-h-11 flex-1 basis-20"
-                onClick={() => setSemanaVista(s.semana)}
-              >
-                <span className="flex flex-col leading-tight">
-                  <span>S{s.semana}</span>
-                  <span className="text-[10px] font-normal opacity-80">
-                    {s.tipo === "carga" ? "carga" : s.tipo === "descarga" ? "descarga" : "super."}
-                  </span>
-                </span>
-              </Button>
-            ))}
-          </div>
+          <SemanasPlan plan={plan} semanaVista={semanaVista} onVer={setSemanaVista} />
 
           <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
             Cambiar, quitar, añadir o mover un ejercicio se aplica a{" "}
