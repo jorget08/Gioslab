@@ -43,7 +43,7 @@ import { createClient } from "@/lib/supabase/client";
  */
 
 const COLUMNAS =
-  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, is_active";
+  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, complementary_pattern, is_active";
 
 function Detalle() {
   const params = useSearchParams();

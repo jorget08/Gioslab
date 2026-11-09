@@ -111,6 +111,13 @@ describe("resumenEjercicio", () => {
     ).toBe("cuádriceps · prensa · 2 contraindicaciones");
   });
 
+  it("dice su patrón complementario, e ignora uno que no es del catálogo (9-nov)", () => {
+    expect(
+      resumenEjercicio(ej({ id: "1", name: "Curl", target_muscle: "Bíceps", complementary_pattern: "flexoextension_codo" })),
+    ).toBe("Bíceps · Flexión / Extensión de Codo (Brazos)");
+    expect(resumenEjercicio(ej({ id: "1", name: "X", complementary_pattern: "inventado" }))).toBe("");
+  });
+
   it("concuerda el singular", () => {
     expect(
       resumenEjercicio(ej({ id: "1", name: "X", contraindications: ["Rodilla"] })),

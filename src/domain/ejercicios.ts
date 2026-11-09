@@ -15,7 +15,7 @@
 import { leerContraindicaciones } from "@/domain/contraindicaciones";
 import { esJerarquia, esPerfil, type Clasificacion } from "@/domain/jerarquias";
 import { esAislamiento } from "@/domain/metodo";
-import { esPatron, type Patron } from "@/domain/patrones";
+import { esComplementario, esPatron, FICHA_COMPLEMENTARIO, type Patron } from "@/domain/patrones";
 
 /**
  * Normaliza el nombre antes de guardarlo.
@@ -103,6 +103,8 @@ export interface Ejercicio {
   hierarchy_level?: number | null;
   length_profile?: string | null;
   is_guided?: boolean | null;
+  /** Su matriz complementaria (9-nov). Se lee con `esComplementario`. */
+  complementary_pattern?: string | null;
   is_active: boolean;
 }
 
@@ -122,11 +124,15 @@ export function clasificacionDe(e: Ejercicio): Clasificacion {
   };
 }
 
-/** Línea de apoyo en el listado: músculo, equipo y cuántas contraindicaciones. */
+/**
+ * Línea de apoyo en el listado: músculo, patrón complementario, equipo y
+ * cuántas contraindicaciones.
+ */
 export function resumenEjercicio(e: Ejercicio): string {
   const contra = leerContraindicaciones(e.contraindications).length;
   return [
     e.target_muscle,
+    esComplementario(e.complementary_pattern) ? FICHA_COMPLEMENTARIO[e.complementary_pattern].nombre : null,
     e.equipment,
     // El plural pierde la tilde: "contraindicaciones", no "contraindicaciónes".
     contra > 0 ? `${contra} ${contra === 1 ? "contraindicación" : "contraindicaciones"}` : null,

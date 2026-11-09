@@ -684,6 +684,7 @@ export type Database = {
       exercise_library: {
         Row: {
           biomechanical_type: string | null
+          complementary_pattern: string | null
           contraindications: Json
           created_at: string
           created_by: string | null
@@ -702,6 +703,7 @@ export type Database = {
         }
         Insert: {
           biomechanical_type?: string | null
+          complementary_pattern?: string | null
           contraindications?: Json
           created_at?: string
           created_by?: string | null
@@ -720,6 +722,7 @@ export type Database = {
         }
         Update: {
           biomechanical_type?: string | null
+          complementary_pattern?: string | null
           contraindications?: Json
           created_at?: string
           created_by?: string | null

@@ -31,7 +31,7 @@ import {
 import { FICHA_JERARQUIA, FICHA_PERFIL, JERARQUIAS, PERFILES } from "@/domain/jerarquias";
 import { leerMedios, type Medio } from "@/domain/medios";
 import { esTipoRelacion, type Relacion } from "@/domain/relaciones";
-import { FICHA_PATRON, PATRONES } from "@/domain/patrones";
+import { COMPLEMENTARIOS, FICHA_COMPLEMENTARIO, FICHA_PATRON, PATRONES } from "@/domain/patrones";
 import { createClient } from "@/lib/supabase/client";
 import { ejercicioSchema, type EjercicioForm, type EjercicioValidado } from "@/lib/validation/ejercicio";
 
@@ -49,7 +49,7 @@ import { ejercicioSchema, type EjercicioForm, type EjercicioValidado } from "@/l
  */
 
 const COLUMNAS =
-  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, hierarchy_level, length_profile, is_guided, is_active";
+  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, hierarchy_level, length_profile, is_guided, complementary_pattern, is_active";
 
 function Formulario() {
   const params = useSearchParams();
@@ -114,6 +114,7 @@ function Formulario() {
             equipo: actual.equipment ?? "",
             tipoBiomecanico: actual.biomechanical_type ?? "",
             patron: (actual.movement_pattern ?? "") as EjercicioForm["patron"],
+            complementario: (actual.complementary_pattern ?? "") as EjercicioForm["complementario"],
             contraindicaciones: leerContraindicaciones(actual.contraindications),
             jerarquia: (actual.hierarchy_level ? String(actual.hierarchy_level) : "") as EjercicioForm["jerarquia"],
             perfil: (actual.length_profile ?? "") as EjercicioForm["perfil"],
@@ -149,6 +150,7 @@ function Formulario() {
       equipment: datos.equipo ?? null,
       biomechanical_type: datos.tipoBiomecanico ?? null,
       movement_pattern: datos.patron ?? null,
+      complementary_pattern: datos.complementario ?? null,
       contraindications: datos.contraindicaciones,
       hierarchy_level: datos.jerarquia ?? null,
       length_profile: datos.perfil ?? null,
@@ -259,6 +261,17 @@ function Formulario() {
             <option key={p} value={p}>
               {FICHA_PATRON[p].nombre}
             </option>
+          ))}
+        </CampoSelect>
+
+        <CampoSelect
+          etiqueta="Patrón complementario"
+          ayuda="Qué tipo de accesorio es dentro de su patrón (su matriz complementaria)"
+          {...register("complementario")}
+        >
+          <option value="">Ninguno</option>
+          {COMPLEMENTARIOS.map((c) => (
+            <option key={c} value={c}>{FICHA_COMPLEMENTARIO[c].nombre}</option>
           ))}
         </CampoSelect>
 

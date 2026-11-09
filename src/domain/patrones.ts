@@ -85,3 +85,89 @@ export function opcionesPatron(): { valor: Patron; texto: string; detalle: strin
     detalle: FICHA_PATRON[p].ejemplos.join(", "),
   }));
 }
+
+// ---------------------------------------------------------------------------
+// Patrones complementarios (9-nov)
+// ---------------------------------------------------------------------------
+
+/**
+ * Su "Matriz Complementaria de Patrones de Movimiento". NO sustituye a los ocho
+ * de arriba: "conservamos intactos los 7 patrones básicos… le agregamos estas
+ * subcategorías complementarias para que el motor clasifique Hip Thrusts,
+ * Curls, Elevaciones Laterales o Trabajo Unilateral sin generar conflictos".
+ * El patrón básico sigue siendo la llave del reparto y de la sustitución; este
+ * dice QUÉ tipo de accesorio es dentro de él. Catálogo cerrado por lo mismo que
+ * el básico: escrito a mano, dos iguales no se encontrarían.
+ */
+export const COMPLEMENTARIOS = [
+  "dominante_unilateral_rodilla",
+  "flexion_rodilla",
+  "extension_rodilla",
+  "abduccion_aduccion_cadera",
+  "puente_cadera",
+  "flexoextension_codo",
+  "elevacion_hombro",
+  "abduccion_horizontal_hombro",
+  "plantiflexion",
+  "core_anti_extension_rotacion",
+] as const;
+
+export type Complementario = (typeof COMPLEMENTARIOS)[number];
+
+/** Nombre, enfoque y ejemplos, tal cual su matriz. */
+export const FICHA_COMPLEMENTARIO: Record<Complementario, { nombre: string; enfoque: string; ejemplos: string }> = {
+  dominante_unilateral_rodilla: {
+    nombre: "Dominante Unilateral de Rodilla",
+    enfoque: "Empuje / Tracción Unilateral",
+    ejemplos: "Sentadilla Búlgara, Zancadas Caminando, Step-Up en Banco, Prensa Unilateral",
+  },
+  flexion_rodilla: {
+    nombre: "Flexión de Rodilla Monoarticular",
+    enfoque: "Aislamiento de Isquiosurales",
+    ejemplos: "Curl Femoral Sentado, Tumbado y De Pie, Curl Nórdico",
+  },
+  extension_rodilla: {
+    nombre: "Extensión de Rodilla Monoarticular",
+    enfoque: "Aislamiento de Cuádriceps",
+    ejemplos: "Extensión de Rodilla en Máquina, Sentadilla Sissy",
+  },
+  abduccion_aduccion_cadera: {
+    nombre: "Abducción / Aducción de Cadera",
+    enfoque: "Anexo Cadera y Aductores",
+    ejemplos: "Abducción en Máquina y en Polea, Aducción en Máquina, Plancha Copenhague",
+  },
+  puente_cadera: {
+    nombre: "Extensión / Puente de Cadera (J3)",
+    enfoque: "Dominante de Glúteo Mayor",
+    ejemplos: "Hip Thrust con Barra, Glute Bridge, Hip Thrust en Máquina, Patada de Glúteo en Polea",
+  },
+  flexoextension_codo: {
+    nombre: "Flexión / Extensión de Codo (Brazos)",
+    enfoque: "Aislamiento de Bíceps / Tríceps",
+    ejemplos: "Curl de Bíceps (EZ, Inclinado, Scott, Bayesian), Press Francés, Pushdown, Extensiones Overhead",
+  },
+  elevacion_hombro: {
+    nombre: "Abducción / Elevación de Hombro",
+    enfoque: "Aislamiento Deltoides Lateral",
+    ejemplos: "Elevaciones Laterales con Mancuernas, en Polea y en Banco Inclinado",
+  },
+  abduccion_horizontal_hombro: {
+    nombre: "Abducción Horizontal / Rotación Externa",
+    enfoque: "Deltoides Posterior y Manguito",
+    ejemplos: "Pájaros con Mancuernas, Inverted Reverse Pec Deck, Face Pulls con Cuerda",
+  },
+  plantiflexion: {
+    nombre: "Plantiflexión (Pantorrillas)",
+    enfoque: "Aislamiento Gastrocnemio / Sóleo",
+    ejemplos: "Elevación de Talones De Pie (gastrocnemio) y Sentado (sóleo)",
+  },
+  core_anti_extension_rotacion: {
+    nombre: "Anti-Extensión / Anti-Rotación (Core)",
+    enfoque: "Estabilidad Central / Abdomen",
+    ejemplos: "Rueda Abdominal, Press Pallof, Crunch en Polea Alta, Plancha Isométrica",
+  },
+};
+
+export function esComplementario(valor: unknown): valor is Complementario {
+  return typeof valor === "string" && (COMPLEMENTARIOS as readonly string[]).includes(valor);
+}

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { CONDICIONES_SISTEMICAS, ZONAS_ANATOMICAS } from "@/domain/contraindicaciones";
 import { PERFILES, type Jerarquia } from "@/domain/jerarquias";
-import { PATRONES } from "@/domain/patrones";
+import { COMPLEMENTARIOS, PATRONES } from "@/domain/patrones";
 
 /**
  * Validación del formulario de ejercicio (tarea 4.1).
@@ -40,6 +40,11 @@ export const ejercicioSchema = z.object({
   // rompe el tipado de la llamada a la base.
   patron: z
     .union([z.enum(PATRONES), z.literal("")])
+    .optional()
+    .transform((v) => v || undefined),
+  // Su matriz complementaria (9-nov): subcategoría dentro del patrón básico.
+  complementario: z
+    .union([z.enum(COMPLEMENTARIOS), z.literal("")])
     .optional()
     .transform((v) => v || undefined),
 
