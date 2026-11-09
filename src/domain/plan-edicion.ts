@@ -15,7 +15,7 @@
  * obligar al entrenador a repetir el cambio seis veces es garantizar que se le
  * olvide una.
  *
- * Series, repeticiones, RPE y descanso afectan SOLO a la semana que está
+ * Series, repeticiones, RPE, descanso y cadencia afectan SOLO a la semana que está
  * mirando. Ahí las semanas sí son distintas a propósito: la de descarga lleva
  * el 45 % menos de series y RPE 5–6, y propagar un retoque de la semana 1 la
  * borraría sin avisar.
@@ -50,12 +50,12 @@ const conDias = (
   ),
 });
 
-/** Un número de un ejercicio, solo en la semana que se está mirando. */
+/** Un número (o la cadencia) de un ejercicio, solo en la semana que se está mirando. */
 export function cambiarNumero(
   plan: Plan,
   sitio: Sitio & { semana: number },
   campo: keyof EjercicioPlan,
-  valor: number,
+  valor: number | string,
 ): Plan {
   return conDias(
     plan,
@@ -188,6 +188,7 @@ export function ejercicioDelMetodo(opciones: {
     rpePrimeras: descarga ? metodo.descarga.rpePrimeras : p.rpePrimeras,
     rpeUltima: descarga ? metodo.descarga.rpeUltima : p.rpeUltima,
     descansoSeg: aislamiento ? p.descansoMinSeg : p.descansoMaxSeg,
+    ...(p.cadencia ? { cadencia: p.cadencia } : {}),
     sustitutos,
     ...(jerarquia ? { jerarquia } : {}),
   };

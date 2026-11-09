@@ -125,6 +125,14 @@ describe("los números cambian solo en la semana que se está mirando", () => {
     expect(p.semanas[0].dias[0].central.ejercicios[0].seriesEfectivas).toBe(5);
     expect(p.semanas[1].dias[0].central.ejercicios[0].seriesEfectivas).toBe(2);
   });
+
+  it("la cadencia también, y queda marcada como cambio (9-nov)", () => {
+    const p = cambiarNumero(plan(), { dia: 0, indice: 0, semana: 1 }, "cadencia", "4010");
+    expect(p.semanas[0].dias[0].central.ejercicios[0].cadencia).toBe("4010");
+    expect(p.semanas[1].dias[0].central.ejercicios[0].cadencia).toBeUndefined();
+    expect(resumenDeCambios(plan(), p)[0]).toContain("cadencia — → 4010");
+    expect(validarPlan(p)).toEqual([]);
+  });
 });
 
 describe("añadir un ejercicio", () => {

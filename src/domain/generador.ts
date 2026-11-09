@@ -53,6 +53,7 @@ import { incluidos, type DecisionEjercicio, type Resultado } from "@/domain/moto
 import {
   cierrePara,
   FICHA_PERIODIZACION,
+  rirDe,
   validarPlan,
   VERSION_PLAN,
   type DiaPlan,
@@ -397,12 +398,14 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
           ? "supercompensacion"
           : "carga";
 
+    // La descarga de bloques es su propio bloque (9-nov): se dice una vez.
+    const dondeVa = tipo === "descarga" ? " · descarga" : fila?.bloque ? ` · bloque ${fila.bloque}`
+      : ` del mesociclo ${FICHA_PERIODIZACION[periodizacion].nombre}`;
     const notasSemana = fila
       ? [
-          `${tipo === "descarga" ? "Descarga" : `Semana ${n}`}` +
-            `${fila.bloque ? ` · bloque ${fila.bloque}` : ` del mesociclo ${FICHA_PERIODIZACION[periodizacion].nombre}`}: ` +
+          `Semana ${n}${dondeVa}: ` +
             `${fila.series} series de ${repMin === repMax ? repMin : `${repMin}–${repMax}`} ` +
-            `a RPE ${rpeFila!.ultima}.`,
+            `a RPE ${rpeFila!.ultima} (RIR ${rirDe(rpeFila!.ultima)}).`,
         ]
       : tipo === "descarga"
         ? [
@@ -441,6 +444,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
           descansoSeg: c.candidato.aislamiento
             ? parametros.descansoMinSeg
             : parametros.descansoMaxSeg,
+          ...(parametros.cadencia ? { cadencia: parametros.cadencia } : {}),
           sustitutos: c.candidato.sustitutos,
           ...(c.candidato.jerarquia !== null ? { jerarquia: c.candidato.jerarquia } : {}),
           notas:

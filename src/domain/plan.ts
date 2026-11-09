@@ -161,6 +161,12 @@ export interface EjercicioPlan {
   /** RPE de la última. En su método casi siempre es mayor que el anterior. */
   rpeUltima?: number;
   descansoSeg: number;
+  /**
+   * Cadencia en su notación de cuatro cifras (9-nov, "ej. 3010"): segundos de
+   * bajada, pausa abajo, subida y pausa arriba; una X es "lo más rápido
+   * posible". Opcional: los planes de antes no la tienen y siguen valiendo.
+   */
+  cadencia?: string;
   /** Técnica de intensidad: drop set, myo-reps, rest-pause… */
   tecnica?: string;
   /**
@@ -181,6 +187,20 @@ export interface EjercicioPlan {
    * siendo válidos.
    */
   jerarquia?: Jerarquia;
+}
+
+export function esCadencia(v: unknown): v is string {
+  return typeof v === "string" && /^[0-9X]{4}$/.test(v);
+}
+
+/**
+ * Las repeticiones en reserva de un RPE. Es su conversión del 2-sep
+ * (`RPE = 10 − RIR`); se muestra junto al RPE para que se audite uno contra el
+ * otro (9-nov), no se guarda aparte: dos números guardados acaban diciendo
+ * cosas distintas.
+ */
+export function rirDe(rpe: number): number {
+  return Math.round((10 - rpe) * 10) / 10;
 }
 
 /** Fase 1. Tiempo fijo y sin carga externa: es su especificación literal. */
@@ -345,6 +365,9 @@ export function validarPlan(plan: Plan): string[] {
           // En su método la última serie es la dura. Al revés suele ser un
           // cambio de sitio al teclear, y nadie lo notaría mirando el plan.
           errores.push(`${ee}: la última serie tiene menos RPE que las anteriores.`);
+        }
+        if (e.cadencia !== undefined && !esCadencia(e.cadencia)) {
+          errores.push(`${ee}: la cadencia son cuatro cifras, como 3010 (una X vale por "explosivo").`);
         }
         if (e.jerarquia !== undefined && !esJerarquia(e.jerarquia)) {
           errores.push(`${ee}: jerarquía desconocida (${String(e.jerarquia)}).`);

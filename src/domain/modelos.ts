@@ -50,6 +50,8 @@ export interface BloqueModelo {
   nombre: string;
   semanas: number;
   minimo: number;
+  /** Todas sus semanas son de descarga: se rotula "Descarga", no "Bloque N". */
+  descarga: boolean;
 }
 
 type Crudo = Record<string, unknown>;
@@ -100,8 +102,9 @@ export function validarModelos(crudo: Crudo): string[] {
         for (const [bloque, minimo] of Object.entries(minimos)) {
           const total = porBloque.get(bloque);
           if (total === undefined) e.push(`El modelo "${nombre}" no tiene ningún bloque "${bloque}".`);
-          else if (!Number.isInteger(minimo) || (minimo as number) < 1 || (minimo as number) > total) {
-            e.push(`El modelo "${nombre}": el mínimo del bloque "${bloque}" tiene que ir de 1 a ${total}.`);
+          // 0 vale: es la descarga que el entrenador puede quitar (9-nov).
+          else if (!Number.isInteger(minimo) || (minimo as number) < 0 || (minimo as number) > total) {
+            e.push(`El modelo "${nombre}": el mínimo del bloque "${bloque}" tiene que ir de 0 a ${total}.`);
           }
         }
     }
@@ -181,8 +184,10 @@ export function bloquesDe(modelo: Modelo): BloqueModelo[] {
   for (const s of modelo.semanas) {
     if (!s.bloque) continue;
     const b = bloques.find((x) => x.nombre === s.bloque);
-    if (b) b.semanas += 1;
-    else bloques.push({ nombre: s.bloque, semanas: 1, minimo: 0 });
+    if (b) {
+      b.semanas += 1;
+      b.descarga &&= s.descarga;
+    } else bloques.push({ nombre: s.bloque, semanas: 1, minimo: 0, descarga: s.descarga });
   }
   for (const b of bloques) b.minimo = modelo.minimoPorBloque[b.nombre] ?? b.semanas;
   return bloques;
@@ -209,5 +214,6 @@ export function recortarModelo(modelo: Modelo, porBloque: Record<string, number>
     vistas.set(s.bloque, n);
     return n <= (quedan.get(s.bloque) ?? n);
   });
-  return { ...modelo, semanas };
+  // Un modelo sin semanas no es un mesociclo más corto, es ninguno.
+  return semanas.length > 0 ? { ...modelo, semanas } : modelo;
 }

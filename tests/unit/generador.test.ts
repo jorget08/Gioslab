@@ -678,7 +678,7 @@ describe("un principiante entra en lineal, y el plan es lineal de verdad", () =>
   });
 });
 
-describe("bloques en tres fases, ATR y pierna sin tren superior (método v5, 3-nov)", () => {
+describe("bloques en tres fases, ATR y pierna sin tren superior (método v5, 3-nov; v6, 9-nov)", () => {
   const DIR = new URL("../../supabase/migrations/", import.meta.url);
   const ACTIVO: Metodo = leerMetodo(
     readdirSync(DIR)
@@ -772,6 +772,34 @@ describe("bloques en tres fases, ATR y pierna sin tren superior (método v5, 3-n
         }
       }
     }
+  });
+
+  it("bloques cierra con una semana de descarga que el entrenador puede quitar (v6, 9-nov)", () => {
+    // "Esto está full, solo faltaría la descarga."
+    const { plan } = generar(13);
+    const ultima = plan!.semanas[12];
+    expect([ultima.tipo, ultima.bloque]).toEqual(["descarga", "Descarga"]);
+    const e = ultima.dias[0].central.ejercicios[0];
+    expect([e.seriesEfectivas, e.repMin, e.repMax, e.rpeUltima]).toEqual([2, 3, 6, 6]);
+    expect(ultima.dias[0].notas![0]).toBe("Semana 13 · descarga: 2 series de 3–6 a RPE 6 (RIR 4).");
+    expect(validarPlan(plan!)).toEqual([]);
+
+    const sin = generar(12, {}, { semanasPorBloque: { Descarga: 0 } }).plan!;
+    expect(sin.semanas.some((s) => s.tipo === "descarga")).toBe(false);
+  });
+
+  it("la nota de la semana dice el RPE y su RIR, y la Realización del ATR va a 9 y 9,5 (v6, 9-nov)", () => {
+    expect(generar(13).plan!.semanas[0].dias[0].notas![0]).toBe(
+      "Semana 1 · bloque Acumulación: 3 series de 8–12 a RPE 7 (RIR 3).",
+    );
+    const atr = generar(6, { training_goal: "Rendimiento Deportivo" }).plan!;
+    expect(atr.semanas.slice(4).map((s) => s.dias[0].central.ejercicios[0].rpeUltima)).toEqual([9, 9.5]);
+  });
+
+  it("cada ejercicio sale con la cadencia de su objetivo (v6, 9-nov)", () => {
+    const { plan } = generar(13);
+    const cadencias = new Set(plan!.semanas.flatMap((s) => s.dias.flatMap((d) => d.central.ejercicios.map((e) => e.cadencia))));
+    expect([...cadencias]).toEqual(["3010"]);
   });
 });
 

@@ -55,6 +55,7 @@ export function cambiosDelEjercicio(
   mirar("repeticiones", rango(generado), rango(actual));
   mirar("RPE", rpe(generado), rpe(actual));
   mirar("descanso", `${generado.descansoSeg} s`, `${actual.descansoSeg} s`);
+  mirar("cadencia", generado.cadencia ?? "—", actual.cadencia ?? "—");
   mirar("calentamiento", generado.seriesCalentamiento, actual.seriesCalentamiento);
 
   return cambios;

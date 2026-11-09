@@ -6,14 +6,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { CambiosDelDia } from "@/domain/ediciones";
 import type { DiaPlan, EjercicioPlan } from "@/domain/plan";
-import { FICHA_CIERRE } from "@/domain/plan";
+import { esCadencia, FICHA_CIERRE, rirDe } from "@/domain/plan";
 
 /**
  * Un día del plan, editable (tarea 5.4).
  *
  * §3.6, literal: «el entrenador siempre decide y puede sobreescribir». Así que
  * aquí se puede cambiar el ejercicio, quitarlo, añadir otro, moverlo de sitio y
- * tocar series, repeticiones, RPE y descanso.
+ * tocar series, repeticiones, RPE, descanso y cadencia.
+ *
+ * El RIR no se edita: sale del RPE (`rirDe`) y se muestra a su lado para que
+ * los dos se auditen juntos desde la semana 1 (Giovanni, 9-nov).
  *
  * DOS DECISIONES DE INTERFAZ QUE VIENEN DE §3.3 (esto se usa de pie, en el
  * gimnasio, con una mano):
@@ -43,7 +46,7 @@ interface Props {
   primerDia: boolean;
   ultimoDia: boolean;
   onMoverDia: (salto: -1 | 1) => void;
-  onNumero: (indice: number, campo: keyof EjercicioPlan, valor: number) => void;
+  onNumero: (indice: number, campo: keyof EjercicioPlan, valor: number | string) => void;
   onCambiar: (indice: number, nombre: string) => void;
   onQuitar: (indice: number) => void;
   onMover: (indice: number, salto: -1 | 1) => void;
@@ -188,7 +191,7 @@ function FilaEjercicio({
   opciones: OpcionEjercicio[];
   primero: boolean;
   ultimo: boolean;
-  onNumero: (campo: keyof EjercicioPlan, valor: number) => void;
+  onNumero: (campo: keyof EjercicioPlan, valor: number | string) => void;
   onCambiar: (nombre: string) => void;
   onQuitar: () => void;
   onMover: (salto: -1 | 1) => void;
@@ -210,9 +213,9 @@ function FilaEjercicio({
           </p>
           <p className="text-xs tabular-nums text-muted-foreground">
             {e.seriesEfectivas} × {e.repMin}–{e.repMax}
-            {e.rpePrimeras !== undefined && ` · RPE ${e.rpePrimeras}/${e.rpeUltima}`}
-            {" · "}
-            {segundos(e.descansoSeg)}
+            {e.rpePrimeras !== undefined && e.rpeUltima !== undefined && ` · ${intensidad(e.rpePrimeras, e.rpeUltima)}`}
+            {e.cadencia && ` · cadencia ${e.cadencia}`}
+            {` · descanso ${segundos(e.descansoSeg)}`}
             {e.seriesCalentamiento > 0 && ` · ${e.seriesCalentamiento} de calentamiento`}
           </p>
           {e.notas && <p className="text-xs text-muted-foreground">{e.notas}</p>}
@@ -284,8 +287,15 @@ function FilaEjercicio({
               onCambio={(v) => onNumero("rpePrimeras", v)} />
             <Numero etiqueta="RPE última" valor={e.rpeUltima ?? 0} min={1} max={10} paso={0.5}
               onCambio={(v) => onNumero("rpeUltima", v)} />
+            {e.rpePrimeras !== undefined && e.rpeUltima !== undefined && (
+              <p className="col-span-2 -mt-1 text-xs text-muted-foreground">
+                Equivale a RIR {rirDe(e.rpePrimeras)} en las primeras y RIR {rirDe(e.rpeUltima)} en
+                la última.
+              </p>
+            )}
             <Numero etiqueta="Descanso (s)" valor={e.descansoSeg} min={10} max={600} paso={15}
               onCambio={(v) => onNumero("descansoSeg", v)} />
+            <Cadencia key={e.cadencia ?? ""} valor={e.cadencia ?? ""} onCambio={(v) => onNumero("cadencia", v)} />
           </div>
 
           <div className="flex gap-2">
@@ -340,6 +350,41 @@ function Numero({
           if (Number.isFinite(v)) onCambio(v);
         }}
         className="min-h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base tabular-nums"
+      />
+    </label>
+  );
+}
+
+/** "RPE 8 (RIR 2)", o "RPE 7.5/9 (RIR 2.5/1)" si la última es más dura. */
+function intensidad(primeras: number, ultima: number): string {
+  return primeras === ultima
+    ? `RPE ${ultima} (RIR ${rirDe(ultima)})`
+    : `RPE ${primeras}/${ultima} (RIR ${rirDe(primeras)}/${rirDe(ultima)})`;
+}
+
+/**
+ * La cadencia se teclea en un borrador y solo sube al plan cuando son cuatro
+ * cifras: a medio escribir ("30") el plan entero dejaría de poder guardarse.
+ */
+function Cadencia({ valor, onCambio }: { valor: string; onCambio: (v: string) => void }) {
+  const [borrador, setBorrador] = useState(valor);
+  const mal = borrador !== "" && !esCadencia(borrador);
+  return (
+    <label className="block space-y-1">
+      <span className="text-xs text-muted-foreground">Cadencia (ej. 3010)</span>
+      <input
+        type="text"
+        value={borrador}
+        maxLength={4}
+        autoCapitalize="characters"
+        autoComplete="off"
+        aria-invalid={mal}
+        onChange={(ev) => {
+          const v = ev.target.value.toUpperCase().replace(/[^0-9X]/g, "");
+          setBorrador(v);
+          if (esCadencia(v)) onCambio(v);
+        }}
+        className="min-h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base tabular-nums aria-invalid:border-destructive"
       />
     </label>
   );

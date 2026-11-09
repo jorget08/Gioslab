@@ -5,6 +5,7 @@ import {
   ejerciciosDelPlan,
   leerPlan,
   planValido,
+  rirDe,
   seriesEfectivasDe,
   seriesPorEjercicioEnSemana,
   validarPlan,
@@ -168,6 +169,17 @@ describe("el ejercicio prescrito", () => {
 
   it("el RPE es opcional: no todo ejercicio lo lleva", () => {
     expect(conEjercicio({ rpePrimeras: undefined, rpeUltima: undefined })).toEqual([]);
+  });
+
+  it("la cadencia son cuatro cifras, con X para lo explosivo (9-nov)", () => {
+    expect(conEjercicio({ cadencia: "3010" })).toEqual([]);
+    expect(conEjercicio({ cadencia: "30X0" })).toEqual([]);
+    expect(conEjercicio({ cadencia: "301" })).toContainEqual(expect.stringMatching(/cadencia/));
+    expect(conEjercicio({ cadencia: "3-1-0" })).toContainEqual(expect.stringMatching(/cadencia/));
+  });
+
+  it("el RIR sale del RPE con su conversión: RPE = 10 − RIR", () => {
+    expect([rirDe(8), rirDe(9.5), rirDe(7.5), rirDe(6)]).toEqual([2, 0.5, 2.5, 4]);
   });
 });
 

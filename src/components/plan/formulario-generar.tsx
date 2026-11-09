@@ -146,7 +146,7 @@ export function FormularioGenerar({
           {bloques.map((b, i) => (
             <label key={b.nombre} className="block space-y-1">
               <span className="text-xs text-muted-foreground">
-                Bloque {i + 1} · {b.nombre}
+                {b.descarga ? "Descarga al final" : `Bloque ${i + 1} · ${b.nombre}`}
               </span>
               <select
                 value={semanasDe(b)}
@@ -156,7 +156,7 @@ export function FormularioGenerar({
               >
                 {Array.from({ length: b.semanas - b.minimo + 1 }, (_, k) => b.minimo + k).map((n) => (
                   <option key={n} value={n}>
-                    {n} semanas
+                    {n === 0 ? "Sin descarga" : n === 1 ? "1 semana" : `${n} semanas`}
                   </option>
                 ))}
               </select>
@@ -179,7 +179,8 @@ export function FormularioGenerar({
           .{" "}
           {modelo
             ? elegibles
-              ? `Mesociclo de ${semanas} semanas en ${bloques.length} bloques; cada bloque se puede acortar ` +
+              ? `Mesociclo de ${semanas} semanas en ${bloques.filter((x) => !x.descarga).length} bloques` +
+                `${bloques.some((x) => x.descarga) ? " más la descarga" : ""}; cada bloque se puede acortar ` +
                 `hasta su mínimo y se le quitan sus últimas semanas.`
               : `Su mesociclo es de ${modelo.semanas.length} semanas con la progresión de Giovanni semana a semana` +
               (descargas.length > 0 ? ` y descarga en la ${descargas.join(" y ")}.` : ".")

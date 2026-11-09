@@ -4,6 +4,7 @@ import {
   FICHA_CIERRE,
   FICHA_OBJETIVO,
   FICHA_PERIODIZACION,
+  rirDe,
   type DiaPlan,
   type EjercicioPlan,
   type Plan,
@@ -86,7 +87,7 @@ const estilos = StyleSheet.create({
     borderBottomColor: LINEA,
   },
   cEjercicio: { flex: 1, paddingRight: 6 },
-  cCorta: { width: 52, textAlign: "right" },
+  cCorta: { width: 44, textAlign: "right" },
   cabecera: { fontSize: 8, color: GRIS },
   apunte: { fontSize: 8, color: GRIS, marginTop: 1 },
 
@@ -140,6 +141,12 @@ function Ejercicio({ e }: { e: EjercicioPlan }) {
       <Text style={estilos.cCorta}>
         {e.rpePrimeras !== undefined ? `${e.rpePrimeras}/${e.rpeUltima}` : "-"}
       </Text>
+      <Text style={estilos.cCorta}>
+        {e.rpePrimeras !== undefined && e.rpeUltima !== undefined
+          ? `${rirDe(e.rpePrimeras)}/${rirDe(e.rpeUltima)}`
+          : "-"}
+      </Text>
+      <Text style={estilos.cCorta}>{e.cadencia ?? "-"}</Text>
       <Text style={estilos.cCorta}>{descanso(e.descansoSeg)}</Text>
     </View>
   );
@@ -173,6 +180,8 @@ function Dia({ dia }: { dia: DiaPlan }) {
         <Text style={[estilos.cCorta, estilos.cabecera]}>Series</Text>
         <Text style={[estilos.cCorta, estilos.cabecera]}>Reps</Text>
         <Text style={[estilos.cCorta, estilos.cabecera]}>RPE</Text>
+        <Text style={[estilos.cCorta, estilos.cabecera]}>RIR</Text>
+        <Text style={[estilos.cCorta, estilos.cabecera]}>Cadencia</Text>
         <Text style={[estilos.cCorta, estilos.cabecera]}>Descanso</Text>
       </View>
 
@@ -235,7 +244,7 @@ export function PlanPDF({ plan, atleta, fecha, avisos = [] }: DatosPDF) {
         {plan.semanas.map((semana) => (
           <View key={semana.semana} style={estilos.semana} break={semana.semana > 1}>
             <Text style={estilos.tituloSemana}>
-              Semana {semana.semana} · {ETIQUETA_SEMANA[semana.tipo]}
+              Semana {semana.semana} · {semana.bloque && semana.tipo !== "descarga" ? `Bloque ${semana.bloque}` : ETIQUETA_SEMANA[semana.tipo]}
             </Text>
             {semana.dias.map((dia) => (
               <Dia key={dia.dia} dia={dia} />

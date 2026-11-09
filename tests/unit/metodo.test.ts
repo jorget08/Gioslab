@@ -362,7 +362,7 @@ describe("consultas sobre el método", () => {
   });
 });
 
-describe("modelos con bloques y periodización por meta (v5, 3-nov)", () => {
+describe("modelos con bloques y periodización por meta (v5, 3-nov; v6, 9-nov)", () => {
   const metodo = leerMetodo(BUENO)!;
   type Mutable = Record<string, Record<string, Record<string, unknown>>>;
 
@@ -374,15 +374,38 @@ describe("modelos con bloques y periodización por meta (v5, 3-nov)", () => {
 
   it("los bloques del modelo salen en orden con su mínimo", () => {
     expect(bloquesDe(metodo.modelos.bloques!)).toEqual([
-      { nombre: "Acumulación", semanas: 4, minimo: 3 },
-      { nombre: "Transmutación", semanas: 4, minimo: 3 },
-      { nombre: "Intensificación", semanas: 4, minimo: 2 },
+      { nombre: "Acumulación", semanas: 4, minimo: 3, descarga: false },
+      { nombre: "Transmutación", semanas: 4, minimo: 3, descarga: false },
+      { nombre: "Intensificación", semanas: 4, minimo: 2, descarga: false },
+      { nombre: "Descarga", semanas: 1, minimo: 0, descarga: true },
     ]);
+  });
+
+  it("la descarga de bloques se puede quitar: mínimo 0 (v6, 9-nov)", () => {
+    const sin = recortarModelo(metodo.modelos.bloques!, { Descarga: 0 });
+    expect(sin.semanas).toHaveLength(12);
+    expect(sin.semanas.some((s) => s.descarga)).toBe(false);
+    expect(metodo.modelos.bloques!.semanas.at(-1)).toMatchObject({ series: 2, repMin: 3, repMax: 6, rpeUltima: 6, descarga: true, bloque: "Descarga" });
+  });
+
+  it("la Realización del ATR sube a RPE 9 y 9,5 (v6, 9-nov)", () => {
+    const atr = metodo.modelos.atr!.semanas;
+    expect(atr.slice(4).map((s) => [s.bloque, s.series, s.rpeUltima])).toEqual([
+      ["Realización", 3, 9],
+      ["Realización", 1, 9.5],
+    ]);
+  });
+
+  it("la cadencia por defecto es 3010 y una mal escrita se rechaza (v6, 9-nov)", () => {
+    expect(metodo.parametros.hipertrofia.cadencia).toBe("3010");
+    expect(
+      validarMetodo(con((x) => ((x as unknown as Mutable).parametros.fuerza.cadencia = "30-1"))),
+    ).toContain('"fuerza": la cadencia son cuatro cifras, como 3010.');
   });
 
   it("recortar quita las últimas semanas de cada bloque y respeta mínimo y tope", () => {
     const m = recortarModelo(metodo.modelos.bloques!, { Acumulación: 9, Transmutación: 3, Intensificación: 0 });
-    expect(m.semanas.map((s) => s.bloque![0]).join("")).toBe("AAAATTTII");
+    expect(m.semanas.map((s) => s.bloque![0]).join("")).toBe("AAAATTTIID");
     // La primera de Acumulación es la de entrada (RPE 7) y se conserva.
     expect(m.semanas[0].rpeUltima).toBe(7);
   });
@@ -393,7 +416,7 @@ describe("modelos con bloques y periodización por meta (v5, 3-nov)", () => {
     ).toContain('El modelo "bloques" no tiene ningún bloque "Taper".');
     expect(
       validarMetodo(con((x) => ((x as unknown as Mutable).modelos.bloques.minimo_por_bloque = { Acumulación: 5 }))),
-    ).toContain('El modelo "bloques": el mínimo del bloque "Acumulación" tiene que ir de 1 a 4.');
+    ).toContain('El modelo "bloques": el mínimo del bloque "Acumulación" tiene que ir de 0 a 4.');
   });
 
   it("una meta que apunta a un modelo desconocido se rechaza", () => {

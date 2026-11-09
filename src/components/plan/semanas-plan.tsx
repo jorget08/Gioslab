@@ -29,6 +29,9 @@ export function SemanasPlan({
     else grupos.push({ bloque, semanas: [s] });
   }
 
+  // La descarga cierra el mesociclo (9-nov): se rotula sola, sin número de bloque.
+  const esDescarga = (g: (typeof grupos)[number]) => g.semanas.every((s) => s.tipo === "descarga");
+
   return (
     <div className="space-y-3">
       {grupos.map((g, i) => (
@@ -36,7 +39,9 @@ export function SemanasPlan({
           {g.bloque && (
             <p className="text-xs text-muted-foreground">
               <strong className="font-semibold text-foreground">
-                Bloque {grupos.filter((x, k) => k <= i && x.bloque).length}: {g.bloque}
+                {esDescarga(g)
+                  ? g.bloque
+                  : `Bloque ${grupos.filter((x, k) => k <= i && x.bloque && !esDescarga(x)).length}: ${g.bloque}`}
               </strong>{" "}
               · semanas {g.semanas[0].semana}
               {g.semanas.length > 1 ? `–${g.semanas.at(-1)!.semana}` : ""}

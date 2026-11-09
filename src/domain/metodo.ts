@@ -25,6 +25,7 @@
  */
 
 import {
+  esCadencia,
   OBJETIVOS,
   PERIODIZACIONES,
   type Objetivo,
@@ -49,6 +50,8 @@ export interface Parametros {
   descansoMinSeg: number;
   /** Compuesto. Su plan real: "Multiarticulares 90–120 s". */
   descansoMaxSeg: number;
+  /** Cadencia por defecto, "3010" (9-nov). Sin ella el plan no la prescribe. */
+  cadencia?: string;
 }
 
 export interface RangoSeries {
@@ -244,6 +247,9 @@ export function validarMetodo(crudo: unknown): string[] {
       if (desMin === null || desMax === null || desMin < 10 || desMin > desMax) {
         e.push(`"${o}": el rango de descanso no es válido.`);
       }
+      if (p.cadencia !== undefined && !esCadencia(p.cadencia)) {
+        e.push(`"${o}": la cadencia son cuatro cifras, como 3010.`);
+      }
     }
   }
 
@@ -397,6 +403,7 @@ export function leerMetodo(crudo: unknown): Metodo | null {
       rpeUltima: p.rpe_ultima as number,
       descansoMinSeg: p.descanso_min_seg as number,
       descansoMaxSeg: p.descanso_max_seg as number,
+      ...(esCadencia(p.cadencia) ? { cadencia: p.cadencia } : {}),
     };
   }
 
