@@ -8,8 +8,8 @@ import { Suspense, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { Campo } from "@/components/shared/campo";
-import { CampoSelect } from "@/components/shared/campo-select";
 import { Guarda } from "@/components/shared/guarda";
+import { CamposClasificacion } from "@/components/biblioteca/clasificacion";
 import { MediosEjercicio } from "@/components/biblioteca/medios";
 import { RelacionesEjercicio } from "@/components/biblioteca/relaciones";
 import { Bloque } from "@/components/shared/paso-wizard";
@@ -28,10 +28,8 @@ import {
   sugerencias,
   type Ejercicio,
 } from "@/domain/ejercicios";
-import { FICHA_JERARQUIA, FICHA_PERFIL, JERARQUIAS, PERFILES } from "@/domain/jerarquias";
 import { leerMedios, type Medio } from "@/domain/medios";
 import { esTipoRelacion, type Relacion } from "@/domain/relaciones";
-import { COMPLEMENTARIOS, FICHA_COMPLEMENTARIO, FICHA_PATRON, PATRONES } from "@/domain/patrones";
 import { createClient } from "@/lib/supabase/client";
 import { ejercicioSchema, type EjercicioForm, type EjercicioValidado } from "@/lib/validation/ejercicio";
 
@@ -49,7 +47,7 @@ import { ejercicioSchema, type EjercicioForm, type EjercicioValidado } from "@/l
  */
 
 const COLUMNAS =
-  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, hierarchy_level, length_profile, is_guided, complementary_pattern, is_active";
+  "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, media_urls, hierarchy_level, length_profile, is_guided, complementary_pattern, default_cadence, axial_load, is_active";
 
 function Formulario() {
   const params = useSearchParams();
@@ -119,6 +117,8 @@ function Formulario() {
             jerarquia: (actual.hierarchy_level ? String(actual.hierarchy_level) : "") as EjercicioForm["jerarquia"],
             perfil: (actual.length_profile ?? "") as EjercicioForm["perfil"],
             guiada: actual.is_guided ?? false,
+            cadencia: actual.default_cadence ?? "",
+            axial: actual.axial_load ?? false,
             activo: actual.is_active,
           });
         }
@@ -155,6 +155,8 @@ function Formulario() {
       hierarchy_level: datos.jerarquia ?? null,
       length_profile: datos.perfil ?? null,
       is_guided: datos.guiada,
+      default_cadence: datos.cadencia ?? null,
+      axial_load: datos.axial,
     };
 
     const supabase = createClient();
@@ -250,49 +252,7 @@ function Formulario() {
       </Bloque>
 
       <Bloque rotulo="Clasificación">
-        <CampoSelect
-          etiqueta="Patrón de movimiento"
-          ayuda="Es la llave con la que el motor sustituye un ejercicio por otro"
-          {...register("patron")}
-          error={errors.patron?.message}
-        >
-          <option value="">Sin asignar</option>
-          {PATRONES.map((p) => (
-            <option key={p} value={p}>
-              {FICHA_PATRON[p].nombre}
-            </option>
-          ))}
-        </CampoSelect>
-
-        <CampoSelect
-          etiqueta="Patrón complementario"
-          ayuda="Qué tipo de accesorio es dentro de su patrón (su matriz complementaria)"
-          {...register("complementario")}
-        >
-          <option value="">Ninguno</option>
-          {COMPLEMENTARIOS.map((c) => (
-            <option key={c} value={c}>{FICHA_COMPLEMENTARIO[c].nombre}</option>
-          ))}
-        </CampoSelect>
-
-        {/* Su orden de la sesión (25-sep). Sin jerarquía se puede prescribir,
-            pero el generador lo pone detrás de lo que sí está clasificado. */}
-        <CampoSelect etiqueta="Jerarquía" ayuda="En qué orden va en la sesión" {...register("jerarquia")}>
-          <option value="">Sin clasificar</option>
-          {JERARQUIAS.map((j) => (
-            <option key={j} value={j}>{FICHA_JERARQUIA[j].nombre}</option>
-          ))}
-        </CampoSelect>
-        <CampoSelect etiqueta="Perfil de longitud" ayuda="Dónde trabaja el músculo en el recorrido" {...register("perfil")}>
-          <option value="">Sin indicar</option>
-          {PERFILES.map((p) => (
-            <option key={p} value={p}>{FICHA_PERFIL[p]}</option>
-          ))}
-        </CampoSelect>
-        <label className="flex min-h-11 cursor-pointer select-none items-center gap-2 text-sm">
-          <input type="checkbox" className="size-5" {...register("guiada")} />
-          Versión guiada: sustituye al libre cuando hay una restricción
-        </label>
+        <CamposClasificacion register={register} errors={errors} />
 
         {/* Los tres campos siguientes no tienen catálogo cerrado porque Giovanni
             no lo ha fijado. En vez de inventarlo, se sugiere lo ya escrito: el

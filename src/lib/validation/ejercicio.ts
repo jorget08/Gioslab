@@ -66,6 +66,15 @@ export const ejercicioSchema = z.object({
     .optional()
     .transform((v) => v || undefined),
   guiada: z.boolean().default(false),
+  // Su cadencia por defecto (16-nov). Se pasa a mayúsculas para que "30x0" valga.
+  cadencia: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^([0-9X]{4})?$/, "Cuatro cifras, como 3010 (X = explosiva)")
+    .optional()
+    .transform((v) => v || undefined),
+  axial: z.boolean().default(false),
 
   activo: z.boolean().default(true),
 });
