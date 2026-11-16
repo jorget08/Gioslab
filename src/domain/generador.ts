@@ -52,6 +52,7 @@ import {
 import { incluidos, type DecisionEjercicio, type Resultado } from "@/domain/motor";
 import {
   cierrePara,
+  esCadencia,
   FICHA_PERIODIZACION,
   rirDe,
   validarPlan,
@@ -64,6 +65,7 @@ import {
   type SemanaPlan,
   type TipoSemana,
 } from "@/domain/plan";
+import { esExplosiva, prescribir, rpeConElMotor, sesionesOndulantes } from "@/domain/prescripcion";
 import { sustitutosDe, type Relacion } from "@/domain/relaciones";
 import {
   ajustarVolumen,
@@ -120,49 +122,6 @@ export interface SalidaGenerador {
   avisos: string[];
   /** Por qué no hay plan. */
   errores: string[];
-}
-
-// ---------------------------------------------------------------------------
-// Piezas
-// ---------------------------------------------------------------------------
-
-/**
- * El RPE que toca, después de que el motor diga la suya.
- *
- * `RPE = 10 − RIR` es conversión suya (2-sep). `fijo` clava, `delta` mueve y
- * `piso` pone un techo al RPE: un suelo de RIR 3 significa que no se puede
- * pasar de RPE 7, y eso viene de una regla de seguridad, así que recorta
- * siempre — nunca al revés.
- */
-function rpeConElMotor(
-  base: { primeras: number; ultima: number },
-  rir: Resultado["rir"],
-): { primeras: number; ultima: number } {
-  let primeras = base.primeras;
-  let ultima = base.ultima;
-
-  if (rir.fijo !== undefined) {
-    primeras = 10 - rir.fijo;
-    ultima = 10 - rir.fijo;
-  }
-  if (rir.delta !== undefined) {
-    primeras -= rir.delta;
-    ultima -= rir.delta;
-  }
-  if (rir.piso !== undefined) {
-    const techo = 10 - rir.piso;
-    primeras = Math.min(primeras, techo);
-    ultima = Math.min(ultima, techo);
-  }
-
-  const acotar = (n: number) => Math.max(1, Math.min(10, Math.round(n * 2) / 2));
-  primeras = acotar(primeras);
-  ultima = acotar(ultima);
-  // Si el recorte pisa el orden, mandan las dos iguales antes que una última
-  // serie más suave que las anteriores, que `validarPlan` rechaza.
-  if (ultima < primeras) primeras = ultima;
-
-  return { primeras, ultima };
 }
 
 // ---------------------------------------------------------------------------
@@ -230,6 +189,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
     }
     const grupo = grupoDeMusculo(metodo, ficha.target_muscle);
     const { jerarquia, perfil, guiada } = clasificacionDe(ficha);
+    const cadencia = esCadencia(ficha.default_cadence) ? ficha.default_cadence : null;
 
     candidatos.push({
       nombre: d.ejercicio,
@@ -242,6 +202,8 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
       jerarquia,
       perfil,
       guiada,
+      cadencia,
+      axial: ficha.axial_load === true,
       // 5.5: las alternativas salen de la matriz de equivalencia y se congelan
       // al generar. Solo las que el motor aprobó para ESTE atleta: ofrecer una
       // excluida es mandarlo a un ejercicio que le está prohibido.
@@ -370,6 +332,14 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
     ...resultado.maniobrasProhibidas.map((m) => `Maniobra prohibida: ${m}.`),
   ];
 
+  // Ondulante diario (v7, 16-nov): la pierna y el torso que se repiten en la
+  // semana alternan sesión A (pesada) y B (estiramiento).
+  const { prescripcion } = metodo;
+  const sesiones =
+    periodizacion === "ondulante" && !modelo && prescripcion.ondulanteDiario
+      ? sesionesOndulantes(reparto.plantilla)
+      : null;
+
   const semanas: SemanaPlan[] = [];
   for (let n = 1; n <= opciones.semanas; n++) {
     // Con tabla propia, la semana es su fila: incluida su descarga, que en el
@@ -417,8 +387,11 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
           ? ["Semana de supercompensación: se vuelve a la carga buscando superar los registros previos."]
           : [];
 
+    const explosiva = esExplosiva(prescripcion, fila?.bloque, objetivo);
     const dias: DiaPlan[] = semanaBase.map((delDia, i) => {
       const plantilla = reparto.plantilla[i];
+      const letra = tipo === "descarga" ? null : (sesiones?.[i] ?? null);
+      const sesion = letra ? prescripcion.ondulanteDiario![letra] : null;
       const ejerciciosDia: EjercicioPlan[] = delDia.map((c) => {
         // El factor de volumen del motor también escala su tabla: el motor
         // manda sobre el método (regla 3 de este archivo).
@@ -428,14 +401,27 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
             ? Math.max(1, Math.round(c.series * (1 - metodo.descarga.reduccionVolumenPct / 100)))
             : c.series;
 
+        const dosis = prescribir({
+          p: prescripcion,
+          repMin,
+          repMax,
+          cadenciaObjetivo: parametros.cadencia,
+          cadenciaPropia: c.candidato.cadencia,
+          jerarquia: c.candidato.jerarquia,
+          aislamiento: c.candidato.aislamiento,
+          explosiva,
+          sesion,
+          rangoMotor: resultado.rangoRepeticiones,
+        });
+
         return {
           ejercicio: c.candidato.nombre,
           seriesCalentamiento: c.candidato.aislamiento
             ? metodo.seriesPorEjercicio.calentamientoAislamiento
             : metodo.seriesPorEjercicio.calentamientoCompuesto,
           seriesEfectivas: series,
-          repMin,
-          repMax,
+          repMin: dosis.repMin,
+          repMax: dosis.repMax,
           rpePrimeras: rpeFila
             ? rpeFila.primeras
             : tipo === "descarga" ? metodo.descarga.rpePrimeras : rpeCarga.primeras,
@@ -445,7 +431,7 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
           descansoSeg: c.candidato.aislamiento
             ? parametros.descansoMinSeg
             : parametros.descansoMaxSeg,
-          ...(parametros.cadencia ? { cadencia: parametros.cadencia } : {}),
+          ...(dosis.cadencia ? { cadencia: dosis.cadencia } : {}),
           sustitutos: c.candidato.sustitutos,
           ...(c.candidato.jerarquia !== null ? { jerarquia: c.candidato.jerarquia } : {}),
           notas:
@@ -455,7 +441,13 @@ export function generarPlan(entrada: EntradaGenerador): SalidaGenerador {
         };
       });
 
-      const notas = [...notasSemana, ...notasDeSesion];
+      const notas = [
+        ...notasSemana,
+        ...(sesion
+          ? [`Sesión ${letra} (${letra === "A" ? "pesada" : "estiramiento"}): ${sesion.repMin}–${sesion.repMax} repeticiones, cadencia ${sesion.cadencia} en lo multiarticular.`]
+          : []),
+        ...notasDeSesion,
+      ];
       return {
         dia: i + 1,
         titulo: plantilla.titulo,

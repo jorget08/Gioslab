@@ -111,7 +111,7 @@ export async function cargarMotorDelAtleta(
     supabase
       .from("exercise_library")
       .select(
-        "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, hierarchy_level, length_profile, is_guided, is_active",
+        "id, name, description, target_muscle, movement_pattern, biomechanical_type, equipment, contraindications, hierarchy_level, length_profile, is_guided, default_cadence, axial_load, is_active",
       )
       .eq("is_active", true),
     supabase.from("exercise_variants").select("exercise_id, variant_exercise_id, relation_type"),

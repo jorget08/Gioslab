@@ -105,6 +105,10 @@ export interface Ejercicio {
   is_guided?: boolean | null;
   /** Su matriz complementaria (9-nov). Se lee con `esComplementario`. */
   complementary_pattern?: string | null;
+  /** Su cadencia por defecto (16-nov). Sin ella, la de su jerarquía. */
+  default_cadence?: string | null;
+  /** Carga axial pesada: dos J1 axiales no van en la misma sesión (16-nov). */
+  axial_load?: boolean | null;
   is_active: boolean;
 }
 

@@ -23,6 +23,9 @@ import { cabeEnElDia, mismaBase, musculoDelDia, type Candidato } from "@/domain/
  * de ejercicio entre el día A y el día B del mismo grupo, y repetir el mismo
  * seis veces es lo que distingue una rutina de una plantilla.
  */
+/** J1 con carga axial pesada: no caben dos en una sesión. */
+export const esAxialPesado = (c: Candidato) => c.axial && c.jerarquia === 1;
+
 export function elegirDelDia(
   plantilla: PlantillaDia,
   candidatos: Candidato[],
@@ -76,6 +79,11 @@ export function elegirDelDia(
   // El mismo ejercicio base con otro apellido (fondos para pecho y fondos para
   // tríceps) no entra dos veces en la sesión: el accesorio busca otra variante.
   const repiteBase = (c: Candidato) => elegidos.some((e) => mismaBase(e.nombre, c.nombre));
+  // "Si la rutina ya incluyó un ejercicio con demanda axial, bloquear otro
+  // axial pesado en esa misma sesión" (16-nov): una sentadilla libre y un peso
+  // muerto el mismo día. Pesado es J1; lo mira también el ajuste de volumen.
+  const otroAxial = (c: Candidato) => esAxialPesado(c) && elegidos.some(esAxialPesado);
+  const vetado = (c: Candidato) => repiteBase(c) || otroAxial(c);
 
   const meter = (c: Candidato) => {
     elegidos.push(c);
@@ -91,7 +99,7 @@ export function elegirDelDia(
   for (const p of patrones) {
     if (elegidos.length >= cupo.max) break;
     const elegido = delDia
-      .filter((c) => c.patron === p && !yaHoy.has(c.nombre) && !usados.has(c.nombre) && !repiteBase(c))
+      .filter((c) => c.patron === p && !yaHoy.has(c.nombre) && !usados.has(c.nombre) && !vetado(c))
       .sort(orden)[0];
     if (elegido) meter(elegido);
   }
@@ -117,7 +125,7 @@ export function elegirDelDia(
             c.jerarquia === falta.jerarquia &&
             c.perfil === falta.perfil &&
             !yaHoy.has(c.nombre) &&
-            !repiteBase(c) &&
+            !vetado(c) &&
             musculoDelDia(c.musculo, plantilla),
         )
         .sort(
@@ -138,7 +146,7 @@ export function elegirDelDia(
   // Se reordena en cada vuelta y no una sola vez: lo que ya entró cambia el
   // orden —un segundo J1 del mismo músculo pasa a ir detrás—.
   while (elegidos.length < cupo.min && elegidos.length < cupo.max) {
-    const resto = delDia.filter((c) => !yaHoy.has(c.nombre) && !repiteBase(c)).sort(orden);
+    const resto = delDia.filter((c) => !yaHoy.has(c.nombre) && !vetado(c)).sort(orden);
     const siguiente = resto.find((c) => !usados.has(c.nombre)) ?? resto[0];
     if (!siguiente) break;
     meter(siguiente);

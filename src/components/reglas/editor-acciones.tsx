@@ -185,6 +185,32 @@ export function EditorAcciones({
         </Campo>
       )}
 
+      {disponibles.includes("rango_repeticiones") && (
+        <Campo
+          rotulo={ETIQUETA_ACCION.rango_repeticiones}
+          ayuda="Manda sobre el objetivo y el modelo: es seguridad. Dos reglas se cruzan quedándose con el más ligero."
+          resumen={
+            acciones.rango_repeticiones
+              ? `${acciones.rango_repeticiones.min}–${acciones.rango_repeticiones.max}`
+              : "sin poner"
+          }
+          abierto={Boolean(acciones.rango_repeticiones)}
+        >
+          <div className="grid grid-cols-2 gap-2">
+            <Numero
+              rotulo="Mínimo"
+              valor={acciones.rango_repeticiones?.min}
+              onCambio={(v) => poner("rango_repeticiones", rango(v, acciones.rango_repeticiones?.max))}
+            />
+            <Numero
+              rotulo="Máximo"
+              valor={acciones.rango_repeticiones?.max}
+              onCambio={(v) => poner("rango_repeticiones", rango(acciones.rango_repeticiones?.min, v))}
+            />
+          </div>
+        </Campo>
+      )}
+
       {disponibles.includes("ratio_patron") && (
         <Campo
           rotulo={ETIQUETA_ACCION.ratio_patron}
@@ -266,6 +292,12 @@ export function EditorAcciones({
 }
 
 /** Quita las claves sin valor para no guardar `{piso: undefined}` como si fuera algo. */
+/** Un rango a medio escribir se guarda con los dos extremos iguales; vacío, se quita. */
+function rango(min?: number, max?: number) {
+  if (min === undefined && max === undefined) return undefined;
+  return { min: min ?? max!, max: max ?? min! };
+}
+
 function limpiar(r: { fijo?: number; piso?: number; delta?: number }) {
   const salida: typeof r = {};
   if (r.fijo !== undefined) salida.fijo = r.fijo;

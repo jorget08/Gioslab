@@ -32,6 +32,7 @@ import {
   type Periodizacion,
 } from "@/domain/plan";
 import { leerModelos, validarModelos, type Modelo } from "@/domain/modelos";
+import { leerPrescripcion, validarPrescripcion, type Prescripcion } from "@/domain/prescripcion";
 import { esPatron, type Patron } from "@/domain/patrones";
 
 // ---------------------------------------------------------------------------
@@ -157,6 +158,8 @@ export interface Metodo {
   descarga: Descarga;
   fases: Fases;
   repartos: Reparto[];
+  /** Cadencias, tolerancia y ondulante diario (v7). Ver `domain/prescripcion.ts`. */
+  prescripcion: Prescripcion;
 }
 
 export const VERSION_METODO = 1 as const;
@@ -340,7 +343,7 @@ export function validarMetodo(crudo: unknown): string[] {
     }
   }
 
-  e.push(...validarModelos(crudo));
+  e.push(...validarModelos(crudo), ...validarPrescripcion(crudo));
 
   // --- Reparto semanal ------------------------------------------------------
   if (!Array.isArray(crudo.repartos) || crudo.repartos.length === 0) {
@@ -420,6 +423,7 @@ export function leerMetodo(crudo: unknown): Metodo | null {
     objetivoPorMeta: c.objetivo_por_meta as Record<string, Objetivo | null>,
     periodizacionPorObjetivo: c.periodizacion_por_objetivo as Record<Objetivo, Periodizacion>,
     ...leerModelos(c),
+    prescripcion: leerPrescripcion(c),
     parametros,
     seriesSemanales: c.series_semanales as Record<string, RangoSeries>,
     grupoPorMusculo: c.grupo_por_musculo as Record<string, string>,

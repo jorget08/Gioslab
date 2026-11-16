@@ -78,6 +78,7 @@ const resultado = (p: Partial<Resultado> = {}): Resultado => ({
   volumenFactor: 1,
   volumenSeries: null,
   rir: {},
+  rangoRepeticiones: null,
   maniobrasProhibidas: [],
   ratioPatron: null,
   aplicadas: [],
@@ -796,17 +797,22 @@ describe("bloques en tres fases, ATR y pierna sin tren superior (método v5, 3-n
     expect(atr.semanas.slice(4).map((s) => s.dias[0].central.ejercicios[0].rpeUltima)).toEqual([9, 9.5]);
   });
 
-  it("cada ejercicio sale con la cadencia de su objetivo (v6, 9-nov)", () => {
+  it("cadencia por jerarquía y concéntrica explosiva en Intensificación (v7, 16-nov)", () => {
     const { plan } = generar(13);
-    const cadencias = new Set(plan!.semanas.flatMap((s) => s.dias.flatMap((d) => d.central.ejercicios.map((e) => e.cadencia))));
-    expect([...cadencias]).toEqual(["3010"]);
+    const de = (semana: number) => plan!.semanas[semana - 1].dias.flatMap((d) => d.central.ejercicios);
+    // La biblioteca de prueba no trae jerarquías: cae a la del objetivo.
+    expect(new Set(de(1).map((e) => e.cadencia))).toEqual(new Set(["3010"]));
+    const compuestos = (semana: number) =>
+      de(semana).filter((e) => !BIBLIOTECA.find((b) => b.name === e.ejercicio)!.movement_pattern!.startsWith("isolation"));
+    expect(new Set(compuestos(9).map((e) => e.cadencia))).toEqual(new Set(["30X0"]));
+    expect(validarPlan(plan!)).toEqual([]);
   });
 });
 
 describe("el mismo ejercicio base no se repite en una sesión (3-nov)", () => {
   const cand = (nombre: string, patron: string, musculo: string, aislamiento = false): Candidato => ({
     nombre, patron, musculo, grupo: null, aislamiento, prioritario: true,
-    modificadores: [], sustitutos: [], jerarquia: null, perfil: null, guiada: false,
+    modificadores: [], sustitutos: [], jerarquia: null, perfil: null, guiada: false, cadencia: null, axial: false,
   });
 
   it("fondos para pecho y fondos para tríceps no van juntos: el accesorio busca otra variante", () => {

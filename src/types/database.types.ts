@@ -683,11 +683,13 @@ export type Database = {
       }
       exercise_library: {
         Row: {
+          axial_load: boolean
           biomechanical_type: string | null
           complementary_pattern: string | null
           contraindications: Json
           created_at: string
           created_by: string | null
+          default_cadence: string | null
           description: string | null
           equipment: string | null
           hierarchy_level: number | null
@@ -702,11 +704,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          axial_load?: boolean
           biomechanical_type?: string | null
           complementary_pattern?: string | null
           contraindications?: Json
           created_at?: string
           created_by?: string | null
+          default_cadence?: string | null
           description?: string | null
           equipment?: string | null
           hierarchy_level?: number | null
@@ -721,11 +725,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          axial_load?: boolean
           biomechanical_type?: string | null
           complementary_pattern?: string | null
           contraindications?: Json
           created_at?: string
           created_by?: string | null
+          default_cadence?: string | null
           description?: string | null
           equipment?: string | null
           hierarchy_level?: number | null

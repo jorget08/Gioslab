@@ -203,7 +203,8 @@ describe("las cifras que cargó la 5.2 son las suyas", () => {
         .filter((d) => d.patrones.includes("core_anti_flexion_extension"))
         .map((d) => d.titulo),
     );
-    expect(conCore).toEqual(["Full Body", "Torso y core", "Tren superior y core"]);
+    // Su mujer de 5 días (16-nov) ya no trae un día "y core".
+    expect(conCore).toEqual(["Full Body", "Torso y core"]);
   });
 });
 

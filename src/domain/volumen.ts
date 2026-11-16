@@ -37,6 +37,9 @@ export interface Candidato {
   jerarquia: Jerarquia | null;
   perfil: Perfil | null;
   guiada: boolean;
+  /** La de su ficha (16-nov); `null` = la de su jerarquía. */
+  cadencia: string | null;
+  axial: boolean;
 }
 
 /** Un candidato ya colocado en un día, con sus series antes de ajustar. */
@@ -147,7 +150,7 @@ export function completarVolumen(
     const faltos = [...cuenta.keys()]
       .filter((g) => {
         const rango = rangoDelGrupo(g, metodo, resultado);
-        return rango !== null && (cuenta.get(g) ?? 0) * maximo < rango.min;
+        return rango !== null && (cuenta.get(g) ?? 0) * maximo < rango.min - metodo.prescripcion.toleranciaSeries;
       })
       .sort((a, b) => a.localeCompare(b, "es"));
 
@@ -167,6 +170,7 @@ export function completarVolumen(
               cabeEnElDia(cand, plantillas[i]) &&
               dia.length < metodo.ejerciciosPorDia.max &&
               !dia.some((c) => mismaBase(c.candidato.nombre, cand.nombre)) &&
+              !(cand.axial && cand.jerarquia === 1 && dia.some((c) => c.candidato.axial && c.candidato.jerarquia === 1)) &&
               // Un segundo J1 del mismo músculo el mismo día repite estímulo.
               !(
                 cand.jerarquia === 1 &&
@@ -237,13 +241,15 @@ export function ajustarVolumen(
       candidato.series += 1;
     }
 
+    // Su margen de ±1 (16-nov): 15 de 16 no es un plan que incumpla su método.
     const hecho = total();
-    if (hecho < rango.min) {
+    const margen = metodo.prescripcion.toleranciaSeries;
+    if (hecho < rango.min - margen) {
       avisos.push(
         `${grupo}: quedan ${hecho} series a la semana y su método pide ${rango.min}. ` +
           "Faltan ejercicios aprobados de ese grupo, no es un ajuste que se pueda apretar más.",
       );
-    } else if (hecho > rango.max) {
+    } else if (hecho > rango.max + margen) {
       avisos.push(
         `${grupo}: quedan ${hecho} series a la semana y su método tope está en ${rango.max}.`,
       );

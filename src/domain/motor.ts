@@ -117,6 +117,8 @@ export interface Resultado {
   /** Series efectivas por grupo muscular y semana, del nivel 4. */
   volumenSeries: { min: number; max: number } | null;
   rir: { fijo?: number; piso?: number; delta?: number };
+  /** Repeticiones que fija una regla clínica (hipertensión, 16-nov). `null` si ninguna. */
+  rangoRepeticiones: { min: number; max: number } | null;
   maniobrasProhibidas: string[];
   ratioPatron: Record<string, number> | null;
   aplicadas: ReglaAplicada[];
@@ -407,6 +409,13 @@ export function evaluar({ hechos, reglas, ejercicios, relaciones = [] }: Entrada
     }
   }
 
+  // El rango de repeticiones también se combina: dos reglas se cruzan quedándose
+  // con el más ligero (el mínimo más alto), que es lo conservador.
+  const rangos = [...del(1), ...del(2)].flatMap((r) => (r.actions?.rango_repeticiones ? [r.actions.rango_repeticiones] : []));
+  const minRango = Math.max(...rangos.map((x) => x.min));
+  const rangoRepeticiones =
+    rangos.length > 0 ? { min: minRango, max: Math.max(minRango, Math.min(...rangos.map((x) => x.max))) } : null;
+
   // --- NIVEL 3 · vectores ---------------------------------------------------
 
   const ratios = del(3)
@@ -497,6 +506,7 @@ export function evaluar({ hechos, reglas, ejercicios, relaciones = [] }: Entrada
     volumenFactor,
     volumenSeries,
     rir,
+    rangoRepeticiones,
     maniobrasProhibidas: [...maniobras],
     ratioPatron,
     aplicadas,

@@ -340,6 +340,8 @@ export interface Acciones {
   volumen_factor?: number;
   /** Nivel 2. `fijo` clava el RIR; `piso` impide bajar de ahí; `delta` lo mueve. */
   rir?: { fijo?: number; piso?: number; delta?: number };
+  /** Niveles 1 y 2. Repeticiones fijas por seguridad: su hipertensión, 12–15 (16-nov). */
+  rango_repeticiones?: { min: number; max: number };
 
   /** Nivel 3. Reparto entre patrones; los valores suman 1. */
   ratio_patron?: Record<string, number>;
@@ -376,8 +378,10 @@ export const ACCIONES_POR_NIVEL: Record<NivelMotor, readonly ClaveAccion[]> = {
     // dos cosas son el mismo criterio. Los suelos se acumulan quedándose con el
     // más alto, así que sumar el nivel 1 solo puede ser más conservador.
     "rir",
+    // Como el RIR: la hipertensión no excluye los press, los aligera (16-nov).
+    "rango_repeticiones",
   ],
-  2: ["volumen_factor", "rir"],
+  2: ["volumen_factor", "rir", "rango_repeticiones"],
   3: ["ratio_patron", "priorizar"],
   4: ["volumen_series"],
 };
@@ -468,6 +472,13 @@ export function validarAcciones(a: Acciones): string[] {
       if (v !== undefined && (v < -5 || v > 10)) {
         errores.push(`El RIR "${clave}" con valor ${v} está fuera de rango.`);
       }
+    }
+  }
+
+  if (a.rango_repeticiones) {
+    const { min, max } = a.rango_repeticiones;
+    if (!Number.isInteger(min) || !Number.isInteger(max) || min < 1 || max > 50 || min > max) {
+      errores.push("El rango de repeticiones no es válido.");
     }
   }
 
@@ -604,6 +615,7 @@ export const ETIQUETA_ACCION: Record<ClaveAccion, string> = {
   prohibir_maniobra: "Prohibir maniobras",
   volumen_factor: "Ajustar el volumen semanal",
   rir: "RIR",
+  rango_repeticiones: "Rango de repeticiones",
   ratio_patron: "Reparto entre patrones",
   volumen_series: "Series por grupo y semana",
 };
@@ -646,6 +658,9 @@ export function describirAccionesPorClave(a: Acciones): Partial<Record<ClaveAcci
     rir.push(`${a.rir.delta >= 0 ? "sube" : "baja"} el RIR en ${Math.abs(a.rir.delta)}`);
   }
   if (rir.length > 0) f.rir = rir.join("; ");
+  if (a.rango_repeticiones) {
+    f.rango_repeticiones = `fija ${a.rango_repeticiones.min}–${a.rango_repeticiones.max} repeticiones`;
+  }
 
   if (a.ratio_patron) {
     // Con el nombre y no con la clave: `squat_dominante_rodilla` es identidad
