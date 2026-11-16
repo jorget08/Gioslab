@@ -182,7 +182,8 @@ function PlanDelAtleta() {
       metodo: carga.metodo,
       ejercicios: carga.ejercicios,
       relaciones: carga.relaciones,
-      atleta: carga.atleta,
+      // La base dice `sex` y el generador `sexo`: sin esto ninguna mujer tenía su reparto.
+      atleta: { ...carga.atleta, sexo: carga.atleta.sex },
       opciones: {
         diasPorSemana: dias,
         semanas,

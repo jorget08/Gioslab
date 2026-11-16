@@ -77,7 +77,8 @@ import {
 // ---------------------------------------------------------------------------
 
 export interface AtletaGenerador {
-  sexo?: string | null;
+  /** Obligatorio: opcional, un atleta sin él caía en silencio al reparto de hombre. */
+  sexo: string | null;
   training_goal?: string | null;
   experience_level?: string | null;
 }
